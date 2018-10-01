@@ -1,0 +1,161 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{867FDF36-1B1A-475B-B44A-F3A7BF914F98}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Smx.PDBSharp</RootNamespace>
+    <AssemblyName>Smx.PDBSharp</AssemblyName>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ByteArrayExtensions.cs" />
+    <Compile Include="DBIReader.cs" />
+    <Compile Include="Endianness.cs" />
+    <Compile Include="Leaves\LF_CHAR.cs" />
+    <Compile Include="Leaves\ILeaf.cs" />
+    <Compile Include="Leaves\LeafReaderAttribute.cs" />
+    <Compile Include="Leaves\LF_LONG.cs" />
+    <Compile Include="Leaves\LF_QUADWORD.cs" />
+    <Compile Include="Leaves\LF_REAL32.cs" />
+    <Compile Include="Leaves\LF_REAL64.cs" />
+    <Compile Include="Leaves\LF_SHORT.cs" />
+    <Compile Include="Leaves\LF_ULONG.cs" />
+    <Compile Include="Leaves\LF_UQUADWORD.cs" />
+    <Compile Include="Leaves\LF_USHORT.cs" />
+    <Compile Include="Leaves\LF_VARSTRING.cs" />
+    <Compile Include="ModuleListReader.cs" />
+    <Compile Include="ModuleReader.cs" />
+    <Compile Include="MSFReader.cs" />
+    <Compile Include="Leaves\LeafType.cs" />
+    <Compile Include="PDBFile.cs" />
+    <Compile Include="PDBType.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReaderBase.cs" />
+    <Compile Include="StreamTableReader.cs" />
+    <Compile Include="StructureReader.cs" />
+    <Compile Include="SymbolDataReader.cs" />
+    <Compile Include="SymbolReaderAttribute.cs" />
+    <Compile Include="SymbolsReader.cs" />
+    <Compile Include="Symbols\ISymbol.cs" />
+    <Compile Include="Symbols\Structures\ATTRSLOTSYM.cs" />
+    <Compile Include="Symbols\Structures\BLOCKSYM32.cs" />
+    <Compile Include="Symbols\Structures\BUILDINFOSYM.cs" />
+    <Compile Include="Symbols\Structures\CALLSITEINFO.cs" />
+    <Compile Include="Symbols\Structures\COFFGROUPSYM.cs" />
+    <Compile Include="Symbols\Structures\Common.cs" />
+    <Compile Include="Symbols\Structures\COMPILESYM.cs" />
+    <Compile Include="Symbols\Structures\COMPILESYM3.cs" />
+    <Compile Include="Symbols\Structures\CONSTSYM.cs" />
+    <Compile Include="Symbols\Structures\CV_LVARFLAGS.cs" />
+    <Compile Include="Symbols\Structures\CV_LVAR_ADDR_GAP.cs" />
+    <Compile Include="Symbols\Structures\CV_LVAR_ADDR_RANGE.cs" />
+    <Compile Include="Symbols\Structures\DATASYM32.cs" />
+    <Compile Include="Symbols\Structures\DEFRANGESYM.cs" />
+    <Compile Include="Symbols\Structures\DEFRANGESYMSUBFIELD.cs" />
+    <Compile Include="Symbols\Structures\ENVBLOCKSYM.cs" />
+    <Compile Include="Symbols\Structures\EXPORTSYM.cs" />
+    <Compile Include="Symbols\Structures\FILESTATICSYM.cs" />
+    <Compile Include="Symbols\Structures\FRAMECOOKIE.cs" />
+    <Compile Include="Symbols\Structures\FRAMEPROCSYM.cs" />
+    <Compile Include="Symbols\Structures\FUNCTIONLIST.cs" />
+    <Compile Include="Symbols\Structures\LABELSYM32.cs" />
+    <Compile Include="Symbols\Structures\LOCALSYM.cs" />
+    <Compile Include="Symbols\Structures\LocalVarAttributes.cs" />
+    <Compile Include="Symbols\Structures\LocalVarFlags.cs" />
+    <Compile Include="Symbols\Structures\MANPROCSYM.cs" />
+    <Compile Include="Symbols\Structures\OBJNAMESYM.cs" />
+    <Compile Include="Symbols\Structures\OEMSYMBOL.cs" />
+    <Compile Include="Symbols\Structures\PROCSYM32.cs" />
+    <Compile Include="Symbols\Structures\REGREL32.cs" />
+    <Compile Include="Symbols\Structures\SECTIONSYM.cs" />
+    <Compile Include="Symbols\Structures\TRAMPOLINESYM.cs" />
+    <Compile Include="Symbols\S_CALLEES.cs" />
+    <Compile Include="Symbols\S_COFFGROUP.cs" />
+    <Compile Include="Symbols\S_DEFRANGE_FRAMEPOINTER_REL.cs" />
+    <Compile Include="Symbols\S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE.cs" />
+    <Compile Include="Symbols\S_DEFRANGE_REGISTER.cs" />
+    <Compile Include="Symbols\Structures\THUNKSYM32.cs" />
+    <Compile Include="Symbols\Structures\UDTSYM.cs" />
+    <Compile Include="Symbols\Structures\UNAMESPACE.cs" />
+    <Compile Include="Symbols\S_BLOCK32.cs" />
+    <Compile Include="Symbols\S_BUILDINFO.cs" />
+    <Compile Include="Symbols\S_CALLSITEINFO.cs" />
+    <Compile Include="Symbols\S_COMPILE2.cs" />
+    <Compile Include="Symbols\S_COMPILE3.cs" />
+    <Compile Include="Symbols\S_DEFRANGE_REGISTER_REL.cs" />
+    <Compile Include="Symbols\S_DEFRANGE_SUBFIELD_REGISTER.cs" />
+    <Compile Include="Symbols\S_END.cs" />
+    <Compile Include="Symbols\S_ENVBLOCK.cs" />
+    <Compile Include="Symbols\S_EXPORT.cs" />
+    <Compile Include="Symbols\S_FILESTATIC.cs" />
+    <Compile Include="Symbols\S_FRAMECOOKIE.cs" />
+    <Compile Include="Symbols\S_FRAMEPROC.cs" />
+    <Compile Include="Symbols\S_GMANPROC.cs" />
+    <Compile Include="Symbols\S_GPROC32.cs" />
+    <Compile Include="Symbols\S_LABEL32.cs" />
+    <Compile Include="Symbols\S_LDATA32.cs" />
+    <Compile Include="Symbols\S_LOCAL.cs" />
+    <Compile Include="Symbols\S_LPROC32.cs" />
+    <Compile Include="Symbols\S_MANCONSTANT.cs" />
+    <Compile Include="Symbols\S_MANSLOT.cs" />
+    <Compile Include="Symbols\S_OBJNAME.cs" />
+    <Compile Include="Symbols\S_OEM.cs" />
+    <Compile Include="Symbols\S_REGREL32.cs" />
+    <Compile Include="Symbols\S_SECTION.cs" />
+    <Compile Include="Symbols\S_THUNK32.cs" />
+    <Compile Include="Symbols\S_TRAMPOLINE.cs" />
+    <Compile Include="Symbols\S_UDT.cs" />
+    <Compile Include="SymbolType.cs" />
+    <Compile Include="Symbols\S_UNAMESPACE.cs" />
+    <Compile Include="SymRecord.cs" />
+    <Compile Include="SymRecordReader.cs" />
+    <Compile Include="Thunks\ADJUSTOR.cs" />
+    <Compile Include="Thunks\IThunk.cs" />
+    <Compile Include="Thunks\NOTYPE.cs" />
+    <Compile Include="Thunks\ThunkReaderAttribute.cs" />
+    <Compile Include="Thunks\ThunkReaderBase.cs" />
+    <Compile Include="Thunks\ThunkType.cs" />
+    <Compile Include="TPIReader.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
