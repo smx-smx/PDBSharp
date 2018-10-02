@@ -16,6 +16,11 @@ namespace Smx.PDBSharp
 {
 	public static class ByteArrayExtensions
 	{
+		/**
+		 * Source (Covered by CPOL license)
+		 * https://www.codeproject.com/Articles/36747/Quick-and-Dirty-HexDump-of-a-Byte-Array
+		 * https://www.codeproject.com/info/cpol10.aspx
+		 */
 		public static void HexDump(this byte[] bytes, int? optBytesLength = null) {
 			if(bytes == null) return;
 			int bytesPerLine = 16;
@@ -76,73 +81,6 @@ namespace Smx.PDBSharp
 				result.Append(line);
 			}
 			Console.WriteLine(result.ToString());
-		}
-
-		public static void HexDump2(this byte[] data, int size) {
-			StringBuilder final = new StringBuilder();
-
-			int offset = 0;
-
-			int indent = 1;
-
-			while(size > 0) {
-				StringBuilder sb = new StringBuilder();
-				sb.AppendFormat(" >                                                      {0:X8}", offset);
-
-				int outLen = size;
-				if(outLen > 16)
-					outLen = 16;
-
-
-				int outLen2 = outLen;
-
-				int relPos = 0;
-				int index = 1 + indent;
-				int index2 = 53 - 15 + indent;
-
-				IEnumerable<byte> tmp = data.Skip(offset);
-
-				for(; outLen2 > 0; outLen2--, index += 2, index2++) {
-					var ucTmp = tmp.Take(1).First();
-
-					string bStr = string.Format("{0:X2}", ucTmp);
-					sb.Remove(index, bStr.Length);
-					sb.Insert(index, bStr);
-
-					char ch = Convert.ToChar(ucTmp);
-					if(!char.IsLetterOrDigit(ch) && !char.IsPunctuation(ch) && !char.IsSymbol(ch) && ch != ' ') {
-						ch = '.';
-					}
-					sb.Remove(index2, 1);
-					sb.Insert(index2, ch);
-
-					if((++relPos % 4) == 0) {
-						index++;
-						sb.Remove(index + 2, 1);
-						sb.Insert(index + 2, ' ');
-					}
-
-					tmp = tmp.Skip(1);
-				}
-
-				if((relPos % 4) == 0) {
-					index--;
-				}
-
-				sb.Remove(index, 1);
-				sb.Insert(index, '<');
-
-				sb.Remove(index + 1, 1);
-				sb.Insert(index + 1, ' ');
-
-				sb.Append(Environment.NewLine);
-				final.Append(sb.ToString());
-
-				offset += outLen;
-				size -= outLen;
-			}
-
-			Console.Write(final.ToString());
 		}
 	}
 }
