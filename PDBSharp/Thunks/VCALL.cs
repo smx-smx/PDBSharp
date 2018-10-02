@@ -7,6 +7,7 @@
  */
 #endregion
 ﻿using Smx.PDBSharp;
+using Smx.PDBSharp.Symbols.Structures;
 using Smx.PDBSharp.Thunks;
 using System;
 using System.Collections.Generic;
@@ -17,19 +18,20 @@ using System.Text;
 namespace Smx.PDBSharp.Thunks
 {
 	[StructLayout(LayoutKind.Sequential, Pack = 1)]
-	public struct VcallThunk : IThunk
+	public struct VcallThunk
 	{
 		public UInt16 VTableOffset;
-
-		public ThunkType Type => ThunkType.VCALL;
 	}
 
 	[ThunkReader(ThunkType.VCALL)]
-	public class VCALL : ReaderBase
+	public class VCALL : ThunkReaderBase, IThunk
 	{
 		public readonly VcallThunk Data;
-		public VCALL(Stream stream) : base(stream) {
+
+		public VCALL(SymbolHeader header, THUNKSYM32 thunkSym, Stream stream) : base(header, thunkSym, stream) {
 			Data = ReadStruct<VcallThunk>();
 		}
+
+		THUNKSYM32 IThunk.Thunk => this.Thunk;
 	}
 }

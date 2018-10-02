@@ -6,7 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using System;
+using Smx.PDBSharp.Symbols.Structures;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,7 +17,7 @@ namespace Smx.PDBSharp.Thunks
 {
 	public interface IThunk
 	{
-		ThunkType Type { get; }
+		THUNKSYM32 Thunk { get; }
 	}
 
 }

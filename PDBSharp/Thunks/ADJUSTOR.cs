@@ -37,7 +37,7 @@ namespace Smx.PDBSharp.Thunks
 
 		public ADJUSTOR(SymbolHeader symHeader, THUNKSYM32 thunk, Stream stream) : base(symHeader, thunk, stream) {
 			AdjustorThunk header = ReadStruct<AdjustorThunk>();
-			string name = ReadSymbolString(Header);
+			string name = ReadSymbolString(symHeader);
 
 			Data = new AdjustorThunkInstance() {
 				Header = header,
@@ -45,7 +45,6 @@ namespace Smx.PDBSharp.Thunks
 			};
 		}
 
-		public ThunkType Type => ThunkType.ADJUSTOR;
-
+		THUNKSYM32 IThunk.Thunk => this.Thunk;
 	}
 }

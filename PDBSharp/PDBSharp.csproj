@@ -8,10 +8,6 @@
     <RootNamespace>Smx.PDBSharp</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Folder Include="Leaves\" />
-    <Folder Include="Properties\" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="System.Net.Http" Version="4.3.3" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
