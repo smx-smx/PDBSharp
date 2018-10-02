@@ -82,7 +82,16 @@ namespace Smx.PDBSharp
 			this.dbi = dbi;
 		}
 
-		public IEnumerable<ModuleInfoInstance> GetModules() {
+		private IEnumerable<ModuleInfoInstance> modules;
+		public IEnumerable<ModuleInfoInstance> Modules {
+			get {
+				if (modules == null)
+					modules = GetModules();
+				return modules;
+			}
+		}
+
+		private IEnumerable<ModuleInfoInstance> GetModules() {
 			var remaining = Stream.Length;
 			while(remaining > 0) {
 				ModuleInfo mod = ReadStruct<ModuleInfo>();

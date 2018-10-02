@@ -26,22 +26,11 @@ namespace Smx.PDBSharp
 		V110 = 20091201
 	}
 
-	public struct DBIFlags
+	public enum DBIFlags : UInt16
 	{
-		//[reserved13][hasCtypes][isStripped][isIncrementalLink]
-		private UInt16 flags;
-
-		public bool IsIncrementalLink() {
-			return (flags & 1) == 1;
-		}
-
-		public bool IsStripped() {
-			return ((flags >> 1) & 1) == 1;
-		}
-
-		public bool HasCTypes() {
-			return ((flags >> 2) & 1) == 1;
-		}
+		IsIncrementalLink = 1 << 0,
+		IsStripped = 1 << 1,
+		HasCTypes = 1 << 2
 	}
 
 	public struct DBIHeader
@@ -77,8 +66,16 @@ namespace Smx.PDBSharp
 		private DBIHeader hdr;
 		private readonly StreamTableReader stRdr;
 
-		// cache modules
-		private IEnumerable<ModuleInfoInstance> modules;
+		private IEnumerable<ModuleReader> modules;
+
+		public IEnumerable<ModuleReader> Modules {
+			get {
+				if (modules == null)
+					modules = GetModules();
+				return modules;
+			}
+		}
+
 
 		public DBIReader(StreamTableReader stRdr, Stream stream) : base(stream) {
 			this.stRdr = stRdr;
@@ -98,27 +95,18 @@ namespace Smx.PDBSharp
 			}
 		}
 
-		private void Test() {
-			foreach(var mod in modules) {
-				byte[] modStream = stRdr.GetStream(mod.Header.StreamNumber);
-				new ModuleReader(mod, new MemoryStream(modStream));
-			}
-		}
-
-		public IEnumerable<ModuleInfoInstance> Modules() {
-			if(modules != null)
-				return modules;
-
+		private IEnumerable<ModuleReader> GetModules() {
 			Stream.Position = Marshal.SizeOf<DBIHeader>();
 
 			byte[] moduleList = Reader.ReadBytes((int)hdr.ModuleListSize);
 			var modListRdr = new ModuleListReader(this, new MemoryStream(moduleList));
 
-			modules = modListRdr.GetModules();
+			IEnumerable<ModuleInfoInstance> moduleInfoList = modListRdr.Modules;
 
-			Test();
-
-			return modules;
+			foreach (ModuleInfoInstance mod in moduleInfoList) {
+				byte[] modStream = stRdr.GetStream(mod.Header.StreamNumber);
+				yield return new ModuleReader(mod, new MemoryStream(modStream));
+			}
 		}
 
 	}

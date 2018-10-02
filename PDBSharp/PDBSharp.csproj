@@ -143,8 +143,6 @@
     <Compile Include="Symbols\S_UDT.cs" />
     <Compile Include="SymbolType.cs" />
     <Compile Include="Symbols\S_UNAMESPACE.cs" />
-    <Compile Include="SymRecord.cs" />
-    <Compile Include="SymRecordReader.cs" />
     <Compile Include="Thunks\ADJUSTOR.cs" />
     <Compile Include="Thunks\IThunk.cs" />
     <Compile Include="Thunks\NOTYPE.cs" />

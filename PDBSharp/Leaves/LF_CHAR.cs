@@ -18,7 +18,6 @@ namespace Smx.PDBSharp.Leaves
 	[LeafReader(LeafType.LF_CHAR)]
 	class LF_CHAR : ReaderBase, ILeaf<char>
 	{
-		public LeafType Type => LeafType.LF_CHAR;
 		public char Value { get; }
 
 		public LF_CHAR(Stream stream) : base(stream) {

@@ -28,19 +28,22 @@ namespace Smx.PDBSharp
 	{
 		private readonly Stream stream;
 
-		private MSFReader rdr;
-		private StreamTableReader stRdr;
-		private DBIReader dbiRdr;
+		private readonly MSFReader rdr;
+		private readonly StreamTableReader stRdr;
+
+		private IEnumerable<ModuleReader> modules;
+
+		public IEnumerable<ModuleReader> Modules {
+			get {
+				if (modules == null)
+					modules = GetModules();
+				return modules;
+			}
+		}
 
 		public PDBFile(Stream stream) {
 			this.stream = stream;
-			this.Load();
 
-			//$DEBUG
-			this.GetModules();
-		}
-
-		private void Load() {
 			this.rdr = new MSFReader(this.stream, PDBType.Big);
 
 			byte[] streamTable = rdr.StreamTable();
@@ -48,11 +51,11 @@ namespace Smx.PDBSharp
 			stRdr = new StreamTableReader(rdr, new MemoryStream(streamTable));
 		}
 
-		private IEnumerable<ModuleInfoInstance> GetModules() {
+		private IEnumerable<ModuleReader> GetModules() {
 			byte[] dbi = stRdr.GetStream((uint)DefaultStreams.DBI);
 
-			dbiRdr = new DBIReader(stRdr, new MemoryStream(dbi));
-			return dbiRdr.Modules();
+			DBIReader dbiRdr = new DBIReader(stRdr, new MemoryStream(dbi));
+			return dbiRdr.Modules;
 		}
 	}
 }

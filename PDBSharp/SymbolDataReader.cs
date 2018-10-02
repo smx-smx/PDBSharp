@@ -53,7 +53,6 @@ namespace Smx.PDBSharp
 			byte[] data = ReadRemaining();
 			Stream.Position = 0;
 
-
 			UInt16 size = Reader.ReadUInt16();
 			UInt16 type = Reader.ReadUInt16();
 			if(!Enum.IsDefined(typeof(SymbolType), type)) {

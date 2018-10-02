@@ -18,8 +18,6 @@ namespace Smx.PDBSharp.Leaves
 	[LeafReader(LeafType.LF_SHORT)]
 	public class LF_SHORT : ReaderBase, ILeaf<short>
 	{
-		public LeafType Type => LeafType.LF_SHORT;
-
 		public short Value { get; }
 
 		public LF_SHORT(Stream stream) : base(stream) {

@@ -15,7 +15,6 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp.Leaves
 {
 	public interface ILeaf {
-		LeafType Type { get; }
 	}
 
 	public interface ILeaf<T> : ILeaf

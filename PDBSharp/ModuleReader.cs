@@ -6,7 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using System;
+using Smx.PDBSharp.Symbols;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,32 +21,35 @@ namespace Smx.PDBSharp
 		private const int SIGNATURE = 4;
 		private readonly ModuleInfoInstance modInfo;
 
+		private IEnumerable<ISymbol> symbols;
+
+		public IEnumerable<ISymbol> Symbols {
+			get {
+				if (symbols == null)
+					symbols = GetSymbols();
+				return symbols;
+			}
+		}
+
 		public ModuleReader(ModuleInfoInstance modInfo, Stream stream) : base(stream) {
-			this.Load();
 			this.modInfo = modInfo;
+
+			uint signature = Reader.ReadUInt32();
+			if (signature != SIGNATURE) {
+				throw new InvalidDataException();
+			}
 
 			GetSymbols();
 		}
 
-		private void Load() {
-			uint signature = Reader.ReadUInt32();
-			if(signature != SIGNATURE) {
-				throw new InvalidDataException();
-			}
-		}
-
-		public IEnumerable<int> GetSymbols() {
+		private IEnumerable<ISymbol> GetSymbols() {
 			Stream.Position = sizeof(int); //after signature
 			int symbolsSize = (int)modInfo.Header.SymbolsSize - sizeof(int); //exclude signature
 
 			byte[] symbolsData = Reader.ReadBytes(symbolsSize);
 
 			var rdr = new SymbolsReader(new MemoryStream(symbolsData));
-			foreach(var symbol in rdr.Symbols) {
-				Console.WriteLine(symbol.ToString());
-			}
-
-			return null;
+			return rdr.Symbols;
 		}
 	}
 }

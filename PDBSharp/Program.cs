@@ -6,7 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using System;
+using Smx.PDBSharp.Symbols;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -24,8 +25,15 @@ namespace Smx.PDBSharp
 			}
 
 			var file = new FileStream(args[0], FileMode.Open, FileAccess.Read);
-			new PDBFile(file);
+			PDBFile pdb = new PDBFile(file);
 
+			foreach (var mod in pdb.Modules) {
+				foreach(var sym in mod.Symbols) {
+					Console.WriteLine($"[MAIN] => {sym.ToString()}");
+				}
+			}
+
+			Console.WriteLine("Press Enter to continue...");
 			Console.ReadLine();
 		}
 	}

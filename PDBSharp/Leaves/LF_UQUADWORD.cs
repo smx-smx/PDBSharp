@@ -18,8 +18,6 @@ namespace Smx.PDBSharp.Leaves
 	[LeafReader(LeafType.LF_UQUADWORD)]
 	public class LF_UQUADWORD : ReaderBase, ILeaf<ulong>
 	{
-		public LeafType Type => LeafType.LF_UQUADWORD;
-
 		public LF_UQUADWORD(Stream stream) : base(stream) {
 			Value = Reader.ReadUInt64();
 		}

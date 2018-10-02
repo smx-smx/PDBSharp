@@ -18,8 +18,6 @@ namespace Smx.PDBSharp.Leaves
 	[LeafReader(LeafType.LF_REAL64)]
 	public class LF_REAL64 : ReaderBase, ILeaf<double>
 	{
-		public LeafType Type => LeafType.LF_REAL64;
-
 		public LF_REAL64(Stream stream) : base(stream) {
 			Value = Reader.ReadDouble();
 		}

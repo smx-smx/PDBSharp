@@ -18,8 +18,6 @@ namespace Smx.PDBSharp.Leaves
 	[LeafReader(LeafType.LF_VARSTRING)]
 	public class LF_VARSTRING : ReaderBase, ILeaf<string>
 	{
-		public LeafType Type => LeafType.LF_VARSTRING;
-
 		public LF_VARSTRING(Stream stream) : base(stream) {
 			UInt16 length = Reader.ReadUInt16();
 			byte[] data = Reader.ReadBytes((int)length);

@@ -18,8 +18,6 @@ namespace Smx.PDBSharp.Leaves
 	[LeafReader(LeafType.LF_LONG)]
 	public class LF_LONG : ReaderBase, ILeaf<int>
 	{
-		public LeafType Type => LeafType.LF_LONG;
-
 		public LF_LONG(Stream stream) : base(stream) {
 			Value = Reader.ReadInt32();
 		}
