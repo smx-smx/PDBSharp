@@ -26,6 +26,10 @@ namespace Smx.PDBSharp
 
 	public class PDBFile
 	{
+
+		private const string SMALL_MAGIC = "Microsoft C/C++ program database 2.00\r\n\x1a" + "JG";
+		private const string BIG_MAGIC = "Microsoft C/C++ MSF 7.00\r\n\x1a" + "DS";
+
 		private readonly Stream stream;
 
 		private readonly MSFReader rdr;
@@ -41,10 +45,37 @@ namespace Smx.PDBSharp
 			}
 		}
 
+		public readonly PDBType FileType;
+
+		private PDBType DetectPdbType() {
+			int maxSize = Math.Max(SMALL_MAGIC.Length, BIG_MAGIC.Length);
+
+			byte[] buffer = new byte[maxSize];
+			stream.Read(buffer, 0, maxSize);
+			stream.Position = 0;
+
+			string msfMagic = Encoding.ASCII.GetString(buffer);
+			if (msfMagic.StartsWith(BIG_MAGIC)) {
+				return PDBType.Big;
+			} else if (msfMagic.StartsWith(SMALL_MAGIC)) {
+				return PDBType.Small;
+			} else {
+				throw new InvalidDataException($"No valid MSF header found");
+			}
+
+		}
+
 		public PDBFile(Stream stream) {
 			this.stream = stream;
 
-			this.rdr = new MSFReader(this.stream, PDBType.Big);
+			this.FileType = DetectPdbType();
+
+			//$TODO
+			if (this.FileType == PDBType.Small) {
+				throw new NotImplementedException($"Small/Old/JG PDBs not supported/tested yet");
+			}
+
+			this.rdr = new MSFReader(this.stream, FileType);
 
 			byte[] streamTable = rdr.StreamTable();
 			//streamTable.HexDump();
