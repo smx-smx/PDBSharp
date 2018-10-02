@@ -18,7 +18,9 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp
 {
-	public class SymbolDataReader : ReaderBase, ISymbol {
+	public class SymbolDataReader : ReaderBase {
+		public delegate void SymbolDataReaderHook(ISymbol parsedData, byte[] rawData);
+		public static event SymbolDataReaderHook OnDataRead;
 
 		private static readonly Dictionary<SymbolType, ConstructorInfo> parsers;
 		static SymbolDataReader() {
@@ -64,10 +66,9 @@ namespace Smx.PDBSharp
 
 			this.Type = (SymbolType)type;
 
-			Console.WriteLine($"[{Type.ToString()}]");
-			data.HexDump();
-
 			ISymbol sym = (ISymbol) parsers[Type].Invoke(new object[] { Stream }) ;
+			OnDataRead?.Invoke(sym, data);
+
 			return sym;
 
 #if false

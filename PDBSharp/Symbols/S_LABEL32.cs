@@ -19,9 +19,13 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_LABEL32)]
 	public class S_LABEL32 : ReaderBase, ISymbol
 	{
+		public SymbolHeader Header { get; }
 		private readonly LabelSym32Instance Data;
+
 		public S_LABEL32(Stream stream) : base(stream) {
-			Data = new LabelSym32Reader(stream).Data;
+			var rdr = new LabelSym32Reader(stream);
+			Header = rdr.Header;
+			Data = rdr.Data;
 		}
 	}
 }

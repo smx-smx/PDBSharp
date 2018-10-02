@@ -19,9 +19,13 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_EXPORT)]
 	public class S_EXPORT : ReaderBase, ISymbol
 	{
+		public SymbolHeader Header { get; }
 		public readonly ExportSymInstance Data;
+
 		public S_EXPORT(Stream stream) : base(stream) {
-			Data = new ExportSymReader(stream).Data;
+			var rdr = new ExportSymReader(stream);
+			Header = rdr.Header;
+			Data = rdr.Data;
 		}
 	}
 }

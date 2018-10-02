@@ -19,9 +19,13 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_SECTION)]
 	public class S_SECTION : ReaderBase, ISymbol
 	{
+		public SymbolHeader Header { get; }
 		public SectionSymInstance Data;
+
 		public S_SECTION(Stream stream) : base(stream) {
-			Data = new SectionSymReader(stream).Data;
+			var rdr = new SectionSymReader(stream);
+			Header = rdr.Header;
+			Data = rdr.Data;
 		}
 	}
 }

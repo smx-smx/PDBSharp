@@ -17,11 +17,10 @@ namespace Smx.PDBSharp.Symbols.Structures
 {
 	public struct BUILDINFOSYM
 	{
-		public SymbolHeader Header;
 		public UInt32 Id;
 	}
 
-	public class BuildInfoSymReader : ReaderBase
+	public class BuildInfoSymReader : SymbolReaderBase
 	{
 		public readonly BUILDINFOSYM Data;
 		public BuildInfoSymReader(Stream stream) : base(stream) {

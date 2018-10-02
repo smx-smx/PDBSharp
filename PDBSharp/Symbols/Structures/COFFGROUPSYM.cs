@@ -19,7 +19,6 @@ namespace Smx.PDBSharp.Symbols.Structures
 	[StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct COFFGROUPSYM
 	{
-		public SymbolHeader Header;
 		public UInt32 Size;
 		public UInt32 Characteristics;
 		public UInt32 SymbolOffset;
@@ -32,12 +31,12 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public string Name;
 	}
 
-	public class CoffGroupSymReader : ReaderBase
+	public class CoffGroupSymReader : SymbolReaderBase
 	{
 		public readonly CoffGroupSymInstance Data;
 		public CoffGroupSymReader(Stream stream) : base(stream) {
 			COFFGROUPSYM header = ReadStruct<COFFGROUPSYM>();
-			string name = ReadSymbolString(header.Header);
+			string name = ReadSymbolString(Header);
 
 			Data = new CoffGroupSymInstance() {
 				Header = header,

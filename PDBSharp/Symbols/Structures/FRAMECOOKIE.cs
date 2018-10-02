@@ -27,14 +27,13 @@ namespace Smx.PDBSharp.Symbols.Structures
 	[StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct FRAMECOOKIE
 	{
-		public SymbolHeader Header;
 		public UInt32 Offset;
 		public UInt16 RegisterIndex;
 		public CookieType CookieType;
 		public byte flags;
 	}
 
-	public class FrameCookieReader : ReaderBase
+	public class FrameCookieReader : SymbolReaderBase
 	{
 		public readonly FRAMECOOKIE Data;
 		public FrameCookieReader(Stream stream) : base(stream) {

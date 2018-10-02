@@ -19,9 +19,13 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_FRAMECOOKIE)]
 	public class S_FRAMECOOKIE : ReaderBase, ISymbol
 	{
+		public SymbolHeader Header { get; }
 		public readonly FRAMECOOKIE Data;
+
 		public S_FRAMECOOKIE(Stream stream) : base(stream) {
-			Data = new FrameCookieReader(stream).Data;
+			var rdr = new FrameCookieReader(stream);
+			Header = rdr.Header;
+			Data = rdr.Data;
 		}
 	}
 }

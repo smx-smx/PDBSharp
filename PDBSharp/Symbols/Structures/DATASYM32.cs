@@ -19,7 +19,6 @@ namespace Smx.PDBSharp.Symbols.Structures
 	[StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct DATASYM32
 	{
-		public SymbolHeader Header;
 		public UInt32 Offset;
 		public UInt16 Segment;
 		public UInt32 TypeIndex;
@@ -31,13 +30,13 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public string Name;
 	}
 
-	public class DataSym32Reader : ReaderBase
+	public class DataSym32Reader : SymbolReaderBase
 	{
 		public readonly DataSym32Instance Data;
 
 		public DataSym32Reader(Stream stream) : base(stream) {
 			DATASYM32 header = ReadStruct<DATASYM32>();
-			string name = ReadSymbolString(header.Header);
+			string name = ReadSymbolString(Header);
 
 			Data = new DataSym32Instance() {
 				Header = header,

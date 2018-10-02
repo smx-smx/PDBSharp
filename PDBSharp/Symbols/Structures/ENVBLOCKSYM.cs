@@ -19,7 +19,6 @@ namespace Smx.PDBSharp.Symbols.Structures
 	[StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct ENVBLOCKSYM
 	{
-		public SymbolHeader Header;
 		private byte flags;
 	}
 
@@ -29,7 +28,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public List<string> Environment;
 	}
 
-	public class EnvBlockSymReader : ReaderBase
+	public class EnvBlockSymReader : SymbolReaderBase
 	{
 		public readonly EnvBlockSymInstance Data;
 		public EnvBlockSymReader(Stream stream) : base(stream) {
@@ -38,7 +37,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 			List<string> env = new List<string>();
 
 			while(Stream.Position < stream.Length) {
-				string envStr = ReadSymbolString(header.Header);
+				string envStr = ReadSymbolString(Header);
 				if(string.IsNullOrEmpty(envStr))
 					break;
 

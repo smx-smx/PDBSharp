@@ -19,10 +19,13 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_BLOCK32)]
 	public class S_BLOCK32 : ReaderBase, ISymbol
 	{
+		public SymbolHeader Header { get; }
 		public readonly BlockSym32Instance Data;
 
 		public S_BLOCK32(Stream stream) : base(stream) {
-			Data = new BlockSym32Reader(stream).Data;
+			var rdr = new BlockSym32Reader(stream);
+			Header = rdr.Header;
+			Data = rdr.Data;
 		}
 	}
 }

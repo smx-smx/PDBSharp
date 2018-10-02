@@ -19,9 +19,13 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_MANCONSTANT)]
 	public class S_MANCONSTANT : ReaderBase, ISymbol
 	{
+		public SymbolHeader Header { get; }
 		public readonly ConstSymInstance Data;
+
 		public S_MANCONSTANT(Stream stream) : base(stream) {
-			Data = new ConstSymReader(stream).Data;
+			var rdr = new ConstSymReader(stream);
+			Header = rdr.Header;
+			Data = rdr.Data;
 		}
 	}
 }

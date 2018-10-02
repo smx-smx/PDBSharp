@@ -60,7 +60,7 @@ namespace Smx.PDBSharp
 			} else if (msfMagic.StartsWith(SMALL_MAGIC)) {
 				return PDBType.Small;
 			} else {
-				throw new InvalidDataException($"No valid MSF header found");
+				throw new InvalidDataException("No valid MSF header found");
 			}
 
 		}

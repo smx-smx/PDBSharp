@@ -27,19 +27,18 @@ namespace Smx.PDBSharp.Symbols.Structures
 	[StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct CONSTSYM
 	{
-		public SymbolHeader Header;
 		public UInt32 TypeIndex;
 		public LeafType Value;
 	}
 
-	public class ConstSymReader : ReaderBase
+	public class ConstSymReader : SymbolReaderBase
 	{
 		public readonly ConstSymInstance Data;
 		public ConstSymReader(Stream stream) : base(stream) {
 			CONSTSYM header = ReadStruct<CONSTSYM>();
 
 			ILeaf value = ReadNumericLeaf(header.Value);
-			string name = ReadSymbolString(header.Header);
+			string name = ReadSymbolString(Header);
 
 			Data = new ConstSymInstance() {
 				Header = header,

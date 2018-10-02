@@ -19,9 +19,12 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_OEM)]
 	public class S_OEM : ReaderBase, ISymbol
 	{
+		public SymbolHeader Header { get; set; }
 		public readonly OemSymbolInstance Data;
 		public S_OEM(Stream stream) : base(stream) {
-			Data = new OemSymbolReader(Stream).Data;
+			var rdr = new OemSymbolReader(Stream);
+			Header = rdr.Header;
+			Data = rdr.Data;
 		}
 	}
 }

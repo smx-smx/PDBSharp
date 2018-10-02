@@ -34,18 +34,16 @@ namespace Smx.PDBSharp.Symbols.Structures
 
 	public struct EXPORTSYM
 	{
-		public SymbolHeader Header;
-
 		public UInt16 Ordinal;
 		public ExportSymFlags Flags;
 	}
 
-	public class ExportSymReader : ReaderBase
+	public class ExportSymReader : SymbolReaderBase
 	{
 		public readonly ExportSymInstance Data;
 		public ExportSymReader(Stream stream) : base(stream) {
 			EXPORTSYM header = ReadStruct<EXPORTSYM>();
-			string name = ReadSymbolString(header.Header);
+			string name = ReadSymbolString(Header);
 
 			Data = new ExportSymInstance() {
 				Header = header,

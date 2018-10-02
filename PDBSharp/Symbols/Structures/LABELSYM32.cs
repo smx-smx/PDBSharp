@@ -19,7 +19,6 @@ namespace Smx.PDBSharp.Symbols.Structures
 	[StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct LABELSYM32
 	{
-		public SymbolHeader Header;
 		public UInt32 Offset;
 		public UInt16 Segment;
 		public CV_PROCFLAGS Flags;
@@ -30,12 +29,12 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public string Name;
 	}
 
-	public class LabelSym32Reader : ReaderBase
+	public class LabelSym32Reader : SymbolReaderBase
 	{
 		public readonly LabelSym32Instance Data;
 		public LabelSym32Reader(Stream stream) : base(stream) {
 			LABELSYM32 header = ReadStruct<LABELSYM32>();
-			string name = ReadSymbolString(header.Header);
+			string name = ReadSymbolString(Header);
 
 			Data = new LabelSym32Instance() {
 				Header = header,

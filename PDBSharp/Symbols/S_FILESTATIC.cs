@@ -19,9 +19,13 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_FILESTATIC)]
 	public class S_FILESTATIC : ReaderBase, ISymbol
 	{
+		public SymbolHeader Header { get; }
 		public readonly FileStaticSymInstance Data;
+
 		public S_FILESTATIC(Stream stream) : base(stream) {
-			Data = new FileStaticSymReader(stream).Data;
+			var rdr = new FileStaticSymReader(stream);
+			Header = rdr.Header;
+			Data = rdr.Data;
 		}
 	}
 }

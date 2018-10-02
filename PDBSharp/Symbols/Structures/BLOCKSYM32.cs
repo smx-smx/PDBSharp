@@ -17,7 +17,6 @@ namespace Smx.PDBSharp.Symbols.Structures
 {
 	public struct BLOCKSYM32
 	{
-		public SymbolHeader Header;
 		public UInt32 Parent;
 		public UInt32 End;
 		public UInt32 Length;
@@ -31,17 +30,13 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public string Name;
 	}
 
-	public class BlockSym32Reader : ReaderBase
+	public class BlockSym32Reader : SymbolReaderBase
 	{
 		public readonly BlockSym32Instance Data;
 
 		public BlockSym32Reader(Stream stream) : base(stream) {
 			BLOCKSYM32 header = ReadStruct<BLOCKSYM32>();
-
-			string name = null;
-			if(Stream.Position < Stream.Length) {
-				name = ReadSymbolString(header.Header);
-			}
+			string name = ReadSymbolString(Header);
 
 			Data = new BlockSym32Instance() {
 				Header = header,

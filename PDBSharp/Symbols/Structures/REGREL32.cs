@@ -19,7 +19,6 @@ namespace Smx.PDBSharp.Symbols.Structures
 	[StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct REGREL32
 	{
-		public SymbolHeader Header;
 		public UInt32 Offset;
 		public UInt32 TypeIndex;
 		public UInt16 RegisterIndex;
@@ -31,13 +30,13 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public string Name;
 	}
 
-	public class RegRel32Reader : ReaderBase
+	public class RegRel32Reader : SymbolReaderBase
 	{
 		public readonly RegRel32Instance Data;
 
 		public RegRel32Reader(Stream stream) : base(stream) {
 			REGREL32 header = ReadStruct<REGREL32>();
-			string name = ReadSymbolString(header.Header);
+			string name = ReadSymbolString(Header);
 
 			Data = new RegRel32Instance() {
 				Header = header,

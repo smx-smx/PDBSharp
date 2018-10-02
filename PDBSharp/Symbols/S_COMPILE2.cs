@@ -19,9 +19,13 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_COMPILE2)]
 	public class S_COMPILE2 : ReaderBase, ISymbol
 	{
+		public SymbolHeader Header { get; }
 		public readonly CompileSymInstance Data;
+
 		public S_COMPILE2(Stream stream) : base(stream) {
-			Data = new CompileSymReader(stream).Data;
+			var rdr = new CompileSymReader(stream);
+			Header = rdr.Header;
+			Data = rdr.Data;
 		}
 	}
 }

@@ -19,9 +19,13 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_DEFRANGE_FRAMEPOINTER_REL)]
 	public class S_DEFRANGE_FRAMEPOINTER_REL : ReaderBase, ISymbol
 	{
+		public SymbolHeader Header { get; }
 		public readonly DefRangeSymInstance Data;
+
 		public S_DEFRANGE_FRAMEPOINTER_REL(Stream stream) : base(stream) {
-			Data = new DefRangeSymReader(stream).Data;
+			var rdr = new DefRangeSymReader(stream);
+			Header = rdr.Header;
+			Data = rdr.Data;
 		}
 	}
 }

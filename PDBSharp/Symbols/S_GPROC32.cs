@@ -19,9 +19,13 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_GPROC32)]
 	public class S_GPROC32 : ReaderBase, ISymbol
 	{
+		public SymbolHeader Header { get; }
 		public readonly ProcSym32Instance Data;
+
 		public S_GPROC32(Stream stream) : base(stream) {
-			Data = new ProcSym32Reader(stream).Data;
+			var rdr = new ProcSym32Reader(stream);
+			Header = rdr.Header;
+			Data = rdr.Data;
 		}
 	}
 }

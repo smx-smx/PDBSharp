@@ -18,7 +18,6 @@ namespace Smx.PDBSharp.Symbols.Structures
 {
 	public struct DEFRANGESYM
 	{
-		public SymbolHeader Header;
 		public UInt32 Program; //"DIA Program"
 		CV_LVAR_ADDR_RANGE Range;
 	}
@@ -29,7 +28,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public CV_LVAR_ADDR_GAP[] Gaps;
 	}
 
-	public class DefRangeSymReader : ReaderBase
+	public class DefRangeSymReader : SymbolReaderBase
 	{
 		public readonly DefRangeSymInstance Data;
 

@@ -19,9 +19,13 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_LOCAL)]
 	public class S_LOCAL : ReaderBase, ISymbol
 	{
+		public SymbolHeader Header { get; }
 		public readonly LocalSymInstance Data;
+
 		public S_LOCAL(Stream stream) : base(stream) {
-			Data = new LocalSymReader(stream).Data;
+			var rdr = new LocalSymReader(stream);
+			Header = rdr.Header;
+			Data = rdr.Data;
 		}
 	}
 }

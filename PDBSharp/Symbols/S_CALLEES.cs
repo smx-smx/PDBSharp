@@ -19,9 +19,13 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_CALLEES)]
 	public class S_CALLEES : ReaderBase, ISymbol
 	{
+		public SymbolHeader Header { get; }
 		public readonly FunctionListInstance Data;
+
 		public S_CALLEES(Stream stream) : base(stream) {
-			Data = new FunctionListReader(stream).Data;
+			var rdr = new FunctionListReader(stream);
+			Header = rdr.Header;
+			Data = rdr.Data;
 		}
 	}
 }

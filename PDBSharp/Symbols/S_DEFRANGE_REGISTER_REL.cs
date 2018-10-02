@@ -19,9 +19,13 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_DEFRANGE_REGISTER_REL)]
 	public class S_DEFRANGE_REGISTER_REL : ReaderBase, ISymbol
 	{
+		public SymbolHeader Header { get; }
 		public readonly DefRangeSymSubFieldInstance Data;
+
 		public S_DEFRANGE_REGISTER_REL(Stream stream) : base(stream) {
-			Data = new DefRangeSymSubFieldReader(stream).Data;
+			var rdr = new DefRangeSymSubFieldReader(stream);
+			Header = rdr.Header;
+			Data = rdr.Data;
 		}
 	}
 }

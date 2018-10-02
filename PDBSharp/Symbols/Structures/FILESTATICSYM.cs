@@ -19,7 +19,6 @@ namespace Smx.PDBSharp.Symbols.Structures
 	[StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct FILESTATICSYM
 	{
-		public SymbolHeader Header;
 		public UInt32 TypeIndex;
 		public UInt32 ModuleFilenameOffset;
 		public CV_LVARFLAGS Flags;
@@ -31,12 +30,12 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public string Name;
 	}
 
-	public class FileStaticSymReader : ReaderBase
+	public class FileStaticSymReader : SymbolReaderBase
 	{
 		public readonly FileStaticSymInstance Data;
 		public FileStaticSymReader(Stream stream) : base(stream) {
 			FILESTATICSYM header = ReadStruct<FILESTATICSYM>();
-			string name = ReadSymbolString(header.Header);
+			string name = ReadSymbolString(Header);
 
 			Data = new FileStaticSymInstance() {
 				Header = header,

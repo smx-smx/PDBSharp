@@ -19,7 +19,6 @@ namespace Smx.PDBSharp.Symbols.Structures
 	[StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct LOCALSYM
 	{
-		public SymbolHeader Header;
 		public UInt32 TypeIndex;
 		public CV_LVARFLAGS Flags;
 	}
@@ -30,12 +29,12 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public string Name;
 	}
 
-	public class LocalSymReader : ReaderBase
+	public class LocalSymReader : SymbolReaderBase
 	{
 		public readonly LocalSymInstance Data;
 		public LocalSymReader(Stream stream) : base(stream) {
 			LOCALSYM header = ReadStruct<LOCALSYM>();
-			string name = ReadSymbolString(header.Header);
+			string name = ReadSymbolString(Header);
 
 			Data = new LocalSymInstance() {
 				Header = header,

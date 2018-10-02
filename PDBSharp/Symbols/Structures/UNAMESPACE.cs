@@ -10,6 +10,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -21,8 +22,23 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public string NamespaceName;
 	}
 
+	[StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct UNAMESPACE
 	{
-		public SymbolHeader Header;
+	}
+
+	public class UsingNamespaceReader : SymbolReaderBase
+	{
+		public readonly UsingNamespaceInstance Data;
+
+		public UsingNamespaceReader(Stream stream) : base(stream) {
+			UNAMESPACE header = ReadStruct<UNAMESPACE>();
+			string name = ReadSymbolString(Header);
+
+			Data = new UsingNamespaceInstance() {
+				Header = header,
+				NamespaceName = name
+			};
+		}
 	}
 }

@@ -23,12 +23,11 @@ namespace Smx.PDBSharp.Symbols.Structures
 
 	public struct OEMSYMBOL
 	{
-		public SymbolHeader Header;
 		public Guid IdOem;
 		public UInt32 TypeIndex;
 	}
 
-	public class OemSymbolReader : ReaderBase
+	public class OemSymbolReader : SymbolReaderBase
 	{
 		public readonly OemSymbolInstance Data;
 

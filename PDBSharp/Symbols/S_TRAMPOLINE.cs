@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using Smx.PDBSharp.Symbols.Structures;
+using Smx.PDBSharp.Symbols.Structures;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,10 +19,12 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_TRAMPOLINE)]
 	public class S_TRAMPOLINE : ReaderBase, ISymbol
 	{
-
+		public SymbolHeader Header { get; }
 		public readonly TRAMPOLINESYM Data;
 		public S_TRAMPOLINE(Stream stream) : base(stream) {
-			Data = new TrampolineSymReader(stream).Data;
+			var rdr = new TrampolineSymReader(stream);
+			Header = rdr.Header;
+			Data = rdr.Data;
 		}
 	}
 }

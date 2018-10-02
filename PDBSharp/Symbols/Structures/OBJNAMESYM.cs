@@ -23,17 +23,16 @@ namespace Smx.PDBSharp.Symbols.Structures
 
 	public struct OBJNAMESYM
 	{
-		public SymbolHeader Header;
 		public UInt32 Signature;
 	}
 
-	public class ObjNameSymReader : ReaderBase
+	public class ObjNameSymReader : SymbolReaderBase
 	{
 		public readonly ObjNameSymInstance Data;
 
 		public ObjNameSymReader(Stream stream) : base(stream) {
 			OBJNAMESYM header = ReadStruct<OBJNAMESYM>();
-			string name = ReadSymbolString(header.Header);
+			string name = ReadSymbolString(Header);
 
 			Data = new ObjNameSymInstance() {
 				Header = header,

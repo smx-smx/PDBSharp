@@ -19,9 +19,13 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_REGREL32)]
 	public class S_REGREL32 : ReaderBase, ISymbol
 	{
+		public SymbolHeader Header { get; }
 		public readonly RegRel32Instance Data;
+
 		public S_REGREL32(Stream stream) : base(stream) {
-			Data = new RegRel32Reader(stream).Data;
+			var rdr = new RegRel32Reader(stream);
+			Header = rdr.Header;
+			Data = rdr.Data;
 		}
 	}
 }

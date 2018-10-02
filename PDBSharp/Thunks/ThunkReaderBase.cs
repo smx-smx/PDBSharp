@@ -19,8 +19,10 @@ namespace Smx.PDBSharp.Thunks
 	public class ThunkReaderBase : ReaderBase
 	{
 		protected readonly THUNKSYM32 Thunk;
+		public readonly SymbolHeader Header;
 
-		public ThunkReaderBase(THUNKSYM32 thunkSym, Stream stream) : base(stream) {
+		public ThunkReaderBase(SymbolHeader header, THUNKSYM32 thunkSym, Stream stream) : base(stream) {
+			this.Header = header;
 			this.Thunk = thunkSym;
 		}
 	}

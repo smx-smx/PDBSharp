@@ -23,7 +23,6 @@ namespace Smx.PDBSharp.Symbols.Structures
 
 	public struct TRAMPOLINESYM
 	{
-		public SymbolHeader Header;
 		public TrampolineType TrampolineType;
 		public UInt16 ThunkSize;
 		public UInt32 ThunkOffset;
@@ -32,7 +31,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public UInt16 TargetSection;
 	}
 
-	public class TrampolineSymReader : ReaderBase
+	public class TrampolineSymReader : SymbolReaderBase
 	{
 		public readonly TRAMPOLINESYM Data;
 		public TrampolineSymReader(Stream stream) : base(stream) {

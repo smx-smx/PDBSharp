@@ -17,14 +17,13 @@ namespace Smx.PDBSharp.Symbols.Structures
 {
 	public struct CALLSITEINFO
 	{
-		public SymbolHeader Heaedr;
 		public UInt32 Offset;
 		public UInt16 SectionIndex;
 		private UInt16 _pad_0;
 		public UInt32 TypeIndex;
 	}
 
-	public class CallSiteInfoReader : ReaderBase
+	public class CallSiteInfoReader : SymbolReaderBase
 	{
 		public readonly CALLSITEINFO Data;
 		public CallSiteInfoReader(Stream stream) : base(stream) {

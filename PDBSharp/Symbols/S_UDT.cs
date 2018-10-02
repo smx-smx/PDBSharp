@@ -19,9 +19,13 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_UDT)]
 	public class S_UDT : ReaderBase, ISymbol
 	{
+		public SymbolHeader Header { get; }
 		public readonly UdtSymInstance Data;
+
 		public S_UDT(Stream stream) : base(stream) {
-			Data = new UdtSymReader(stream).Data;
+			var rdr = new UdtSymReader(stream);
+			Header = rdr.Header;
+			Data = rdr.Data;
 		}
 	}
 }

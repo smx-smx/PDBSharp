@@ -19,10 +19,13 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_BUILDINFO)]
 	public class S_BUILDINFO : ReaderBase, ISymbol
 	{
+		public SymbolHeader Header { get; }
 		public readonly BUILDINFOSYM Data;
 
 		public S_BUILDINFO(Stream stream) : base(stream) {
-			Data = new BuildInfoSymReader(stream).Data;
+			var rdr = new BuildInfoSymReader(stream);
+			Header = rdr.Header;
+			Data = rdr.Data;
 		}
 	}
 }

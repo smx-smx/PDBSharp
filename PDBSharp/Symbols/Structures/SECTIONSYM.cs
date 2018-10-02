@@ -17,7 +17,6 @@ namespace Smx.PDBSharp.Symbols.Structures
 {
 	public struct SECTIONSYM
 	{
-		public SymbolHeader Header;
 		public UInt16 SectionIndex;
 		public sbyte Alignment;
 		private sbyte reserved_0;
@@ -32,12 +31,12 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public string Name;
 	}
 
-	public class SectionSymReader : ReaderBase
+	public class SectionSymReader : SymbolReaderBase
 	{
 		public readonly SectionSymInstance Data;
 		public SectionSymReader(Stream stream) : base(stream) {
 			SECTIONSYM header = ReadStruct<SECTIONSYM>();
-			string name = ReadSymbolString(header.Header);
+			string name = ReadSymbolString(Header);
 
 			Data = new SectionSymInstance() {
 				Header = header,

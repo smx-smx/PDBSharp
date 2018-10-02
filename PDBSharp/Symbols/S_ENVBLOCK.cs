@@ -19,9 +19,13 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_ENVBLOCK)]
 	public class S_ENVBLOCK : ReaderBase, ISymbol
 	{
+		public SymbolHeader Header { get; }
 		public readonly EnvBlockSymInstance Data;
+
 		public S_ENVBLOCK(Stream stream) : base(stream) {
-			Data = new EnvBlockSymReader(stream).Data;
+			var rdr = new EnvBlockSymReader(stream);
+			Header = rdr.Header;
+			Data = rdr.Data;
 		}
 	}
 }

@@ -19,9 +19,13 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_FRAMEPROC)]
 	public class S_FRAMEPROC : ReaderBase, ISymbol
 	{
+		public SymbolHeader Header { get; }
 		public readonly FRAMEPROCSYM Data;
+
 		public S_FRAMEPROC(Stream stream) : base(stream) {
-			Data = new FrameProcSymReader(stream).Data;
+			var rdr = new FrameProcSymReader(stream);
+			Header = rdr.Header;
+			Data = rdr.Data;
 		}
 	}
 }

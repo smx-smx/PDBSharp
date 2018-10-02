@@ -6,20 +6,23 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Smx.PDBSharp.Symbols.Structures;
 
 namespace Smx.PDBSharp.Symbols
 {
 	[SymbolReader(SymbolType.S_END)]
-	public class S_END : ReaderBase, ISymbol
+	public class S_END : SymbolReaderBase, ISymbol
 	{
 		public S_END(Stream stream) : base(stream) {
 			//S_END has no data because it's used as marker
 		}
+
+		SymbolHeader ISymbol.Header => this.Header;
 	}
 }

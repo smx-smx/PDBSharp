@@ -19,10 +19,13 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_THUNK32)]
 	public class S_THUNK32 : ReaderBase, ISymbol
 	{
+		public SymbolHeader Header { get; }
 		public readonly ThunkSym32Instance Data;
 
 		public S_THUNK32(Stream stream) : base(stream) {
-			Data = new ThunkSym32Reader(stream).Data;
+			var rdr = new ThunkSym32Reader(stream);
+			Header = rdr.Header;
+			Data = rdr.Data;
 		}
 	}
 }

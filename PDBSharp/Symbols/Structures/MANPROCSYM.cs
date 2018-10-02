@@ -27,7 +27,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public string Name;
 	}
 
-	public class ManProcSymReader : ReaderBase
+	public class ManProcSymReader : SymbolReaderBase
 	{
 		public readonly ManProcSymInstance Data;
 
@@ -44,7 +44,6 @@ namespace Smx.PDBSharp.Symbols.Structures
 	[StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct MANPROCSYM
 	{
-		public SymbolHeader Header;
 		/// <summary>
 		/// Parent Symbol
 		/// </summary>

@@ -52,7 +52,6 @@ namespace Smx.PDBSharp.Symbols.Structures
 	[StructLayout(LayoutKind.Sequential, Pack = 4)]
 	public struct FRAMEPROCSYM
 	{
-		public SymbolHeader Header;
 		public UInt32 FrameSize;
 		public UInt32 PaddingSize;
 		public UInt32 PaddingOffset;
@@ -81,7 +80,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 		}
 	}
 
-	public class FrameProcSymReader : ReaderBase
+	public class FrameProcSymReader : SymbolReaderBase
 	{
 		public readonly FRAMEPROCSYM Data;
 		public FrameProcSymReader(Stream stream) : base(stream) {

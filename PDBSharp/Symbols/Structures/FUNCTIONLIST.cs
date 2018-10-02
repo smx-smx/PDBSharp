@@ -17,7 +17,6 @@ namespace Smx.PDBSharp.Symbols.Structures
 {
 	public struct FUNCTIONLIST
 	{
-		public SymbolHeader Header;
 		public UInt32 Count;
 	}
 
@@ -27,7 +26,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public UInt32[] Functions;
 	}
 
-	public class FunctionListReader : ReaderBase
+	public class FunctionListReader : SymbolReaderBase
 	{
 		public readonly FunctionListInstance Data;
 

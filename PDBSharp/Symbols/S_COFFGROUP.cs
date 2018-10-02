@@ -19,9 +19,13 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_COFFGROUP)]
 	public class S_COFFGROUP : ReaderBase, ISymbol
 	{
+		public SymbolHeader Header { get; }
 		public readonly CoffGroupSymInstance Data;
+
 		public S_COFFGROUP(Stream stream) : base(stream) {
-			Data = new CoffGroupSymReader(stream).Data;
+			var rdr = new CoffGroupSymReader(stream);
+			Header = rdr.Header;
+			Data = rdr.Data;
 		}
 	}
 }

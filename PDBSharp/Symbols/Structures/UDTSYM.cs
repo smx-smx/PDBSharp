@@ -17,7 +17,6 @@ namespace Smx.PDBSharp.Symbols.Structures
 {
 	public struct UDTSYM
 	{
-		public SymbolHeader Header;
 		public UInt32 TypeIndex;
 	}
 
@@ -27,13 +26,13 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public string Name;
 	}
 
-	public class UdtSymReader : ReaderBase
+	public class UdtSymReader : SymbolReaderBase
 	{
 		public readonly UdtSymInstance Data;
 
 		public UdtSymReader(Stream stream) : base(stream) {
 			UDTSYM header = ReadStruct<UDTSYM>();
-			string name = ReadSymbolString(header.Header);
+			string name = ReadSymbolString(Header);
 
 			Data = new UdtSymInstance() {
 				Header = header,

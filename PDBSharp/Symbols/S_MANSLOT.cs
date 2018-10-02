@@ -19,10 +19,13 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_MANSLOT)]
 	public class S_MANSLOT : ReaderBase, ISymbol
 	{
+		public SymbolHeader Header { get; }
 		public readonly AttrSlotSymInstance Data;
 
 		public S_MANSLOT(Stream stream) : base(stream) {
-			Data = new AttrSlotSymReader(stream).Data;
+			var rdr = new AttrSlotSymReader(stream);
+			Header = rdr.Header;
+			Data = rdr.Data;
 		}
 	}
 }

@@ -19,16 +19,13 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_UNAMESPACE)]
 	public class UNameSpaceReader : ReaderBase, ISymbol
 	{
+		public SymbolHeader Header { get; }
 		public readonly UsingNamespaceInstance Data;
 
 		public UNameSpaceReader(Stream stream) : base(stream) {
-			UNAMESPACE header = ReadStruct<UNAMESPACE>();
-			string name = ReadSymbolString(header.Header);
-
-			Data = new UsingNamespaceInstance() {
-				Header = header,
-				NamespaceName = name
-			};
+			var rdr = new UsingNamespaceReader(stream);
+			Header = rdr.Header;
+			Data = rdr.Data;
 		}
 	}
 }

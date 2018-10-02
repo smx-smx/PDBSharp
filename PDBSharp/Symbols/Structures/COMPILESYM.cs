@@ -33,7 +33,6 @@ namespace Smx.PDBSharp.Symbols.Structures
 	[StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct COMPILESYM
 	{
-		public SymbolHeader Header;
 		private UInt32 flags;
 		public UInt16 Machine;
 
@@ -55,12 +54,12 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public string VersionString;
 	}
 
-	public class CompileSymReader : ReaderBase
+	public class CompileSymReader : SymbolReaderBase
 	{
 		public readonly CompileSymInstance Data;
 		public CompileSymReader(Stream stream) : base(stream) {
 			COMPILESYM header = ReadStruct<COMPILESYM>();
-			string versionString = ReadSymbolString(header.Header);
+			string versionString = ReadSymbolString(Header);
 
 			Data = new CompileSymInstance() {
 				Header = header,

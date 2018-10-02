@@ -25,7 +25,6 @@ namespace Smx.PDBSharp.Symbols.Structures
 	[StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct PROCSYM32
 	{
-		public SymbolHeader Header;
 		public UInt32 Parent;
 		public UInt32 End;
 		public UInt32 Next;
@@ -38,12 +37,12 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public CV_PROCFLAGS Flags;
 	}
 
-	public class ProcSym32Reader : ReaderBase
+	public class ProcSym32Reader : SymbolReaderBase
 	{
 		public readonly ProcSym32Instance Data;
 		public ProcSym32Reader(Stream stream) : base(stream) {
 			PROCSYM32 header = ReadStruct<PROCSYM32>();
-			string name = ReadSymbolString(header.Header);
+			string name = ReadSymbolString(Header);
 
 			Data = new ProcSym32Instance() {
 				Header = header,

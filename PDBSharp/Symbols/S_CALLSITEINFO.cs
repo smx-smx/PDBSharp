@@ -19,9 +19,13 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_CALLSITEINFO)]
 	public class S_CALLSITEINFO : ReaderBase, ISymbol
 	{
+		public SymbolHeader Header { get; }
 		public readonly CALLSITEINFO Data;
+
 		public S_CALLSITEINFO(Stream stream) : base(stream) {
-			Data = new CallSiteInfoReader(stream).Data;
+			var rdr = new CallSiteInfoReader(stream);
+			Header = rdr.Header;
+			Data = rdr.Data;
 		}
 	}
 }

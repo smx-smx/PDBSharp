@@ -27,32 +27,6 @@ namespace Smx.PDBSharp
 
 	public abstract class ReaderBase
 	{
-		private static readonly Dictionary<LeafType, ConstructorInfo> leafReaders;
-		private static readonly Dictionary<ThunkType, ConstructorInfo> thunkReaders;
-
-		static ReaderBase() {
-			leafReaders = Assembly
-				.GetExecutingAssembly()
-				.GetTypes()
-				.Where(t => t.GetCustomAttribute<LeafReaderAttribute>() != null)
-				.ToDictionary(
-					// key
-					t => t.GetCustomAttribute<LeafReaderAttribute>().Type,
-					// value
-					t => t.GetConstructor(new Type[] { typeof(Stream) }
-				));
-
-			thunkReaders = Assembly
-				.GetExecutingAssembly()
-				.GetTypes()
-				.Where(t => t.GetCustomAttribute<ThunkReaderAttribute>() != null)
-				.ToDictionary(
-					// key
-					t => t.GetCustomAttribute<ThunkReaderAttribute>().Type,
-					// value
-					t => t.GetConstructor(new Type[] { typeof(THUNKSYM32), typeof(Stream) }
-				));
-		}
 
 		protected readonly Stream Stream;
 		protected readonly BinaryReader Reader;
@@ -99,28 +73,15 @@ namespace Smx.PDBSharp
 		}
 
 		public string ReadSymbolString(SymbolHeader symHdr) {
-			if (symHdr.Type < SymbolType.S_ST_MAX) {
-				return Reader.ReadString();
-			} else {
-				return ReadCString();
+			try {
+				if (symHdr.Type < SymbolType.S_ST_MAX) {
+					return Reader.ReadString();
+				} else {
+					return ReadCString();
+				}
+			} catch (EndOfStreamException) {
+				return null;
 			}
-		}
-
-		public ILeaf ReadNumericLeaf(LeafType type) {
-			if (!Enum.IsDefined(typeof(LeafType), type)) {
-				throw new InvalidDataException();
-			}
-
-			return (ILeaf)leafReaders[type].Invoke(new object[] { Stream });
-		}
-
-		public IThunk ReadThunk(THUNKSYM32 thunk) {
-			ThunkType type = thunk.Ordinal;
-			if (!Enum.IsDefined(typeof(ThunkType), type)) {
-				throw new InvalidDataException();
-			}
-
-			return (IThunk)thunkReaders[type].Invoke(new object[] { thunk, Stream });
 		}
 	}
 }

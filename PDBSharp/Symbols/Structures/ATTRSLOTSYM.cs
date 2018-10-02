@@ -23,19 +23,18 @@ namespace Smx.PDBSharp.Symbols.Structures
 
 	public struct ATTRSLOTSYM
 	{
-		public SymbolHeader Header;
 		public UInt32 SlotIndex;
 		public UInt32 TypeIndex;
 		public LocalVarAttributes Attributes;
 	}
 
-	public class AttrSlotSymReader : ReaderBase
+	public class AttrSlotSymReader : SymbolReaderBase
 	{
 		public readonly AttrSlotSymInstance Data;
 
 		public AttrSlotSymReader(Stream stream) : base(stream) {
 			ATTRSLOTSYM header = ReadStruct<ATTRSLOTSYM>();
-			string name = ReadSymbolString(header.Header);
+			string name = ReadSymbolString(Header);
 
 			Data = new AttrSlotSymInstance() {
 				Header = header,

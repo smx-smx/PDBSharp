@@ -4,12 +4,12 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <ApplicationIcon />
     <StartupObject />
+    <AssemblyName>Smx.PDBSharp</AssemblyName>
+    <RootNamespace>Smx.PDBSharp</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="Leaves\" />
     <Folder Include="Properties\" />
-    <Folder Include="Symbols\" />
-    <Folder Include="Thunks\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Net.Http" Version="4.3.3" />

@@ -19,10 +19,13 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_LDATA32)]
 	public class S_LDATA32 : ReaderBase, ISymbol
 	{
+		public SymbolHeader Header { get; }
 		public readonly DataSym32Instance Data;
 
 		public S_LDATA32(Stream stream) : base(stream) {
-			Data = new DataSym32Reader(stream).Data;
+			var rdr = new DataSym32Reader(stream);
+			Header = rdr.Header;
+			Data = rdr.Data;
 		}
 	}
 }

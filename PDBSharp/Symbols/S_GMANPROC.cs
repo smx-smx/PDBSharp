@@ -19,10 +19,13 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_GMANPROC)]
 	public class S_GMANPROC : ReaderBase, ISymbol
 	{
+		public SymbolHeader Header { get; }
 		public readonly ManProcSymInstance Data;
 
 		public S_GMANPROC(Stream stream) : base(stream) {
-			Data = new ManProcSymReader(this.Stream).Data;
+			var rdr = new ManProcSymReader(stream);
+			Header = rdr.Header;
+			Data = rdr.Data;
 		}
 	}
 }

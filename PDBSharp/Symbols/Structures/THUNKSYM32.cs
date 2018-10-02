@@ -20,7 +20,6 @@ namespace Smx.PDBSharp.Symbols.Structures
 	[StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct THUNKSYM32
 	{
-		public SymbolHeader Header;
 		public UInt32 Parent;
 		public UInt32 End;
 		public UInt32 Next;
@@ -37,13 +36,13 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public IThunk Data;
 	}
 
-	public class ThunkSym32Reader : ReaderBase
+	public class ThunkSym32Reader : SymbolReaderBase
 	{
 		public readonly ThunkSym32Instance Data;
 
 		public ThunkSym32Reader(Stream stream) : base(stream) {
 			THUNKSYM32 header = ReadStruct<THUNKSYM32>();
-			string name = ReadSymbolString(header.Header);
+			string name = ReadSymbolString(Header);
 			IThunk data = ReadThunk(header);
 
 			Data = new ThunkSym32Instance() {

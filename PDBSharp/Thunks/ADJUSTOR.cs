@@ -18,15 +18,10 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Thunks
 {
-	[StructLayout(LayoutKind.Explicit, Pack = 1)]
+	[StructLayout(LayoutKind.Sequential, Pack = 1)]
 	public struct AdjustorThunk
 	{
-		// duplicated uint16 kept for documentation purposes
-
-		[FieldOffset(0)]
-		public UInt16 Delta; //with following string
-		[FieldOffset(0)]
-		public UInt16 VTableOffset;
+		public UInt16 Delta;
 	}
 
 	public struct AdjustorThunkInstance
@@ -40,9 +35,9 @@ namespace Smx.PDBSharp.Thunks
 	{
 		public readonly AdjustorThunkInstance Data;
 
-		public ADJUSTOR(THUNKSYM32 thunk, Stream stream) : base(thunk, stream) {
+		public ADJUSTOR(SymbolHeader symHeader, THUNKSYM32 thunk, Stream stream) : base(symHeader, thunk, stream) {
 			AdjustorThunk header = ReadStruct<AdjustorThunk>();
-			string name = ReadSymbolString(thunk.Header);
+			string name = ReadSymbolString(Header);
 
 			Data = new AdjustorThunkInstance() {
 				Header = header,
