@@ -19,19 +19,20 @@ namespace Smx.PDBSharp.Dumper
 	class Program
 	{
 		static void OnSymbolData(ISymbol symbol, byte[] rawData) {
+			Console.WriteLine(new string('=', 80));
+			Console.WriteLine();
+
 			Console.WriteLine($"[{symbol.Header.Type}]");
 			rawData.HexDump();
+			Console.WriteLine();
 
 			FieldInfo data = symbol.GetType().GetField("Data");
 
 			object obj;
-			if (data == null) {
-				obj = new object();
-			} else {
+			if (data != null) {
 				obj = data.GetValue(symbol);
+				Console.WriteLine(ObjectDumper.Dump(obj));
 			}
-			string strRep = ObjectDumper.Dump(obj);
-			Console.WriteLine(strRep);
 		}
 
 		static void Main(string[] args) {

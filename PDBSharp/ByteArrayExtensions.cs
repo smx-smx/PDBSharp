@@ -29,7 +29,6 @@ namespace Smx.PDBSharp
 			int lineBufIdx = 0;
 			while(index < bytes.Length) {
 				if ((index % 16) == 0) {
-					sb.AppendLine();
 					sb.AppendFormat("{0:X8}   ", index);
 					lineLength = 8 + 3;
 					lineBufIdx = 0;
@@ -66,10 +65,11 @@ namespace Smx.PDBSharp
 					if (sz == 0)
 						sz = 16;
 					sb.Append(lineBuf.Take(sz).ToArray());
+					sb.AppendLine();
 				}
 			}
 
-			Console.WriteLine(sb.ToString());
+			Console.Write(sb.ToString());
 		}
 	}
 }
