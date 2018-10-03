@@ -7,6 +7,7 @@
  */
 #endregion
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
@@ -23,36 +24,82 @@ namespace Smx.PDBSharp.Dumper
 			this.depth = depth;
 		}
 
+		private void AppendIndent(StringBuilder sb, int depth) {
+			for (int i = 0; i < depth; i++)
+				sb.Append("\t");
+		}
+
 		private string GetString(Type t) {
-			StringBuilder sb = new StringBuilder($"{{{t.FullName}}}");
-			sb.AppendLine();
-			foreach(FieldInfo field in t.GetFields()) {
-				for (int i = 0; i < depth; i++)
-					sb.Append("\t");
+			StringBuilder sb = new StringBuilder($"{{{t.FullName}}}\t");
 
-				object value = field.GetValue(obj);
-
-				sb.Append($" [{field.Name}] => ");
-				if(value == null) {
-					sb.Append("null");
-				} else if (field.FieldType.IsPrimitive) {
-					sb.Append(value.ToString());
-					sb.AppendFormat(" (0x{0:X})", value);
-				} else if(field.FieldType == typeof(string)) {
-					sb.Append(value.ToString());
-				} else if (field.FieldType.IsEnum) {
-					sb.Append(Enum.GetName(field.FieldType, value));
-				} else if (field.FieldType != t) {
-					sb.Append(new ObjectDumper(value, depth + 1).ToString());
-				} else {
-					sb.Append(value.ToString());
-				}
+			if(!t.IsPrimitive && t != typeof(string))
 				sb.AppendLine();
+
+			AppendIndent(sb, depth);
+
+			FieldInfo[] fields = t.GetFields(BindingFlags.Instance | BindingFlags.Public);
+
+			if (obj == null) {
+				sb.Append("null");
+			} else if (t.IsPrimitive) {
+				sb.Append(obj.ToString());
+				sb.AppendFormat(" (0x{0:X})", obj);
+			} else if (t == typeof(string)) {
+				sb.Append($"\"{obj.ToString()}\"");
+			} else if (typeof(IEnumerable<object>).IsAssignableFrom(t)) {
+				int i = 0;
+				foreach (var item in (IEnumerable)obj) {
+					AppendIndent(sb, depth + 1);
+					sb.AppendFormat("[{0:D}]: {1}", i++, new ObjectDumper(item, depth + 2).ToString());
+					sb.AppendLine();
+				}
+			} else if (t.IsArray) {
+				sb.AppendLine();
+				Type elType = t.GetElementType();
+				Array array = (Array)obj;
+				for (int i = 0; i < array.Length; i++) {
+					AppendIndent(sb, depth + 1);
+					sb.AppendFormat("[{0:D}]: {1}", i, new ObjectDumper(array.GetValue(i), depth + 2).ToString());
+				}
+			} else if (t.IsEnum) {
+				FlagsAttribute flags = t.GetCustomAttribute<FlagsAttribute>();
+				if (flags != null) {
+					sb.Append("[FLAGS]: <");
+					int numFlags = 0;
+					foreach (Enum value in Enum.GetValues(t)) {
+						if (((Enum)obj).HasFlag(value)) {
+							sb.AppendFormat($"{value.ToString()},");
+							numFlags++;
+						}
+					}
+					if (numFlags > 0) {
+						sb.Length--;
+					}
+					sb.Append(">");
+				} else {
+					sb.Append(Enum.GetName(t, obj));
+				}
+			} else if(fields.Length > 0) {
+				foreach (FieldInfo field in fields) {
+					AppendIndent(sb, depth + 1);
+					sb.Append($"[{field.Name}] => ");
+
+					object value = field.GetValue(obj);
+					if (field.FieldType != t) {
+						sb.Append(new ObjectDumper(value, depth).ToString());
+					}
+				}
+			} else {
+				sb.Append(obj.ToString());
 			}
+
+			sb.AppendLine();
 			return sb.ToString();
 		}
 
 		public override string ToString() {
+			if (obj == null)
+				return "null";
 			return GetString(obj.GetType());
 		}
 

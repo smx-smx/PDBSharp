@@ -16,10 +16,11 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp
 {
-	public class ModuleReader : ReaderBase
+	public class ModuleReader : ReaderBase, IModule
 	{
 		private const int SIGNATURE = 4;
-		private readonly ModuleInfoInstance modInfo;
+
+		public ModuleInfoInstance Module { get; }
 
 		private IEnumerable<ISymbol> symbols;
 
@@ -32,7 +33,7 @@ namespace Smx.PDBSharp
 		}
 
 		public ModuleReader(ModuleInfoInstance modInfo, Stream stream) : base(stream) {
-			this.modInfo = modInfo;
+			this.Module = modInfo;
 
 			uint signature = Reader.ReadUInt32();
 			if (signature != SIGNATURE) {
@@ -44,7 +45,7 @@ namespace Smx.PDBSharp
 
 		private IEnumerable<ISymbol> GetSymbols() {
 			Stream.Position = sizeof(int); //after signature
-			int symbolsSize = (int)modInfo.Header.SymbolsSize - sizeof(int); //exclude signature
+			int symbolsSize = (int)Module.Header.SymbolsSize - sizeof(int); //exclude signature
 
 			byte[] symbolsData = Reader.ReadBytes(symbolsSize);
 

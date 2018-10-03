@@ -66,9 +66,9 @@ namespace Smx.PDBSharp
 		private DBIHeader hdr;
 		private readonly StreamTableReader stRdr;
 
-		private IEnumerable<ModuleReader> modules;
+		private IEnumerable<IModule> modules;
 
-		public IEnumerable<ModuleReader> Modules {
+		public IEnumerable<IModule> Modules {
 			get {
 				if (modules == null)
 					modules = GetModules();
@@ -95,7 +95,7 @@ namespace Smx.PDBSharp
 			}
 		}
 
-		private IEnumerable<ModuleReader> GetModules() {
+		private IEnumerable<IModule> GetModules() {
 			Stream.Position = Marshal.SizeOf<DBIHeader>();
 
 			byte[] moduleList = Reader.ReadBytes((int)hdr.ModuleListSize);
@@ -104,7 +104,12 @@ namespace Smx.PDBSharp
 			IEnumerable<ModuleInfoInstance> moduleInfoList = modListRdr.Modules;
 
 			foreach (ModuleInfoInstance mod in moduleInfoList) {
-				byte[] modStream = stRdr.GetStream(mod.Header.StreamNumber);
+				int streamNumber = mod.Header.StreamNumber;
+				if (streamNumber < 0) {
+					yield return new ModuleWrapper(mod);
+					continue;
+				}
+				byte[] modStream = stRdr.GetStream((uint)streamNumber);
 				yield return new ModuleReader(mod, new MemoryStream(modStream));
 			}
 		}

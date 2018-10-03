@@ -39,7 +39,7 @@ namespace Smx.PDBSharp
 
 				chunk.All(b => {
 					char c = Convert.ToChar(b);
-					if (char.IsControl(c)) {
+					if (char.IsControl(c) || c >= sbyte.MaxValue) {
 						c = '.';
 					}
 					lineBuf[lineBufIdx++] = c;

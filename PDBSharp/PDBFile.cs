@@ -35,9 +35,9 @@ namespace Smx.PDBSharp
 		private readonly MSFReader rdr;
 		private readonly StreamTableReader stRdr;
 
-		private IEnumerable<ModuleReader> modules;
+		private IEnumerable<IModule> modules;
 
-		public IEnumerable<ModuleReader> Modules {
+		public IEnumerable<IModule> Modules {
 			get {
 				if (modules == null)
 					modules = GetModules();
@@ -82,7 +82,7 @@ namespace Smx.PDBSharp
 			stRdr = new StreamTableReader(rdr, new MemoryStream(streamTable));
 		}
 
-		private IEnumerable<ModuleReader> GetModules() {
+		private IEnumerable<IModule> GetModules() {
 			byte[] dbi = stRdr.GetStream((uint)DefaultStreams.DBI);
 
 			DBIReader dbiRdr = new DBIReader(stRdr, new MemoryStream(dbi));

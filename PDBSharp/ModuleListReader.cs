@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -14,6 +14,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Smx.PDBSharp.Symbols;
 
 namespace Smx.PDBSharp
 {
@@ -53,7 +54,7 @@ namespace Smx.PDBSharp
 		public UInt32 Opened;
 		public SectionContribution40 Section;
 		public UInt16 Flags;
-		public UInt16 StreamNumber;
+		public Int16 StreamNumber;
 		public UInt32 SymbolsSize;
 		public UInt32 LinesSize;
 		public UInt32 C13LinesSizes;
@@ -68,11 +69,23 @@ namespace Smx.PDBSharp
 		//szObjFile
 	}
 
-	public class ModuleInfoInstance
+	public class ModuleInfoInstance 
 	{
 		public ModuleInfo Header;
 		public string ModuleName;
 		public string ObjectFileName;
+	}
+
+	public class ModuleWrapper : IModule
+	{
+		public readonly ModuleInfoInstance Header;
+
+		public ModuleWrapper(ModuleInfoInstance moduleInfo) {
+			Header = moduleInfo;
+		}
+
+		public ModuleInfoInstance Module => Header;
+		public IEnumerable<ISymbol> Symbols => Enumerable.Empty<ISymbol>();
 	}
 
 	public class ModuleListReader : ReaderBase
@@ -93,7 +106,7 @@ namespace Smx.PDBSharp
 
 		private IEnumerable<ModuleInfoInstance> GetModules() {
 			var remaining = Stream.Length;
-			while(remaining > 0) {
+			while (remaining > 0) {
 				ModuleInfo mod = ReadStruct<ModuleInfo>();
 				string moduleName = ReadCString();
 				string objectFileName = ReadCString();

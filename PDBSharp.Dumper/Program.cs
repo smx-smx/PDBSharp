@@ -50,6 +50,9 @@ namespace Smx.PDBSharp.Dumper
 
 			// trigger enumeration
 			foreach (var mod in pdb.Modules) {
+				Console.WriteLine($"[MODULE => {mod.Module.ModuleName}]");
+				Console.WriteLine($"[OBJECT => {mod.Module.ObjectFileName}]");
+				Console.WriteLine();
 				foreach (var sym in mod.Symbols) {
 				}
 			}
