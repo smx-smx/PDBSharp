@@ -6,7 +6,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using System;
+using Smx.PDBSharp.Leaves;
+using Smx.PDBSharp.Symbols;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -36,12 +38,29 @@ namespace Smx.PDBSharp
 		private readonly StreamTableReader stRdr;
 
 		private IEnumerable<IModule> modules;
+		private IEnumerable<ILeaf> types;
+
+		public IEnumerable<byte[]> Streams {
+			get {
+				for(uint i=0; i<stRdr.NumStreams; i++) {
+					yield return stRdr.GetStream(i);
+				}
+			}
+		}
 
 		public IEnumerable<IModule> Modules {
 			get {
 				if (modules == null)
-					modules = GetModules();
+					modules = ReadModules().Cached();
 				return modules;
+			}
+		}
+
+		public IEnumerable<ILeaf> Types {
+			get {
+				if (types == null)
+					types = ReadTypes().Cached();
+				return types;
 			}
 		}
 
@@ -82,11 +101,18 @@ namespace Smx.PDBSharp
 			stRdr = new StreamTableReader(rdr, new MemoryStream(streamTable));
 		}
 
-		private IEnumerable<IModule> GetModules() {
+		public IEnumerable<IModule> ReadModules() {
 			byte[] dbi = stRdr.GetStream((uint)DefaultStreams.DBI);
 
 			DBIReader dbiRdr = new DBIReader(stRdr, new MemoryStream(dbi));
-			return dbiRdr.Modules;
+			return dbiRdr.ReadModules();
+		}
+
+		public IEnumerable<ILeaf> ReadTypes() {
+			byte[] tpi = stRdr.GetStream((uint)DefaultStreams.TPI);
+
+			TPIReader tpiRdr = new TPIReader(stRdr, new MemoryStream(tpi));
+			return tpiRdr.ReadTypes();
 		}
 	}
 }

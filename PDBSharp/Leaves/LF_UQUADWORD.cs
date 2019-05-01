@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp.Leaves
 {
 	[LeafReader(LeafType.LF_UQUADWORD)]
-	public class LF_UQUADWORD : ReaderBase, ILeaf<ulong>
+	public class LF_UQUADWORD : SymbolReaderBase, ILeaf<ulong>
 	{
 		public LF_UQUADWORD(Stream stream) : base(stream) {
 			Value = Reader.ReadUInt64();

@@ -104,9 +104,8 @@ namespace Smx.PDBSharp.Dumper
 		}
 
 
-		public static string Dump(object obj) {
-			Type t = obj.GetType();
-			return new ObjectDumper(obj).ToString();
+		public static void Dump(object obj) {
+			Console.WriteLine(new ObjectDumper(obj).ToString());
 		}
 	}
 }

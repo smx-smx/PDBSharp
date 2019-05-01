@@ -16,12 +16,12 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp.Leaves
 {
 	[LeafReader(LeafType.LF_REAL64)]
-	public class LF_REAL64 : ReaderBase, ILeaf<double>
+	public class LF_REAL64 : TypeDataReader
 	{
+		public readonly double Value;
+
 		public LF_REAL64(Stream stream) : base(stream) {
 			Value = Reader.ReadDouble();
 		}
-
-		public double Value { get; }
 	}
 }

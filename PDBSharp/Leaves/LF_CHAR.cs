@@ -6,7 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using System;
+using Smx.PDBSharp.Symbols.Structures;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,12 +17,12 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp.Leaves
 {
 	[LeafReader(LeafType.LF_CHAR)]
-	class LF_CHAR : ReaderBase, ILeaf<char>
+	class LF_CHAR : TypeDataReader
 	{
-		public char Value { get; }
+		public readonly byte Value;
 
 		public LF_CHAR(Stream stream) : base(stream) {
-			Value = Convert.ToChar(Reader.ReadByte());
+			Value = Reader.ReadByte();
 		}
 	}
 }

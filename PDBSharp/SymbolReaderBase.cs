@@ -13,12 +13,13 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using Smx.PDBSharp.Leaves;
+using Smx.PDBSharp.Symbols;
 using Smx.PDBSharp.Symbols.Structures;
 using Smx.PDBSharp.Thunks;
 
 namespace Smx.PDBSharp
 {
-	public class SymbolReaderBase : ReaderBase
+	public class SymbolReaderBase : ReaderBase, ISymbol
 	{
 		private static readonly Dictionary<LeafType, ConstructorInfo> leafReaders;
 		private static readonly Dictionary<ThunkType, ConstructorInfo> thunkReaders;
@@ -48,6 +49,12 @@ namespace Smx.PDBSharp
 		}
 
 		public readonly SymbolHeader Header;
+
+		SymbolHeader ISymbol.Header {
+			get {
+				return Header;
+			}
+		}
 
 		public ILeaf ReadNumericLeaf(LeafType type) {
 			if (!Enum.IsDefined(typeof(LeafType), type)) {

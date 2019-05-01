@@ -6,23 +6,24 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-using Smx.PDBSharp.Symbols.Structures;
+﻿using Smx.PDBSharp.Symbols.Structures;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Symbols
 {
-	[LeafReader(LeafType.LF_LONG)]
-	public class LF_LONG : TypeDataReader
+	[SymbolReader(SymbolType.S_REGISTER_ST)]
+	public class S_REGISTER_ST : ReaderBase, ISymbol
 	{
-		public readonly int Value;
+		public SymbolHeader Header { get; }
+		public readonly RegSymInstance Data;
 
-		public LF_LONG(Stream stream) : base(stream) {
-			Value = Reader.ReadInt32();
+		public S_REGISTER_ST(Stream stream) : base(stream) {
+			var rdr = new RegSymReader(stream);
+			Header = rdr.Header;
+			Data = rdr.Data;
 		}
 	}
 }

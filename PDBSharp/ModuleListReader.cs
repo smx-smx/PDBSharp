@@ -76,6 +76,9 @@ namespace Smx.PDBSharp
 		public string ObjectFileName;
 	}
 
+	/// <summary>
+	/// Represents a module without symbols
+	/// </summary>
 	public class ModuleWrapper : IModule
 	{
 		public readonly ModuleInfoInstance Header;

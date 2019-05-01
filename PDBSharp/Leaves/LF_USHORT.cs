@@ -16,12 +16,12 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp.Leaves
 {
 	[LeafReader(LeafType.LF_USHORT)]
-	public class LF_USHORT : ReaderBase, ILeaf<ushort>
+	public class LF_USHORT : TypeDataReader
 	{
+		public readonly UInt16 Value;
+
 		public LF_USHORT(Stream stream) : base(stream) {
 			Value = Reader.ReadUInt16();
 		}
-
-		public ushort Value { get; }
 	}
 }

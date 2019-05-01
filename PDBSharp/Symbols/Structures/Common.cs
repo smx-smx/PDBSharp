@@ -6,8 +6,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,5 +19,13 @@ namespace Smx.PDBSharp.Symbols.Structures
 	{
 		public UInt16 Length;
 		public SymbolType Type;
+	}
+
+	public class SymbolHeaderReader : ReaderBase
+	{
+		public readonly SymbolHeader Data;
+		public SymbolHeaderReader(Stream stream) : base(stream) {
+			Data = ReadStruct<SymbolHeader>();
+		}
 	}
 }

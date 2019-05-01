@@ -16,10 +16,16 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp
 {
+	public enum ModuleSignature  : UInt32
+	{
+		C6 = 0,
+		C7 = 1,
+		C11 = 2,
+		C13 = 4
+	}
+
 	public class ModuleReader : ReaderBase, IModule
 	{
-		private const int SIGNATURE = 4;
-
 		public ModuleInfoInstance Module { get; }
 
 		private IEnumerable<ISymbol> symbols;
@@ -35,9 +41,14 @@ namespace Smx.PDBSharp
 		public ModuleReader(ModuleInfoInstance modInfo, Stream stream) : base(stream) {
 			this.Module = modInfo;
 
-			uint signature = Reader.ReadUInt32();
-			if (signature != SIGNATURE) {
+			ModuleSignature signature = (ModuleSignature)Reader.ReadUInt32();
+
+			if(!Enum.IsDefined(typeof(ModuleSignature), signature)) {
 				throw new InvalidDataException();
+			}
+
+			if(signature != ModuleSignature.C13){
+				throw new NotImplementedException($"CodeView {signature} not supported yet");
 			}
 
 			GetSymbols();

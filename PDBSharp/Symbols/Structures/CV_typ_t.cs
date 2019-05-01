@@ -8,19 +8,14 @@
 #endregion
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Symbols.Structures
 {
-	[LeafReader(LeafType.LF_ULONG)]
-	public class LF_ULONG : TypeDataReader
+	[StructLayout(LayoutKind.Sequential, Pack = 1)]
+	public struct CV_typ_t
 	{
-		public readonly UInt32 Value;
-		public LF_ULONG(Stream stream) : base(stream) {
-			Value = Reader.ReadUInt32();
-		}
+		public UInt32 Type;
 	}
 }

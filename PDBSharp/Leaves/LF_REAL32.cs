@@ -16,13 +16,11 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp.Leaves
 {
 	[LeafReader(LeafType.LF_REAL32)]
-	public class LF_REAL32 : ReaderBase, ILeaf<float>
+	public class LF_REAL32 : TypeDataReader
 	{
+		public readonly float Value;
 		public LF_REAL32(Stream stream) : base(stream) {
 			Value = Reader.ReadSingle();
-		}
-
-		public float Value { get; }
-		
+		}		
 	}
 }

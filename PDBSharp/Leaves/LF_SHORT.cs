@@ -16,9 +16,9 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp.Leaves
 {
 	[LeafReader(LeafType.LF_SHORT)]
-	public class LF_SHORT : ReaderBase, ILeaf<short>
+	public class LF_SHORT : TypeDataReader
 	{
-		public short Value { get; }
+		public readonly short Value;
 
 		public LF_SHORT(Stream stream) : base(stream) {
 			Value = Reader.ReadInt16();

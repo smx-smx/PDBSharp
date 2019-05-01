@@ -21,13 +21,13 @@ namespace Smx.PDBSharp
 
 		public StreamTableReader(MSFReader msf, Stream stream) : base(stream) {
 			this.msf = msf;
-			numStreams = Reader.ReadUInt32();
-			streamsData = new byte[numStreams][];
+			NumStreams = Reader.ReadUInt32();
+			streamsData = new byte[NumStreams][];
 
 			StreamSizes();
 		}
 
-		private uint numStreams;
+		public uint NumStreams;
 		private UInt32[] streamSizes;
 
 		private byte[][] streamsData;
@@ -38,8 +38,8 @@ namespace Smx.PDBSharp
 
 			Stream.Position = sizeof(int);
 
-			streamSizes = new uint[numStreams];
-			for(int i=0; i<numStreams; i++) {
+			streamSizes = new uint[NumStreams];
+			for(int i=0; i<NumStreams; i++) {
 				streamSizes[i] = Reader.ReadUInt32();
 			}
 
@@ -50,7 +50,7 @@ namespace Smx.PDBSharp
 			var streamSize = streamSizes[streamNumber];
 			var numStreamPages = msf.GetNumPages(streamSize);
 
-			uint dataOffset = sizeof(int) * (numStreams + 1);
+			uint dataOffset = sizeof(int) * (NumStreams + 1);
 			for(int i=0; i<streamNumber; i++) {
 				dataOffset += msf.GetNumPages(streamSizes[i]) * sizeof(int);
 			}

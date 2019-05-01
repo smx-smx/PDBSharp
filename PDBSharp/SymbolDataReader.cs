@@ -66,8 +66,14 @@ namespace Smx.PDBSharp
 
 			this.Type = (SymbolType)type;
 
-			ISymbol sym = (ISymbol) parsers[Type].Invoke(new object[] { Stream }) ;
-			OnDataRead?.Invoke(sym, data);
+			ISymbol sym = null;
+			if (parsers.ContainsKey(Type)) {
+				sym = (ISymbol)parsers[Type].Invoke(new object[] { Stream });
+				OnDataRead?.Invoke(sym, data);
+			} else {
+				OnDataRead?.Invoke(null, data);
+				throw new NotImplementedException();
+			}
 
 			return sym;
 

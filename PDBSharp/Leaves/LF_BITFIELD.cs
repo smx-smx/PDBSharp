@@ -6,21 +6,24 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Leaves
 {
-	[LeafReader(LeafType.LF_ULONG)]
-	public class LF_ULONG : TypeDataReader
+	[LeafReader(LeafType.LF_BITFIELD)]
+	public class LF_BITFIELD : TypeDataReader
 	{
-		public readonly UInt32 Value;
-		public LF_ULONG(Stream stream) : base(stream) {
-			Value = Reader.ReadUInt32();
+		public readonly UInt32 TypeIndex;
+		public readonly byte Length;
+		public readonly byte Position;
+
+		public LF_BITFIELD(Stream stream) : base(stream) {
+			TypeIndex = Reader.ReadUInt32();
+			Length = Reader.ReadByte();
+			Position = Reader.ReadByte();
 		}
 	}
 }

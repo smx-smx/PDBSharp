@@ -6,7 +6,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
+using MoreLinq;
+using Smx.PDBSharp.Leaves;
 using Smx.PDBSharp.Symbols;
+using Smx.PDBSharp.Symbols.Structures;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -22,16 +25,26 @@ namespace Smx.PDBSharp.Dumper
 			Console.WriteLine(new string('=', 80));
 			Console.WriteLine();
 
-			Console.WriteLine($"[{symbol.Header.Type}]");
+			SymbolHeader symHdr;
+			if(symbol == null) {
+				symHdr = new SymbolHeaderReader(new MemoryStream(rawData)).Data;
+			} else {
+				symHdr = symbol.Header;
+			}
+
+			Console.WriteLine($"[{symHdr.Type}]");
 			rawData.HexDump();
 			Console.WriteLine();
+
+			if (symbol == null)
+				return;
 
 			FieldInfo data = symbol.GetType().GetField("Data");
 
 			object obj;
 			if (data != null) {
 				obj = data.GetValue(symbol);
-				Console.WriteLine(ObjectDumper.Dump(obj));
+				ObjectDumper.Dump(obj);
 			}
 		}
 
@@ -47,6 +60,24 @@ namespace Smx.PDBSharp.Dumper
 #if DEBUG
 			SymbolDataReader.OnDataRead += OnSymbolData;
 #endif
+
+#if FALSE
+			int i = 0;
+			foreach (byte[] stream in pdb.Streams){
+				File.WriteAllBytes($"stream{i}.bin", stream);
+				i++;
+			}
+#endif
+
+			foreach(var type in pdb.Types) {
+				switch (type) {
+					case LF_FIELDLIST flst:
+						flst.Fields.ForEach(leaf => ObjectDumper.Dump(leaf));
+						break;
+				}
+				ObjectDumper.Dump(type);
+			}
+			return;
 
 			// trigger enumeration
 			foreach (var mod in pdb.Modules) {
