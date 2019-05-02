@@ -6,17 +6,34 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols.Structures
 {
-	public struct CV_LVAR_ADDR_GAP
+	public class CV_LVAR_ADDR_GAP : ReaderBase
 	{
-		public UInt16 GapStartOffset;
-		public UInt16 Length;
+		public const int SIZE = 4;
+
+		public readonly UInt16 GapStartOffset;
+		public readonly UInt16 Length;
+
+		public CV_LVAR_ADDR_GAP(Stream stream) : base(stream) {
+			GapStartOffset = ReadUInt16();
+			Length = ReadUInt16();
+		}
+
+		public static CV_LVAR_ADDR_GAP[] ReadGaps(Stream stream) {
+			// interpret remaining data as gaps
+			int numGaps = (int)(stream.Length - stream.Position) / CV_LVAR_ADDR_GAP.SIZE;
+			return Enumerable
+				.Range(1, numGaps)
+				.Select(_ => new CV_LVAR_ADDR_GAP(stream))
+				.ToArray();
+		}
 	}
 }

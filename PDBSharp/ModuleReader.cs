@@ -28,40 +28,27 @@ namespace Smx.PDBSharp
 	{
 		public ModuleInfoInstance Module { get; }
 
-		private IEnumerable<ISymbol> symbols;
-
 		public IEnumerable<ISymbol> Symbols {
 			get {
-				if (symbols == null)
-					symbols = GetSymbols();
-				return symbols;
+				return ReadSymbols().Cached();
 			}
 		}
 
 		public ModuleReader(ModuleInfoInstance modInfo, Stream stream) : base(stream) {
 			this.Module = modInfo;
 
-			ModuleSignature signature = (ModuleSignature)Reader.ReadUInt32();
-
-			if(!Enum.IsDefined(typeof(ModuleSignature), signature)) {
-				throw new InvalidDataException();
-			}
-
+			ModuleSignature signature = ReadEnum<ModuleSignature>();
 			if(signature != ModuleSignature.C13){
 				throw new NotImplementedException($"CodeView {signature} not supported yet");
 			}
-
-			GetSymbols();
 		}
 
-		private IEnumerable<ISymbol> GetSymbols() {
-			Stream.Position = sizeof(int); //after signature
-			int symbolsSize = (int)Module.Header.SymbolsSize - sizeof(int); //exclude signature
-
-			byte[] symbolsData = Reader.ReadBytes(symbolsSize);
+		private IEnumerable<ISymbol> ReadSymbols() {
+			int symbolsSize = (int)Module.Header.SymbolsSize - sizeof(ModuleSignature); //exclude signature
+			byte[] symbolsData = ReadBytes(symbolsSize);
 
 			var rdr = new SymbolsReader(new MemoryStream(symbolsData));
-			return rdr.Symbols;
+			return rdr.ReadSymbols();
 		}
 	}
 }

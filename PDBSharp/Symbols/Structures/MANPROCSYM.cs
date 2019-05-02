@@ -6,69 +6,49 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using System;
-using System.Collections.Generic;
+using Smx.PDBSharp.Symbols.Structures;
+using System;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols.Structures
 {
-	public struct CV_PROCFLAGS
-	{
-		private byte flag;
-	}
-
-	public struct ManProcSymInstance
-	{
-		public MANPROCSYM Header;
-		public string Name;
-	}
-
-	public class ManProcSymReader : SymbolReaderBase
-	{
-		public readonly ManProcSymInstance Data;
-
-		public ManProcSymReader(Stream stream) : base(stream) {
-			var header = ReadStruct<MANPROCSYM>();
-			string name = ReadCString();
-			Data = new ManProcSymInstance() {
-				Header = header,
-				Name = name
-			};
-		}
-	}
-
-	[StructLayout(LayoutKind.Sequential, Pack = 1)]
-	public struct MANPROCSYM
+	public class ManProcSym : SymbolDataReader
 	{
 		/// <summary>
 		/// Parent Symbol
 		/// </summary>
-		public UInt32 Parent;
+		public readonly UInt32 Parent;
 		/// <summary>
 		/// End of block
 		/// </summary>
-		public UInt32 End;
+		public readonly UInt32 End;
 		/// <summary>
 		/// Next Symbol
 		/// </summary>
-		public UInt32 Next;
+		public readonly UInt32 Next;
+		public readonly UInt32 ProcLength;
+		public readonly UInt32 DebugStartOffset;
+		public readonly UInt32 DebugEndOffset;
+		public readonly UInt32 ComToken;
+		public readonly UInt32 Offset;
+		public readonly UInt16 Segment;
+		public readonly CV_PROCFLAGS Flags;
+		public readonly UInt16 ReturnRegister;
+		public readonly string Name;
 
-		public UInt32 ProcLength;
-
-		public UInt32 DebugStartOffset;
-		public UInt32 DebugEndOffset;
-
-		public UInt32 ComToken;
-		public UInt32 Offset;
-
-		public UInt16 Segment;
-
-		public CV_PROCFLAGS Flags;
-		public UInt16 ReturnRegister;
+		public ManProcSym(Stream stream) : base(stream) {
+			Parent = ReadUInt32();
+			End = ReadUInt32();
+			Next = ReadUInt32();
+			ProcLength = ReadUInt32();
+			DebugStartOffset = ReadUInt32();
+			DebugEndOffset = ReadUInt32();
+			ComToken = ReadUInt32();
+			Offset = ReadUInt32();
+			Segment = ReadUInt16();
+			Flags = ReadEnum<CV_PROCFLAGS>();
+			ReturnRegister = ReadUInt16();
+			Name = ReadSymbolString();
+		}
 	}
-
 }

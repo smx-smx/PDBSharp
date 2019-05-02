@@ -21,7 +21,7 @@ namespace Smx.PDBSharp.Leaves
 		public readonly long Value;
 
 		public LF_QUADWORD(Stream stream) : base(stream) {
-			Value = Reader.ReadInt64();
+			Value = ReadInt64();
 		}
 	}
 }

@@ -21,7 +21,7 @@ namespace Smx.PDBSharp.Leaves
 		public readonly UInt16 Value;
 
 		public LF_USHORT(Stream stream) : base(stream) {
-			Value = Reader.ReadUInt16();
+			Value = ReadUInt16();
 		}
 	}
 }

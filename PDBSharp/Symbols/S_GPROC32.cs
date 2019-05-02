@@ -17,15 +17,9 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp.Symbols
 {
 	[SymbolReader(SymbolType.S_GPROC32)]
-	public class S_GPROC32 : ReaderBase, ISymbol
+	public class S_GPROC32 : ProcSym32
 	{
-		public SymbolHeader Header { get; }
-		public readonly ProcSym32Instance Data;
-
 		public S_GPROC32(Stream stream) : base(stream) {
-			var rdr = new ProcSym32Reader(stream);
-			Header = rdr.Header;
-			Data = rdr.Data;
 		}
 	}
 }

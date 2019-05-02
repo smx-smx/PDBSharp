@@ -71,7 +71,7 @@ namespace Smx.PDBSharp
 		public TPIReader(StreamTableReader stRdr, Stream stream) : base(stream) {
 			this.stRdr = stRdr;
 
-			Reader.ReadBytes(Marshal.SizeOf<TPIHeader>()).HexDump();
+			ReadBytes(Marshal.SizeOf<TPIHeader>()).HexDump();
 			Stream.Position = 0;
 
 			Header = ReadStruct<TPIHeader>();

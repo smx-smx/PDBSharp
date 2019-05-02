@@ -25,11 +25,11 @@ namespace Smx.PDBSharp.Leaves
 		public readonly VTableShapeDescriptor[] Descriptors;
 
 		public LF_VTSHAPE(Stream stream) : base(stream) {
-			NumberOfEntries = Reader.ReadUInt16();
+			NumberOfEntries = ReadUInt16();
 
 			//round up 4 bits (desctiptor size)
 			int numberOfBytes = (int)Math.Ceiling((double)(4 * NumberOfEntries) / sizeof(byte));
-			byte[] descriptorsData = Reader.ReadBytes(numberOfBytes);
+			byte[] descriptorsData = ReadBytes(numberOfBytes);
 
 			Descriptors = new VTableShapeDescriptor[NumberOfEntries];
 

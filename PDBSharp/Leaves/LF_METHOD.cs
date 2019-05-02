@@ -22,8 +22,8 @@ namespace Smx.PDBSharp.Leaves
 		public readonly string Name;
 
 		public LF_METHOD(Stream stream) : base(stream) {
-			NumberOfOccurrences = Reader.ReadUInt16();
-			MethodListRecordIndex = Reader.ReadUInt32();
+			NumberOfOccurrences = ReadUInt16();
+			MethodListRecordIndex = ReadUInt32();
 			Name = ReadCString();
 		}
 	}

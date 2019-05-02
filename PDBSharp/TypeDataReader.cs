@@ -59,7 +59,7 @@ namespace Smx.PDBSharp
 		/// <param name="leafType"></param>
 		/// <returns>true if we found a leaf, false if we found raw data marker</returns>
 		protected ILeaf ReadVaryingType(out uint dataSize) {
-			UInt16 leafValue = Reader.ReadUInt16();
+			UInt16 leafValue = ReadUInt16();
 			if (leafValue < (ushort)LeafType.LF_NUMERIC) {
 				// $TODO: leafValue is not a leaf marker, but it's still a valid ushort
 				// do we need to save this?
@@ -84,7 +84,7 @@ namespace Smx.PDBSharp
 			long remaining = Stream.Length - Stream.Position;
 			long savedPos = Stream.Position;
 			while(remaining-- > 0) {
-				byte b = Reader.ReadByte();
+				byte b = ReadByte();
 				if (b >= (byte)LeafType.LF_PAD0 && b <= (byte)LeafType.LF_PAD15) {
 					continue;
 				}
@@ -96,14 +96,9 @@ namespace Smx.PDBSharp
 		public ILeaf ReadType(bool hasSize = true) {
 			UInt16 size = 0;
 			if (hasSize) {
-				size = Reader.ReadUInt16();
+				size = ReadUInt16();
 			}
-			UInt16 type = Reader.ReadUInt16();
-			if(!Enum.IsDefined(typeof(LeafType), type)) {
-				throw new InvalidDataException();
-			}
-
-			this.LeafType = (LeafType)type;
+			LeafType = ReadEnum<LeafType>();
 
 			ILeaf typeSym = null;
 			if (parsers.ContainsKey(LeafType)) {

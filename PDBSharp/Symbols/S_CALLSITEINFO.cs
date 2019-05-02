@@ -17,15 +17,17 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp.Symbols
 {
 	[SymbolReader(SymbolType.S_CALLSITEINFO)]
-	public class S_CALLSITEINFO : ReaderBase, ISymbol
+	public class S_CALLSITEINFO : SymbolDataReader
 	{
-		public SymbolHeader Header { get; }
-		public readonly CALLSITEINFO Data;
+		public readonly UInt32 Offset;
+		public readonly UInt16 SectionIndex;
+		public readonly UInt32 TypeIndex;
 
 		public S_CALLSITEINFO(Stream stream) : base(stream) {
-			var rdr = new CallSiteInfoReader(stream);
-			Header = rdr.Header;
-			Data = rdr.Data;
+			Offset = ReadUInt32();
+			SectionIndex = ReadUInt16();
+			ReadUInt16();
+			TypeIndex = ReadUInt32();
 		}
 	}
 }

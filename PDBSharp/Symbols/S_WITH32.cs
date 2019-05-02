@@ -6,16 +6,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
+using System.IO;
 using System.Text;
 
-namespace Smx.PDBSharp.Symbols.Structures
+namespace Smx.PDBSharp.Symbols
 {
-	[StructLayout(LayoutKind.Sequential, Pack = 1)]
-	public struct CV_typ_t
+	[SymbolReader(SymbolType.S_WITH32)]
+	public class S_WITH32 : SymbolDataReader
 	{
-		public UInt32 Type;
+		public S_WITH32(Stream stream) : base(stream) {
+		}
 	}
 }

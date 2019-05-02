@@ -22,8 +22,8 @@ namespace Smx.PDBSharp.Leaves
 		public readonly string Name;
 
 		public LF_ARRAY(Stream stream) : base(stream) {
-			ElementTypeIndex = Reader.ReadUInt32();
-			IndexingTypeIndex = Reader.ReadUInt32();
+			ElementTypeIndex = ReadUInt32();
+			IndexingTypeIndex = ReadUInt32();
 
 			var varyingData = ReadVaryingType(out uint dataSize);
 

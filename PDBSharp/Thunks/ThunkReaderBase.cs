@@ -16,14 +16,12 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Thunks
 {
-	public class ThunkReaderBase : ReaderBase
+	public class ThunkReaderBase : SymbolReaderBase
 	{
-		protected readonly THUNKSYM32 Thunk;
 		public readonly SymbolHeader Header;
 
-		public ThunkReaderBase(SymbolHeader header, THUNKSYM32 thunkSym, Stream stream) : base(stream) {
+		public ThunkReaderBase(SymbolHeader header, Stream stream) : base(stream) {
 			this.Header = header;
-			this.Thunk = thunkSym;
 		}
 	}
 }

@@ -6,38 +6,19 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols.Structures
 {
-	public struct UDTSYM
+	public class UdtSym : SymbolDataReader
 	{
-		public UInt32 TypeIndex;
-	}
+		public readonly UInt32 TypeIndex;
+		public readonly string Name;
 
-	public struct UdtSymInstance
-	{
-		public UDTSYM Header;
-		public string Name;
-	}
-
-	public class UdtSymReader : SymbolReaderBase
-	{
-		public readonly UdtSymInstance Data;
-
-		public UdtSymReader(Stream stream) : base(stream) {
-			UDTSYM header = ReadStruct<UDTSYM>();
-			string name = ReadSymbolString(Header);
-
-			Data = new UdtSymInstance() {
-				Header = header,
-				Name = name
-			};
+		public UdtSym(Stream stream) : base(stream) {
+			TypeIndex = ReadUInt32();
+			Name = ReadSymbolString();
 		}
 	}
 }

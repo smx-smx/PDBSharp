@@ -17,15 +17,14 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp.Symbols
 {
 	[SymbolReader(SymbolType.S_OBJNAME)]
-	public class S_OBJNAME : ReaderBase, ISymbol
+	public class S_OBJNAME : SymbolDataReader
 	{
-		public SymbolHeader Header { get; }
-		public readonly ObjNameSymInstance Data;
+		public readonly UInt32 Signature;
+		public readonly string Name;
 
 		public S_OBJNAME(Stream stream) : base(stream) {
-			var rdr = new ObjNameSymReader(stream);
-			Header = rdr.Header;
-			Data = rdr.Data;
+			Signature = ReadUInt32();
+			Name = ReadSymbolString();
 		}
 	}
 }

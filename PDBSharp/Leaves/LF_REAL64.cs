@@ -21,7 +21,7 @@ namespace Smx.PDBSharp.Leaves
 		public readonly double Value;
 
 		public LF_REAL64(Stream stream) : base(stream) {
-			Value = Reader.ReadDouble();
+			Value = ReadDouble();
 		}
 	}
 }

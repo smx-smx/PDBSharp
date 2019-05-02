@@ -20,7 +20,7 @@ namespace Smx.PDBSharp.Leaves
 		public readonly string FieldName;
 
 		public LF_ENUMERATE(Stream stream) : base(stream) {
-			Attributes = new FieldAttributes(Reader.ReadUInt16());
+			Attributes = new FieldAttributes(ReadUInt16());
 			ILeaf type = ReadVaryingType(out uint leafSize);
 			FieldName = ReadCString();
 		}

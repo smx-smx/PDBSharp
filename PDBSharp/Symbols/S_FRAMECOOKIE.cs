@@ -17,15 +17,18 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp.Symbols
 {
 	[SymbolReader(SymbolType.S_FRAMECOOKIE)]
-	public class S_FRAMECOOKIE : ReaderBase, ISymbol
+	public class S_FRAMECOOKIE : SymbolDataReader
 	{
-		public SymbolHeader Header { get; }
-		public readonly FRAMECOOKIE Data;
+		public readonly UInt32 Offset;
+		public readonly UInt16 RegisterIndex;
+		public readonly CookieType Type;
+		public readonly byte Flags;
 
 		public S_FRAMECOOKIE(Stream stream) : base(stream) {
-			var rdr = new FrameCookieReader(stream);
-			Header = rdr.Header;
-			Data = rdr.Data;
+			Offset = ReadUInt32();
+			RegisterIndex = ReadUInt16();
+			Type = ReadEnum<CookieType>();
+			Flags = ReadByte();
 		}
 	}
 }

@@ -19,8 +19,8 @@ namespace Smx.PDBSharp.Leaves
 		public readonly UInt32 PointerTypeIndex;
 
 		public LF_VFUNCTAB(Stream stream) : base(stream) {
-			Reader.ReadUInt16(); //padding
-			PointerTypeIndex = Reader.ReadUInt32();
+			ReadUInt16(); //padding
+			PointerTypeIndex = ReadUInt32();
 		}
 	}
 }

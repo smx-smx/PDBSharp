@@ -17,15 +17,22 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp.Symbols
 {
 	[SymbolReader(SymbolType.S_ENVBLOCK)]
-	public class S_ENVBLOCK : ReaderBase, ISymbol
+	public class S_ENVBLOCK : SymbolDataReader
 	{
-		public SymbolHeader Header { get; }
-		public readonly EnvBlockSymInstance Data;
+		public readonly string[] Data;
 
 		public S_ENVBLOCK(Stream stream) : base(stream) {
-			var rdr = new EnvBlockSymReader(stream);
-			Header = rdr.Header;
-			Data = rdr.Data;
+			byte flags = ReadByte(); //fEC -> reserved (1 bit)
+
+			List<string> strLst = new List<string>(); ;
+			while (Stream.Position < Stream.Length) {
+				string str = ReadSymbolString();
+				if (str.Length == 0)
+					break;
+				strLst.Add(str);
+			}
+
+			Data = strLst.ToArray();
 		}
 	}
 }

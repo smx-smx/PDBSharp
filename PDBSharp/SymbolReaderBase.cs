@@ -19,11 +19,9 @@ using Smx.PDBSharp.Thunks;
 
 namespace Smx.PDBSharp
 {
-	public class SymbolReaderBase : ReaderBase, ISymbol
+	public class SymbolReaderBase : ReaderBase
 	{
 		private static readonly Dictionary<LeafType, ConstructorInfo> leafReaders;
-		private static readonly Dictionary<ThunkType, ConstructorInfo> thunkReaders;
-
 		static SymbolReaderBase() {
 			leafReaders = Assembly
 				.GetExecutingAssembly()
@@ -35,25 +33,6 @@ namespace Smx.PDBSharp
 					// value
 					t => t.GetConstructor(new Type[] { typeof(Stream) }
 				));
-
-			thunkReaders = Assembly
-				.GetExecutingAssembly()
-				.GetTypes()
-				.Where(t => t.GetCustomAttribute<ThunkReaderAttribute>() != null)
-				.ToDictionary(
-					// key
-					t => t.GetCustomAttribute<ThunkReaderAttribute>().Type,
-					// value
-					t => t.GetConstructor(new Type[] { typeof(SymbolHeader), typeof(THUNKSYM32), typeof(Stream) }
-				));
-		}
-
-		public readonly SymbolHeader Header;
-
-		SymbolHeader ISymbol.Header {
-			get {
-				return Header;
-			}
 		}
 
 		public ILeaf ReadNumericLeaf(LeafType type) {
@@ -64,17 +43,7 @@ namespace Smx.PDBSharp
 			return (ILeaf)leafReaders[type].Invoke(new object[] { Stream });
 		}
 
-		public IThunk ReadThunk(THUNKSYM32 thunk) {
-			ThunkType type = thunk.Ordinal;
-			if (!Enum.IsDefined(typeof(ThunkType), type)) {
-				throw new InvalidDataException();
-			}
-
-			return (IThunk)thunkReaders[type].Invoke(new object[] { Header, thunk, Stream });
-		}
-
 		public SymbolReaderBase(Stream stream) : base(stream) {
-			Header = ReadStruct<SymbolHeader>();
 		}
 	}
 }

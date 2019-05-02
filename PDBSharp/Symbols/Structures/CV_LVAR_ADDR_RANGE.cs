@@ -6,18 +6,25 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols.Structures
 {
-	public struct CV_LVAR_ADDR_RANGE
+	public class CV_LVAR_ADDR_RANGE : ReaderBase
 	{
-		public UInt32 OffsetStart;
-		public UInt16 IndexSectionStart;
-		public UInt16 Length;
+		public readonly UInt32 OffsetStart;
+		public readonly UInt16 IndexSectionStart;
+		public readonly UInt16 Length;
+
+		public CV_LVAR_ADDR_RANGE(Stream stream) : base(stream) {
+			OffsetStart = ReadUInt32();
+			IndexSectionStart = ReadUInt16();
+			Length = ReadUInt16();
+		}
 	}
 }

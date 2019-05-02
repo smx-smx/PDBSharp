@@ -26,10 +26,10 @@ namespace Smx.PDBSharp.Leaves
 		public readonly string FieldName;
 
 		public LF_ENUM(Stream stream) : base(stream) {
-			NumElements = Reader.ReadUInt16();
-			Property = (TypeProperties)Reader.ReadUInt16();
-			UnderlyingTypeIndex = Reader.ReadUInt32();
-			FieldTypeIndex = Reader.ReadUInt32();
+			NumElements = ReadUInt16();
+			Property = ReadEnum<TypeProperties>();
+			UnderlyingTypeIndex = ReadUInt32();
+			FieldTypeIndex = ReadUInt32();
 			FieldName = ReadCString();
 
 		}

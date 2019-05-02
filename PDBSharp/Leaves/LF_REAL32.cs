@@ -20,7 +20,7 @@ namespace Smx.PDBSharp.Leaves
 	{
 		public readonly float Value;
 		public LF_REAL32(Stream stream) : base(stream) {
-			Value = Reader.ReadSingle();
+			Value = ReadSingle();
 		}		
 	}
 }

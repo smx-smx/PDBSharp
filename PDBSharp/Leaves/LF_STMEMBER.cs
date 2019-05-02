@@ -21,8 +21,8 @@ namespace Smx.PDBSharp.Leaves
 		public readonly string Name;
 
 		public LF_STMEMBER(Stream stream) : base(stream) {
-			Attributes = new FieldAttributes(Reader.ReadUInt16());
-			TypeRecordIndex = Reader.ReadUInt32();
+			Attributes = new FieldAttributes(ReadUInt16());
+			TypeRecordIndex = ReadUInt32();
 			Name = ReadCString();
 		}
 	}

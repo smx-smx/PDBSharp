@@ -17,15 +17,16 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp.Symbols
 {
 	[SymbolReader(SymbolType.S_DEFRANGE_FRAMEPOINTER_REL)]
-	public class S_DEFRANGE_FRAMEPOINTER_REL : ReaderBase, ISymbol
+	public class S_DEFRANGE_FRAMEPOINTER_REL : SymbolDataReader
 	{
-		public SymbolHeader Header { get; }
-		public readonly DefRangeSymInstance Data;
+		public readonly UInt32 FramePointerOffset;
+		public CV_LVAR_ADDR_RANGE Range;
+		public CV_LVAR_ADDR_GAP[] Gaps;
 
 		public S_DEFRANGE_FRAMEPOINTER_REL(Stream stream) : base(stream) {
-			var rdr = new DefRangeSymReader(stream);
-			Header = rdr.Header;
-			Data = rdr.Data;
+			FramePointerOffset = ReadUInt32();
+			Range = new CV_LVAR_ADDR_RANGE(stream);
+			Gaps = CV_LVAR_ADDR_GAP.ReadGaps(stream);
 		}
 	}
 }

@@ -21,9 +21,9 @@ namespace Smx.PDBSharp.Leaves
 		public readonly byte Position;
 
 		public LF_BITFIELD(Stream stream) : base(stream) {
-			TypeIndex = Reader.ReadUInt32();
-			Length = Reader.ReadByte();
-			Position = Reader.ReadByte();
+			TypeIndex = ReadUInt32();
+			Length = ReadByte();
+			Position = ReadByte();
 		}
 	}
 }

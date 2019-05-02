@@ -17,15 +17,12 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp.Symbols
 {
 	[SymbolReader(SymbolType.S_BUILDINFO)]
-	public class S_BUILDINFO : ReaderBase, ISymbol
+	public class S_BUILDINFO : SymbolDataReader
 	{
-		public SymbolHeader Header { get; }
-		public readonly BUILDINFOSYM Data;
+		public readonly UInt32 Id;
 
 		public S_BUILDINFO(Stream stream) : base(stream) {
-			var rdr = new BuildInfoSymReader(stream);
-			Header = rdr.Header;
-			Data = rdr.Data;
+			Id = ReadUInt32();
 		}
 	}
 }

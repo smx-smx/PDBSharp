@@ -19,9 +19,7 @@ namespace Smx.PDBSharp.Thunks
 	[ThunkReader(ThunkType.NOTYPE)]
 	public class NOTYPE : ThunkReaderBase, IThunk
 	{
-		public NOTYPE(SymbolHeader symHeader, THUNKSYM32 thunk, Stream stream) : base(symHeader, thunk, stream) {
+		public NOTYPE(SymbolHeader symHeader, Stream stream) : base(symHeader, stream) {
 		}
-
-		THUNKSYM32 IThunk.Thunk => this.Thunk;
 	}
 }

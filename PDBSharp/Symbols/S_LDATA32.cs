@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using Smx.PDBSharp.Symbols.Structures;
+using Smx.PDBSharp.Symbols.Structures;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,15 +17,9 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp.Symbols
 {
 	[SymbolReader(SymbolType.S_LDATA32)]
-	public class S_LDATA32 : ReaderBase, ISymbol
+	public class S_LDATA32 : DataSym32
 	{
-		public SymbolHeader Header { get; }
-		public readonly DataSym32Instance Data;
-
 		public S_LDATA32(Stream stream) : base(stream) {
-			var rdr = new DataSym32Reader(stream);
-			Header = rdr.Header;
-			Data = rdr.Data;
 		}
 	}
 }

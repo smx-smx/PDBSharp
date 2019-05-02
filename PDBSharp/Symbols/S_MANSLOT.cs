@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using Smx.PDBSharp.Symbols.Structures;
+using Smx.PDBSharp.Symbols.Structures;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,16 +16,20 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
+
 	[SymbolReader(SymbolType.S_MANSLOT)]
-	public class S_MANSLOT : ReaderBase, ISymbol
+	public class S_MANSLOT : SymbolDataReader
 	{
-		public SymbolHeader Header { get; }
-		public readonly AttrSlotSymInstance Data;
+		public readonly UInt32 SlotIndex;
+		public readonly UInt32 TypeIndex;
+		public readonly CV_LVAR_ATTR Attributes;
+		public readonly string Name;
 
 		public S_MANSLOT(Stream stream) : base(stream) {
-			var rdr = new AttrSlotSymReader(stream);
-			Header = rdr.Header;
-			Data = rdr.Data;
+			SlotIndex = ReadUInt32();
+			TypeIndex = ReadUInt32();
+			Attributes = new CV_LVAR_ATTR(stream);
+			Name = ReadSymbolString();
 		}
 	}
 }

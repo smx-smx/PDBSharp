@@ -17,14 +17,40 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp.Symbols
 {
 	[SymbolReader(SymbolType.S_TRAMPOLINE)]
-	public class S_TRAMPOLINE : ReaderBase, ISymbol
+	public class S_TRAMPOLINE : SymbolDataReader
 	{
-		public SymbolHeader Header { get; }
-		public readonly TRAMPOLINESYM Data;
+		/// <summary>
+		/// trampoline sym subtype
+		/// </summary>
+		public readonly TrampolineType TrampolineType;
+		/// <summary>
+		/// size of the thunk
+		/// </summary>
+		public readonly UInt16 ThunkSize;
+		/// <summary>
+		/// offset of the thunk
+		/// </summary>
+		public readonly UInt32 ThunkOffset;
+		/// <summary>
+		/// offset of the target of the thunk
+		/// </summary>
+		public readonly UInt32 TargetOffset;
+		/// <summary>
+		/// section index of the thunk
+		/// </summary>
+		public readonly UInt16 ThunkSection;
+		/// <summary>
+		/// section index of the target of the thunk
+		/// </summary>
+		public readonly UInt16 TargetSection;
+
 		public S_TRAMPOLINE(Stream stream) : base(stream) {
-			var rdr = new TrampolineSymReader(stream);
-			Header = rdr.Header;
-			Data = rdr.Data;
+			TrampolineType = ReadEnum<TrampolineType>();
+			ThunkSize = ReadUInt16();
+			ThunkOffset = ReadUInt32();
+			TargetOffset = ReadUInt32();
+			ThunkSection = ReadUInt16();
+			TargetSection = ReadUInt16();
 		}
 	}
 }

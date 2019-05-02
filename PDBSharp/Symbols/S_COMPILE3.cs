@@ -17,15 +17,32 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp.Symbols
 {
 	[SymbolReader(SymbolType.S_COMPILE3)]
-	public class S_COMPILE3 : ReaderBase, ISymbol
+	public class S_COMPILE3 : SymbolDataReader
 	{
-		public SymbolHeader Header { get; }
-		public readonly CompileSym3Instance Data;
+		public readonly CompileSym3Flags Flags;
+		public readonly UInt16 Machine;
+		public readonly UInt16 FrontendVersionMajor;
+		public readonly UInt16 FrontendVersionMinor;
+		public readonly UInt16 FrontendVersionBuild;
+		public readonly UInt16 FrontendQFEVersion;
+		public readonly UInt16 BackendVersionMajor;
+		public readonly UInt16 BackendVersionMinor;
+		public readonly UInt16 BackendVersionBuild;
+		public readonly UInt16 BackendQFEVersion;
+		public readonly string VersionString;
 
 		public S_COMPILE3(Stream stream) : base(stream) {
-			var rdr = new CompileSym3Reader(stream);
-			Header = rdr.Header;
-			Data = rdr.Data;
+			Flags = new CompileSym3Flags(ReadUInt32());
+			Machine = ReadUInt16();
+			FrontendVersionMajor = ReadUInt16();
+			FrontendVersionMinor = ReadUInt16();
+			FrontendVersionBuild = ReadUInt16();
+			FrontendQFEVersion = ReadUInt16();
+			BackendVersionMajor = ReadUInt16();
+			BackendVersionMinor = ReadUInt16();
+			BackendVersionBuild = ReadUInt16();
+			BackendQFEVersion = ReadUInt16();
+			VersionString = ReadSymbolString();
 		}
 	}
 }

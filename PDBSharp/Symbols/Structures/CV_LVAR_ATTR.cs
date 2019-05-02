@@ -6,25 +6,22 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using System;
-using System.Collections.Generic;
+using Smx.PDBSharp.Symbols.Structures;
+using System;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols.Structures
 {
-	public struct BUILDINFOSYM
+	public class CV_LVAR_ATTR : ReaderBase
 	{
-		public UInt32 Id;
-	}
+		public readonly UInt32 Offset;
+		public readonly UInt16 Segment;
+		public readonly CV_LVARFLAGS Flags;
 
-	public class BuildInfoSymReader : SymbolReaderBase
-	{
-		public readonly BUILDINFOSYM Data;
-		public BuildInfoSymReader(Stream stream) : base(stream) {
-			Data = ReadStruct<BUILDINFOSYM>();
+		public CV_LVAR_ATTR(Stream stream) : base(stream) {
+			Offset = ReadUInt32();
+			Segment = ReadUInt16();
+			Flags = ReadEnum<CV_LVARFLAGS>();
 		}
 	}
 }

@@ -36,8 +36,8 @@ namespace Smx.PDBSharp.Leaves
 		public readonly PointerAttributes Attributes;
 
 		public LF_POINTER(Stream stream) : base(stream) {
-			UnderlyingTypeIndex = Reader.ReadUInt32();
-			Attributes = new PointerAttributes(Reader.ReadUInt32());
+			UnderlyingTypeIndex = ReadUInt32();
+			Attributes = new PointerAttributes(ReadUInt32());
 		}
 	}
 }

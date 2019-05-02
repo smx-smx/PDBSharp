@@ -27,11 +27,11 @@ namespace Smx.PDBSharp.Leaves
 		public readonly string Name;
 
 		public LF_CLASS(Stream stream) : base(stream) {
-			NumberOfElements = Reader.ReadUInt16();
-			FieldProperties = (TypeProperties)Reader.ReadUInt16();
-			FieldIndex = Reader.ReadUInt32();
-			DerivedTypeIndex = Reader.ReadUInt32();
-			VShapeTableTypeIndex = Reader.ReadUInt32();
+			NumberOfElements = ReadUInt16();
+			FieldProperties = ReadEnum<TypeProperties>();
+			FieldIndex = ReadUInt32();
+			DerivedTypeIndex = ReadUInt32();
+			VShapeTableTypeIndex = ReadUInt32();
 
 			var StructSize = ReadVaryingType(out uint dataSize);
 	

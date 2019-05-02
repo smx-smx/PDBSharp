@@ -17,15 +17,16 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp.Symbols
 {
 	[SymbolReader(SymbolType.S_LOCAL)]
-	public class S_LOCAL : ReaderBase, ISymbol
+	public class S_LOCAL : SymbolDataReader
 	{
-		public SymbolHeader Header { get; }
-		public readonly LocalSymInstance Data;
+		public readonly UInt32 TypeIndex;
+		public readonly CV_LVARFLAGS Flags;
+		public readonly string Name;
 
 		public S_LOCAL(Stream stream) : base(stream) {
-			var rdr = new LocalSymReader(stream);
-			Header = rdr.Header;
-			Data = rdr.Data;
+			TypeIndex = ReadUInt32();
+			Flags = ReadEnum<CV_LVARFLAGS>();
+			Name = ReadSymbolString();
 		}
 	}
 }

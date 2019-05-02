@@ -23,9 +23,9 @@ namespace Smx.PDBSharp.Leaves
 		public readonly string Name;
 
 		public LF_UNION(Stream stream) : base(stream) {
-			NumberOfElements = Reader.ReadUInt16();
-			Properties = (TypeProperties)Reader.ReadUInt16();
-			FieldTypeIndex = Reader.ReadUInt32();
+			NumberOfElements = ReadUInt16();
+			Properties = ReadEnum<TypeProperties>();
+			FieldTypeIndex = ReadUInt32();
 
 			var varyingData = ReadVaryingType(out uint dataSize);
 			Name = ReadCString();

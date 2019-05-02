@@ -18,49 +18,53 @@ namespace Smx.PDBSharp
 	public class StreamTableReader : ReaderBase
 	{
 		private readonly MSFReader msf;
+		public readonly UInt32[] StreamSizes;
 
 		public StreamTableReader(MSFReader msf, Stream stream) : base(stream) {
 			this.msf = msf;
-			NumStreams = Reader.ReadUInt32();
-			streamsData = new byte[NumStreams][];
+			NumStreams = ReadUInt32();
+			StreamSizes = ReadStreamSizes();
 
-			StreamSizes();
+			streamsData = new byte[NumStreams][];
 		}
 
 		public uint NumStreams;
-		private UInt32[] streamSizes;
-
 		private byte[][] streamsData;
 
-		public UInt32[] StreamSizes() {
-			if(streamSizes != null)
-				return streamSizes;
+		public UInt32[] ReadStreamSizes() {
 
-			Stream.Position = sizeof(int);
-
-			streamSizes = new uint[NumStreams];
-			for(int i=0; i<NumStreams; i++) {
-				streamSizes[i] = Reader.ReadUInt32();
-			}
+			UInt32[] streamSizes = Enumerable
+				.Range(1, (int)NumStreams)
+				.Select(_ => ReadUInt32())
+				.ToArray();
 
 			return streamSizes;
 		}
 
+		/// <summary>
+		/// Reads the list of pages for a given stream
+		/// </summary>
+		/// <param name="streamNumber"></param>
+		/// <returns></returns>
 		private IEnumerable<UInt32> GetListPages_Stream(uint streamNumber) {
-			var streamSize = streamSizes[streamNumber];
-			var numStreamPages = msf.GetNumPages(streamSize);
+			var streamSize = StreamSizes[streamNumber];
+			
+			// skip the list of streams
+			uint dataOffset = sizeof(UInt32) * (NumStreams + 1);
 
-			uint dataOffset = sizeof(int) * (NumStreams + 1);
+			// skip the page list for the streams before us
 			for(int i=0; i<streamNumber; i++) {
-				dataOffset += msf.GetNumPages(streamSizes[i]) * sizeof(int);
+				dataOffset += msf.GetNumPages(StreamSizes[i]) * sizeof(UInt32);
 			}
 
-			Stream.Position = dataOffset;
+			Stream.Seek(dataOffset, SeekOrigin.Begin);
 
-			UInt32[] pageList = new UInt32[numStreamPages];
-			for(int i=0; i<numStreamPages; i++) {
-				pageList[i] = Reader.ReadUInt32();
-			}
+			// how many pages are we going to read
+			var numStreamPages = msf.GetNumPages(streamSize);
+			UInt32[] pageList = Enumerable
+				.Range(1, (int)numStreamPages)
+				.Select(_ => ReadUInt32())
+				.ToArray();
 
 			return pageList;
 		}
@@ -68,6 +72,7 @@ namespace Smx.PDBSharp
 		private byte[] ReadStream(uint streamNumber) {
 			var pages = GetListPages_Stream(streamNumber);
 
+			// for each page in list, read the page data and combine
 			return pages
 				.Select(page => msf.ReadPage(page))
 				.SelectMany(x => x)

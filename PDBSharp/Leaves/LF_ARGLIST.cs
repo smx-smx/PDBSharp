@@ -21,9 +21,9 @@ namespace Smx.PDBSharp.Leaves
 		public UInt32[] ArgumentTypeIndices;
 
 		public LF_ARGLIST(Stream stream) : base(stream) {
-			NumberOfArguments = Reader.ReadUInt16();
+			NumberOfArguments = ReadUInt16();
 			ArgumentTypeIndices = Enumerable.Range(1, NumberOfArguments)
-											.Select(_ => Reader.ReadUInt32())
+											.Select(_ => ReadUInt32())
 											.ToArray();
 		}
 	}

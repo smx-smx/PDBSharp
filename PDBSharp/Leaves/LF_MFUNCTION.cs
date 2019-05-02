@@ -26,14 +26,14 @@ namespace Smx.PDBSharp.Leaves
 		public readonly UInt32 ThisAdjustor;
 
 		public LF_MFUNCTION(Stream stream) : base(stream) {
-			ReturnValueTypeIndex = Reader.ReadUInt32();
-			ContainingClassTypeIndex = Reader.ReadUInt32();
-			ThisPointerTypeIndex = Reader.ReadUInt32();
-			CallingConvention = (CallingConvention)Reader.ReadByte();
-			Reader.ReadByte(); //reserved
-			NumberOfParameters = Reader.ReadUInt16();
-			ArgumentListTypeIndex = Reader.ReadUInt32();
-			ThisAdjustor = Reader.ReadUInt32();
+			ReturnValueTypeIndex = ReadUInt32();
+			ContainingClassTypeIndex = ReadUInt32();
+			ThisPointerTypeIndex = ReadUInt32();
+			CallingConvention = ReadEnum<CallingConvention>();
+			ReadByte(); //reserved
+			NumberOfParameters = ReadUInt16();
+			ArgumentListTypeIndex = ReadUInt32();
+			ThisAdjustor = ReadUInt32();
 		}
 	}
 }

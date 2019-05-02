@@ -22,11 +22,11 @@ namespace Smx.PDBSharp.Leaves
 		public readonly UInt32 ArgumentListTypeIndex;
 
 		public LF_PROCEDURE(Stream stream) : base(stream) {
-			ReturnValueTypeIndex = Reader.ReadUInt32();
-			CallingConvention = (CallingConvention)Reader.ReadByte();
-			Reader.ReadByte(); //reserved
-			NumberOfParameters = Reader.ReadUInt16();
-			ArgumentListTypeIndex = Reader.ReadUInt32();
+			ReturnValueTypeIndex = ReadUInt32();
+			CallingConvention = ReadEnum<CallingConvention>();
+			ReadByte(); //reserved
+			NumberOfParameters = ReadUInt16();
+			ArgumentListTypeIndex = ReadUInt32();
 		}
 	}
 }

@@ -20,8 +20,8 @@ namespace Smx.PDBSharp.Leaves
 		public readonly string Name;
 
 		public LF_NESTTYPE(Stream stream) : base(stream) {
-			Reader.ReadUInt16(); //padding
-			NestedTypeDefIndex = Reader.ReadUInt32();
+			ReadUInt16(); //padding
+			NestedTypeDefIndex = ReadUInt32();
 			Name = ReadCString();
 		}
 	}

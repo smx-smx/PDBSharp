@@ -17,15 +17,24 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp.Symbols
 {
 	[SymbolReader(SymbolType.S_FRAMEPROC)]
-	public class S_FRAMEPROC : ReaderBase, ISymbol
+	public class S_FRAMEPROC : SymbolDataReader
 	{
-		public SymbolHeader Header { get; }
-		public readonly FRAMEPROCSYM Data;
+		public readonly UInt32 FrameSize;
+		public readonly UInt32 PaddingSize;
+		public readonly UInt32 PaddingOffset;
+		public readonly UInt32 SavedRegistersSize;
+		public readonly UInt32 ExceptionHandlerOffset;
+		public readonly UInt16 ExceptionHandlerSection;
+		public readonly FrameProcSymFlags Flags;
 
 		public S_FRAMEPROC(Stream stream) : base(stream) {
-			var rdr = new FrameProcSymReader(stream);
-			Header = rdr.Header;
-			Data = rdr.Data;
+			FrameSize = ReadUInt32();
+			PaddingSize = ReadUInt32();
+			PaddingOffset = ReadUInt32();
+			SavedRegistersSize = ReadUInt32();
+			ExceptionHandlerOffset = ReadUInt32();
+			ExceptionHandlerSection = ReadUInt16();
+			Flags = new FrameProcSymFlags(ReadUInt16());
 		}
 	}
 }

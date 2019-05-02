@@ -28,10 +28,8 @@ namespace Smx.PDBSharp.Thunks
 	{
 		public readonly VcallThunk Data;
 
-		public VCALL(SymbolHeader header, THUNKSYM32 thunkSym, Stream stream) : base(header, thunkSym, stream) {
+		public VCALL(SymbolHeader header, Stream stream) : base(header, stream) {
 			Data = ReadStruct<VcallThunk>();
 		}
-
-		THUNKSYM32 IThunk.Thunk => this.Thunk;
 	}
 }

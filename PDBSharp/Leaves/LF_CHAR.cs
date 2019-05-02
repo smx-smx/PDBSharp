@@ -22,7 +22,7 @@ namespace Smx.PDBSharp.Leaves
 		public readonly byte Value;
 
 		public LF_CHAR(Stream stream) : base(stream) {
-			Value = Reader.ReadByte();
+			Value = ReadByte();
 		}
 	}
 }

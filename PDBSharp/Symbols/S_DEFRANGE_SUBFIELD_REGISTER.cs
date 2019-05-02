@@ -17,15 +17,20 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp.Symbols
 {
 	[SymbolReader(SymbolType.S_DEFRANGE_SUBFIELD_REGISTER)]
-	public class S_DEFRANGE_SUBFIELD_REGISTER : ReaderBase, ISymbol
+	public class S_DEFRANGE_SUBFIELD_REGISTER : SymbolDataReader
 	{
-		public SymbolHeader Header { get; }
-		public readonly DefRangeSymSubFieldInstance Data;
+		public readonly UInt16 Register;
+		public readonly RangeAttributes Attributes;
+		public readonly UInt32 ParentVariableOffset;
+		public readonly CV_LVAR_ADDR_RANGE Range;
+		public readonly CV_LVAR_ADDR_GAP[] Gaps;
 
 		public S_DEFRANGE_SUBFIELD_REGISTER(Stream stream) : base(stream) {
-			var rdr = new DefRangeSymSubFieldReader(stream);
-			Header = rdr.Header;
-			Data = rdr.Data;
+			Register = ReadUInt16();
+			Attributes = ReadEnum<RangeAttributes>();
+			ParentVariableOffset = ReadUInt32() & 0xFFF; //CV_OFFSET_PARENT_LENGTH_LIMIT
+			Range = new CV_LVAR_ADDR_RANGE(stream);
+			Gaps = CV_LVAR_ADDR_GAP.ReadGaps(stream);
 		}
 	}
 }

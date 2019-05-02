@@ -20,8 +20,8 @@ namespace Smx.PDBSharp.Leaves
 		public readonly UInt32 BaseClassTypeIndex;
 
 		public LF_BCLASS(Stream stream) : base(stream) {
-			Attributes = new FieldAttributes(Reader.ReadUInt16());
-			BaseClassTypeIndex = Reader.ReadUInt32();
+			Attributes = new FieldAttributes(ReadUInt16());
+			BaseClassTypeIndex = ReadUInt32();
 
 			var varDataType = ReadVaryingType(out uint dataSize);
 		}

@@ -17,15 +17,17 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp.Symbols
 {
 	[SymbolReader(SymbolType.S_CALLEES)]
-	public class S_CALLEES : ReaderBase, ISymbol
+	public class S_CALLEES : SymbolDataReader
 	{
-		public SymbolHeader Header { get; }
-		public readonly FunctionListInstance Data;
+		public readonly UInt32 NumberOfFunctions;
+		public readonly UInt32[] Functions;
 
 		public S_CALLEES(Stream stream) : base(stream) {
-			var rdr = new FunctionListReader(stream);
-			Header = rdr.Header;
-			Data = rdr.Data;
+			NumberOfFunctions = ReadUInt32();
+			Functions = Enumerable
+				.Range(1, (int)NumberOfFunctions)
+				.Select(_ => ReadUInt32())
+				.ToArray();
 		}
 	}
 }

@@ -17,15 +17,18 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp.Symbols
 {
 	[SymbolReader(SymbolType.S_FILESTATIC)]
-	public class S_FILESTATIC : ReaderBase, ISymbol
+	public class S_FILESTATIC : SymbolDataReader
 	{
-		public SymbolHeader Header { get; }
-		public readonly FileStaticSymInstance Data;
+		public readonly UInt32 TypeIndex;
+		public readonly UInt32 ModuleFilenameOffset;
+		public readonly CV_LVARFLAGS Flags;
+		public readonly string Name;
 
 		public S_FILESTATIC(Stream stream) : base(stream) {
-			var rdr = new FileStaticSymReader(stream);
-			Header = rdr.Header;
-			Data = rdr.Data;
+			TypeIndex = ReadUInt32();
+			ModuleFilenameOffset = ReadUInt32();
+			Flags = ReadEnum<CV_LVARFLAGS>();
+			Name = ReadSymbolString();
 		}
 	}
 }

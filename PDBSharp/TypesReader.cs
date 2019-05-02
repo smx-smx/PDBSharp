@@ -24,7 +24,7 @@ namespace Smx.PDBSharp
 			var remaining = Stream.Length;
 
 			while(remaining > 0) {
-				UInt16 length = Reader.ReadUInt16();
+				UInt16 length = ReadUInt16();
 				if (length == 0)
 					break;
 
@@ -33,7 +33,7 @@ namespace Smx.PDBSharp
 
 				BinaryWriter wr = new BinaryWriter(new MemoryStream(symDataBuf));
 				wr.Write(length);
-				wr.Write(Reader.ReadBytes((int)length));
+				wr.Write(ReadBytes((int)length));
 
 				TypeDataReader rdr = new TypeDataReader(new MemoryStream(symDataBuf));
 				yield return rdr.ReadType();

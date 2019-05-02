@@ -22,9 +22,9 @@ namespace Smx.PDBSharp.Leaves
 
 
 		public LF_VBCLASS(Stream stream) : base(stream) {
-			Attributes = new FieldAttributes(Reader.ReadUInt16());
-			VirtualBaseClassTypeIndex = Reader.ReadUInt32();
-			VirtualBasePointerTypeIndex = Reader.ReadUInt32();
+			Attributes = new FieldAttributes(ReadUInt16());
+			VirtualBaseClassTypeIndex = ReadUInt32();
+			VirtualBasePointerTypeIndex = ReadUInt32();
 
 
 			//virtual base pointer offset from address point

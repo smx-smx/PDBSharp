@@ -93,21 +93,19 @@ namespace Smx.PDBSharp
 
 	public class ModuleListReader : ReaderBase
 	{
-		private readonly DBIReader dbi;
-		public ModuleListReader(DBIReader dbi, Stream stream) : base(stream) {
-			this.dbi = dbi;
+		public ModuleListReader(Stream stream) : base(stream) {
 		}
 
 		private IEnumerable<ModuleInfoInstance> modules;
 		public IEnumerable<ModuleInfoInstance> Modules {
 			get {
 				if (modules == null)
-					modules = GetModules();
+					modules = ReadModules().Cached();
 				return modules;
 			}
 		}
 
-		private IEnumerable<ModuleInfoInstance> GetModules() {
+		private IEnumerable<ModuleInfoInstance> ReadModules() {
 			var remaining = Stream.Length;
 			while (remaining > 0) {
 				ModuleInfo mod = ReadStruct<ModuleInfo>();

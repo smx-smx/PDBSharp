@@ -20,7 +20,7 @@ namespace Smx.PDBSharp.Leaves
 	{
 		public readonly UInt32 Value;
 		public LF_ULONG(Stream stream) : base(stream) {
-			Value = Reader.ReadUInt32();
+			Value = ReadUInt32();
 		}
 	}
 }

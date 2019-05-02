@@ -17,7 +17,6 @@ namespace Smx.PDBSharp.Thunks
 {
 	public interface IThunk
 	{
-		THUNKSYM32 Thunk { get; }
 	}
 
 }

@@ -52,7 +52,7 @@ namespace Smx.PDBSharp
 
 		public IEnumerable<byte[]> GetPages(uint numPages) {
 			for(int i = 0; i < numPages; i++) {
-				var pageNum = Reader.ReadUInt32();
+				var pageNum = ReadUInt32();
 				yield return ReadPage(pageNum);
 			}
 		}
@@ -102,7 +102,7 @@ namespace Smx.PDBSharp
 		public byte[] ReadPage(uint pageNumber) {
 			return PerformAt<byte[]>(pageNumber * hdr.PageSize, () => {
 				Trace.WriteLine($"Reading Page {pageNumber} @ {pageNumber * hdr.PageSize:X8}");
-				return Reader.ReadBytes((int)hdr.PageSize);
+				return ReadBytes((int)hdr.PageSize);
 			});
 		}
 	}

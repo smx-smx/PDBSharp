@@ -6,11 +6,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using Smx.PDBSharp.Symbols;
+using Smx.PDBSharp.Symbols;
+using Smx.PDBSharp.Symbols.Structures;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -18,36 +22,54 @@ namespace Smx.PDBSharp
 {
 	public class SymbolsReader : ReaderBase
 	{
+		private static readonly Dictionary<SymbolType, ConstructorInfo> symbolReaders;
+
+		static SymbolsReader() {
+			symbolReaders = Assembly
+				.GetExecutingAssembly()
+				.GetTypes()
+				.Where(t => t.GetCustomAttribute<SymbolReaderAttribute>() != null)
+				.ToDictionary(
+					// key
+					t => t.GetCustomAttribute<SymbolReaderAttribute>().Type,
+					// value
+					t => t.GetConstructor(new Type[] { typeof(Stream) }
+				));
+		}
+
 		public SymbolsReader(Stream stream) : base(stream) {
 		}
 
-		private IEnumerable<ISymbol> symbols;
-
-		public IEnumerable<ISymbol> Symbols {
-			get {
-				if (symbols == null)
-					symbols = GetSymbols();
-				return symbols;
-			}
-		}
-
-		private IEnumerable<ISymbol> GetSymbols() {
+		public IEnumerable<ISymbol> ReadSymbols() {
 			var remaining = Stream.Length;
 
-			while(remaining > 0) {
-				// number of bytes that follow
-				UInt16 length = Reader.ReadUInt16();
+			while (remaining > 0) {
+				// number of bytes that follow, including symbolType
+				UInt16 length = ReadUInt16();
 
-				// the data view includes the length field we just read
+				SymbolType symbolType = ReadEnum<SymbolType>();
+
+				// including symbol length
 				int dataSize = length + sizeof(UInt16);
-				byte[] symDataBuf = new byte[dataSize];
+				Stream symDataStream = new MemoryStream(new byte[dataSize]);
 
-				BinaryWriter wr = new BinaryWriter(new MemoryStream(symDataBuf));
+				byte[] data = ReadBytes((int)length - sizeof(UInt16));
+
+				BinaryWriter wr = new BinaryWriter(symDataStream);
 				wr.Write(length);
-				wr.Write(Reader.ReadBytes((int)length));
+				wr.Write((UInt16)symbolType);
+				wr.Write(data);
+				symDataStream.Position = 0;
 
-				SymbolDataReader rdr = new SymbolDataReader(new MemoryStream(symDataBuf));
-				yield return rdr.Symbol;
+				if (symbolReaders.ContainsKey(symbolType)) {
+					yield return (ISymbol)symbolReaders[symbolType].Invoke(new object[] { symDataStream });
+				} else {
+					throw new NotImplementedException();
+				}
+
+				if (symDataStream.Position != symDataStream.Length) {
+					Trace.WriteLine($"WARNING: {symbolType} didn't consume {symDataStream.Length - symDataStream.Position} bytes");
+				}
 
 				remaining -= dataSize;
 			}

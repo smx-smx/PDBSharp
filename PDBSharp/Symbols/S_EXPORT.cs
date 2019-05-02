@@ -17,15 +17,16 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp.Symbols
 {
 	[SymbolReader(SymbolType.S_EXPORT)]
-	public class S_EXPORT : ReaderBase, ISymbol
+	public class S_EXPORT : SymbolDataReader
 	{
-		public SymbolHeader Header { get; }
-		public readonly ExportSymInstance Data;
+		public readonly UInt16 Ordinal;
+		public readonly ExportSymFlags Flags;
+		public readonly string Name;
 
 		public S_EXPORT(Stream stream) : base(stream) {
-			var rdr = new ExportSymReader(stream);
-			Header = rdr.Header;
-			Data = rdr.Data;
+			Ordinal = ReadUInt16();
+			Flags = ReadEnum<ExportSymFlags>();
+			Name = ReadSymbolString();
 		}
 	}
 }

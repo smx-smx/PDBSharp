@@ -16,11 +16,11 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp.Leaves
 {
 	[LeafReader(LeafType.LF_VARSTRING)]
-	public class LF_VARSTRING : SymbolReaderBase, ILeaf<string>
+	public class LF_VARSTRING: SymbolDataReader, ILeaf<string>
 	{
 		public LF_VARSTRING(Stream stream) : base(stream) {
-			UInt16 length = Reader.ReadUInt16();
-			byte[] data = Reader.ReadBytes((int)length);
+			UInt16 length = ReadUInt16();
+			byte[] data = ReadBytes((int)length);
 			Value = Encoding.ASCII.GetString(data);
 		}
 

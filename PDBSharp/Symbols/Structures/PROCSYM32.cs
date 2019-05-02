@@ -16,38 +16,32 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols.Structures
 {
-	public struct ProcSym32Instance
+	public class ProcSym32: SymbolDataReader
 	{
-		public PROCSYM32 Header;
-		public string Name;
-	}
+		public readonly UInt32 Parent;
+		public readonly UInt32 End;
+		public readonly UInt32 Next;
+		public readonly UInt32 Length;
+		public readonly UInt32 DebugStartOffset;
+		public readonly UInt32 DebugEndOffset;
+		public readonly UInt32 TypeIndex;
+		public readonly UInt32 Offset;
+		public readonly UInt16 Segment;
+		public readonly CV_PROCFLAGS Flags;
+		public readonly string Name;
 
-	[StructLayout(LayoutKind.Sequential, Pack = 1)]
-	public struct PROCSYM32
-	{
-		public UInt32 Parent;
-		public UInt32 End;
-		public UInt32 Next;
-		public UInt32 Length;
-		public UInt32 DebugStartOffset;
-		public UInt32 DebugEndOffset;
-		public UInt32 TypeIndex;
-		public UInt32 Offset;
-		public UInt16 Segment;
-		public CV_PROCFLAGS Flags;
-	}
-
-	public class ProcSym32Reader : SymbolReaderBase
-	{
-		public readonly ProcSym32Instance Data;
-		public ProcSym32Reader(Stream stream) : base(stream) {
-			PROCSYM32 header = ReadStruct<PROCSYM32>();
-			string name = ReadSymbolString(Header);
-
-			Data = new ProcSym32Instance() {
-				Header = header,
-				Name = name
-			};
+		public ProcSym32(Stream stream) : base(stream) {
+			Parent = ReadUInt32();
+			End = ReadUInt32();
+			Next = ReadUInt32();
+			Length = ReadUInt32();
+			DebugStartOffset = ReadUInt32();
+			DebugEndOffset = ReadUInt32();
+			TypeIndex = ReadUInt32();
+			Offset = ReadUInt32();
+			Segment = ReadUInt16();
+			Flags = ReadEnum<CV_PROCFLAGS>();
+			Name = ReadSymbolString();
 		}
 	}
 }

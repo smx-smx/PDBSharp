@@ -26,6 +26,7 @@ namespace Smx.PDBSharp
 		V110 = 20091201
 	}
 
+	[Flags]
 	public enum DBIFlags : UInt16
 	{
 		IsIncrementalLink = 1 << 0,
@@ -74,24 +75,21 @@ namespace Smx.PDBSharp
 				throw new InvalidDataException();
 			}
 
-			int numStreams = stRdr.StreamSizes().Count();
-			if(
-				hdr.GsSymbolsStreamNumber >= numStreams ||
-				hdr.PsSymbolsStreamNumber >= numStreams ||
-				hdr.SymbolRecordsStreamNumber >= numStreams
+			uint nStreams = stRdr.NumStreams;
+			if (
+				hdr.GsSymbolsStreamNumber >= nStreams ||
+				hdr.PsSymbolsStreamNumber >= nStreams ||
+				hdr.SymbolRecordsStreamNumber >= nStreams
 			) {
 				throw new InvalidDataException();
 			}
 		}
 
 		public IEnumerable<IModule> ReadModules() {
-			Stream.Position = Marshal.SizeOf<DBIHeader>();
-
-			byte[] moduleList = Reader.ReadBytes((int)hdr.ModuleListSize);
-			var modListRdr = new ModuleListReader(this, new MemoryStream(moduleList));
+			byte[] moduleList = ReadBytes((int)hdr.ModuleListSize);
+			var modListRdr = new ModuleListReader(new MemoryStream(moduleList));
 
 			IEnumerable<ModuleInfoInstance> moduleInfoList = modListRdr.Modules;
-
 			foreach (ModuleInfoInstance mod in moduleInfoList) {
 				int streamNumber = mod.Header.StreamNumber;
 				if (streamNumber < 0) {

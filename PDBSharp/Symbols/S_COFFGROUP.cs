@@ -17,15 +17,20 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp.Symbols
 {
 	[SymbolReader(SymbolType.S_COFFGROUP)]
-	public class S_COFFGROUP : ReaderBase, ISymbol
+	public class S_COFFGROUP : SymbolDataReader
 	{
-		public SymbolHeader Header { get; }
-		public readonly CoffGroupSymInstance Data;
+		public readonly UInt32 Size;
+		public readonly UInt32 Characteristics;
+		public readonly UInt32 SymbolOffset;
+		public readonly UInt16 SymbolSegment;
+		public readonly string Name;
 
 		public S_COFFGROUP(Stream stream) : base(stream) {
-			var rdr = new CoffGroupSymReader(stream);
-			Header = rdr.Header;
-			Data = rdr.Data;
+			Size = ReadUInt32();
+			Characteristics = ReadUInt32();
+			SymbolOffset = ReadUInt32();
+			SymbolSegment = ReadUInt16();
+			Name = ReadSymbolString();
 		}
 	}
 }

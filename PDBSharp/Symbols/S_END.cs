@@ -17,12 +17,10 @@ using Smx.PDBSharp.Symbols.Structures;
 namespace Smx.PDBSharp.Symbols
 {
 	[SymbolReader(SymbolType.S_END)]
-	public class S_END : SymbolReaderBase, ISymbol
+	public class S_END : SymbolDataReader
 	{
 		public S_END(Stream stream) : base(stream) {
 			//S_END has no data because it's used as marker
 		}
-
-		SymbolHeader ISymbol.Header => this.Header;
 	}
 }

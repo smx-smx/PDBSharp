@@ -22,8 +22,8 @@ namespace Smx.PDBSharp.Leaves
 		public readonly string Name;
 
 		public LF_MEMBER(Stream stream) : base(stream) {
-			Attributes = new FieldAttributes(Reader.ReadUInt16());
-			FieldTypeIndex = Reader.ReadUInt32();
+			Attributes = new FieldAttributes(ReadUInt16());
+			FieldTypeIndex = ReadUInt32();
 
 			var varLength = ReadVaryingType(out uint dataSize);
 

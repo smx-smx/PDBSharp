@@ -22,13 +22,13 @@ namespace Smx.PDBSharp.Leaves
 		public readonly UInt32 VBaseOffset;
 
 		public LF_METHODLIST(Stream stream) : base(stream) {
-			Attributes = new FieldAttributes(Reader.ReadUInt16());
-			ProcedureTypeRecordIndex = Reader.ReadUInt32();
+			Attributes = new FieldAttributes(ReadUInt16());
+			ProcedureTypeRecordIndex = ReadUInt32();
 
 			switch (Attributes.MethodProperties) {
 				case MethodProperties.Intro:
 				case MethodProperties.PureIntro:
-					VBaseOffset = Reader.ReadUInt32();
+					VBaseOffset = ReadUInt32();
 					break;
 				default:
 					VBaseOffset = 0;

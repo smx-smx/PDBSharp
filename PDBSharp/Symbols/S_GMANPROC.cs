@@ -6,8 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using Smx.PDBSharp.Symbols.Structures;
-using System;
+using Smx.PDBSharp.Symbols.Structures;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,16 +15,11 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
-	[SymbolReader(SymbolType.S_GMANPROC)]
-	public class S_GMANPROC : ReaderBase, ISymbol
-	{
-		public SymbolHeader Header { get; }
-		public readonly ManProcSymInstance Data;
 
+	[SymbolReader(SymbolType.S_GMANPROC)]
+	public class S_GMANPROC : ManProcSym
+	{
 		public S_GMANPROC(Stream stream) : base(stream) {
-			var rdr = new ManProcSymReader(stream);
-			Header = rdr.Header;
-			Data = rdr.Data;
 		}
 	}
 }

@@ -6,45 +6,22 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using Smx.PDBSharp.Leaves;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols.Structures
 {
-	public struct ConstSymInstance
+	public class ConstSym : SymbolDataReader
 	{
-		public CONSTSYM Header;
-		public ILeaf Value;
-		public string Name;
-	}
+		public readonly UInt32 TypeIndex;
+		public readonly UInt16 Value;
+		public readonly string Name;
 
-	[StructLayout(LayoutKind.Sequential, Pack = 1)]
-	public struct CONSTSYM
-	{
-		public UInt32 TypeIndex;
-		public LeafType Value;
-	}
-
-	public class ConstSymReader : SymbolReaderBase
-	{
-		public readonly ConstSymInstance Data;
-		public ConstSymReader(Stream stream) : base(stream) {
-			CONSTSYM header = ReadStruct<CONSTSYM>();
-
-			ILeaf value = ReadNumericLeaf(header.Value);
-			string name = ReadSymbolString(Header);
-
-			Data = new ConstSymInstance() {
-				Header = header,
-				Value = value,
-				Name = name
-			};
+		public ConstSym(Stream stream) : base(stream) {
+			TypeIndex = ReadUInt32();
+			//$TODO: Numeric Leaf
+			Value = ReadUInt16();
+			Name = ReadSymbolString();
 		}
 	}
 }

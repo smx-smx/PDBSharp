@@ -17,15 +17,26 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp.Symbols
 {
 	[SymbolReader(SymbolType.S_SECTION)]
-	public class S_SECTION : ReaderBase, ISymbol
+	public class S_SECTION : SymbolDataReader
 	{
-		public SymbolHeader Header { get; }
-		public SectionSymInstance Data;
+		public readonly UInt16 SectionNumber;
+		/// <summary>
+		/// Alignment of this section (power of 2)
+		/// </summary>
+		public byte Alignment;
+		public UInt32 Rva;
+		public UInt32 Length;
+		public UInt32 Characteristics;
+		public string Name;
 
 		public S_SECTION(Stream stream) : base(stream) {
-			var rdr = new SectionSymReader(stream);
-			Header = rdr.Header;
-			Data = rdr.Data;
+			SectionNumber = ReadUInt16();
+			Alignment = ReadByte();
+			ReadByte(); //reserved
+			Rva = ReadUInt32();
+			Length = ReadUInt32();
+			Characteristics = ReadUInt32();
+			Name = ReadSymbolString();
 		}
 	}
 }

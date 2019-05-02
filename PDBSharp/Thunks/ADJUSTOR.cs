@@ -31,20 +31,18 @@ namespace Smx.PDBSharp.Thunks
 	}
 
 	[ThunkReader(ThunkType.ADJUSTOR)]
-	public class ADJUSTOR : ThunkReaderBase, IThunk
+	public class ADJUSTOR : SymbolDataReader, IThunk
 	{
 		public readonly AdjustorThunkInstance Data;
 
-		public ADJUSTOR(SymbolHeader symHeader, THUNKSYM32 thunk, Stream stream) : base(symHeader, thunk, stream) {
+		public ADJUSTOR(SymbolHeader symHeader, Stream stream) : base(symHeader, stream) {
 			AdjustorThunk header = ReadStruct<AdjustorThunk>();
-			string name = ReadSymbolString(symHeader);
+			string name = ReadSymbolString();
 
 			Data = new AdjustorThunkInstance() {
 				Header = header,
 				Name = name
 			};
 		}
-
-		THUNKSYM32 IThunk.Thunk => this.Thunk;
 	}
 }

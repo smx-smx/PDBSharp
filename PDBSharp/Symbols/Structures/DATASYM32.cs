@@ -6,42 +6,23 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols.Structures
 {
-	[StructLayout(LayoutKind.Sequential, Pack = 1)]
-	public struct DATASYM32
+	public class DataSym32 : SymbolDataReader
 	{
-		public UInt32 Offset;
-		public UInt16 Segment;
-		public UInt32 TypeIndex;
-	}
+		public readonly UInt32 TypeIndex;
+		public readonly UInt32 Offset;
+		public readonly UInt16 Segment;
+		public readonly string Name;
 
-	public struct DataSym32Instance
-	{
-		public DATASYM32 Header;
-		public string Name;
-	}
-
-	public class DataSym32Reader : SymbolReaderBase
-	{
-		public readonly DataSym32Instance Data;
-
-		public DataSym32Reader(Stream stream) : base(stream) {
-			DATASYM32 header = ReadStruct<DATASYM32>();
-			string name = ReadSymbolString(Header);
-
-			Data = new DataSym32Instance() {
-				Header = header,
-				Name = name
-			};
+		public DataSym32(Stream stream) : base(stream) {
+			TypeIndex = ReadUInt32();
+			Offset = ReadUInt32();
+			Segment = ReadUInt16();
+			Name = ReadSymbolString();
 		}
 	}
 }
