@@ -19,76 +19,92 @@ using Smx.PDBSharp.Symbols;
 namespace Smx.PDBSharp
 {
 
-	public struct SectionContribution
+	public interface SectionContribution
 	{
-		public UInt32 DataCrc;
-		public UInt32 RelocCrc;
 	}
 
-	[StructLayout(LayoutKind.Sequential, Pack = 4)]
-	public struct SectionContribution20
+	public class SectionContribution40 : ReaderBase, SectionContribution
 	{
-		public UInt16 SectionIndex;
-		public UInt32 Offset;
-		public UInt32 Size;
-		public UInt16 ModuleIndex;
+		public readonly UInt16 SectionIndex;
+		public readonly UInt32 Offset;
+		public readonly UInt32 Size;
+		public readonly UInt32 Characteristics;
+		public readonly UInt16 ModuleIndex;
+
+		// footer
+		public readonly UInt32 DataCrc;
+		public readonly UInt32 RelocCrc;
+
+		public SectionContribution40(Stream stream) : base(stream) {
+			SectionIndex = ReadUInt16();
+			ReadUInt16();
+
+			Offset = ReadUInt32();
+			Size = ReadUInt32();
+			Characteristics = ReadUInt32();
+
+			ModuleIndex = ReadUInt16();
+			ReadUInt16();
+
+			DataCrc = ReadUInt32();
+			RelocCrc = ReadUInt32();
+		}
 	}
 
-	[StructLayout(LayoutKind.Sequential, Pack = 4)]
-	public struct SectionContribution40
+	public class ModuleInfoFlags
 	{
-		//<-- SC40
-		public UInt16 SectionIndex;
-		//- padding u16
-		public UInt32 Offset;
-		public UInt32 Size;
-		public UInt32 Characteristics;
-		public UInt16 ModuleIndex;
-
-		public SectionContribution Footer;
-	}
-
-	[StructLayout(LayoutKind.Sequential, Pack = 4)]
-	public struct ModuleInfo
-	{
-		public UInt32 Opened;
-		public SectionContribution40 Section;
-		public UInt16 Flags;
-		public Int16 StreamNumber;
-		public UInt32 SymbolsSize;
-		public UInt32 LinesSize;
-		public UInt32 C13LinesSizes;
-		public UInt16 NumFiles;
-		//- padding u16
-		public UInt32 FilenameOffsets;
-
-		public UInt32 SourceFileNameIdx;
-		public UInt32 PDBNameIdx;
-
-		//szModule
-		//szObjFile
-	}
-
-	public class ModuleInfoInstance 
-	{
-		public ModuleInfo Header;
-		public string ModuleName;
-		public string ObjectFileName;
-	}
-
-	/// <summary>
-	/// Represents a module without symbols
-	/// </summary>
-	public class ModuleWrapper : IModule
-	{
-		public readonly ModuleInfoInstance Header;
-
-		public ModuleWrapper(ModuleInfoInstance moduleInfo) {
-			Header = moduleInfo;
+		private readonly UInt16 flags;
+		public ModuleInfoFlags(UInt16 flags) {
+			this.flags = flags;
 		}
 
-		public ModuleInfoInstance Module => Header;
-		public IEnumerable<ISymbol> Symbols => Enumerable.Empty<ISymbol>();
+		public bool Written => (flags & 1) == 1;
+		public bool ECEnabled => ((flags >> 1) & 1) == 1;
+		public byte TSMListIndex => (byte)((flags >> 8) & 8);
+	}
+
+	public class ModuleInfo : ReaderBase
+	{
+		public readonly UInt32 OpenModuleHandle;
+		public readonly SectionContribution SectionContribution;
+		public readonly ModuleInfoFlags Flags;
+		public readonly Int16 StreamNumber;
+		public readonly UInt32 SymbolsSize;
+		public readonly UInt32 LinesSize;
+		public readonly UInt32 C13LinesSize;
+		public readonly UInt16 NumberOfFiles;
+		public readonly UInt32 FileNameOffsets;
+
+		public readonly UInt32 SrcFileNameIndex;
+		public readonly UInt32 PdbFileNameIndex;
+
+		public readonly string ModuleName;
+		public readonly string ObjectFileName;
+
+		public ModuleInfo(Stream stream) : base(stream) {
+			OpenModuleHandle = ReadUInt32();
+			SectionContribution = new SectionContribution40(stream);
+
+			Flags = new ModuleInfoFlags(ReadUInt16());
+			StreamNumber = ReadInt16();
+
+			SymbolsSize = ReadUInt32();
+			LinesSize = ReadUInt32();
+			C13LinesSize = ReadUInt32();
+
+			NumberOfFiles = ReadUInt16();
+			ReadUInt16();
+
+			FileNameOffsets = ReadUInt32();
+
+			//ECInfo start
+			SrcFileNameIndex = ReadUInt32();
+			PdbFileNameIndex = ReadUInt32();
+			//ECInfo end
+
+			ModuleName = ReadCString();
+			ObjectFileName = ReadCString();
+		}
 	}
 
 	public class ModuleListReader : ReaderBase
@@ -96,8 +112,8 @@ namespace Smx.PDBSharp
 		public ModuleListReader(Stream stream) : base(stream) {
 		}
 
-		private IEnumerable<ModuleInfoInstance> modules;
-		public IEnumerable<ModuleInfoInstance> Modules {
+		private IEnumerable<ModuleInfo> modules;
+		public IEnumerable<ModuleInfo> Modules {
 			get {
 				if (modules == null)
 					modules = ReadModules().Cached();
@@ -105,25 +121,17 @@ namespace Smx.PDBSharp
 			}
 		}
 
-		private IEnumerable<ModuleInfoInstance> ReadModules() {
+		private IEnumerable<ModuleInfo> ReadModules() {
 			var remaining = Stream.Length;
 			while (remaining > 0) {
-				ModuleInfo mod = ReadStruct<ModuleInfo>();
-				string moduleName = ReadCString();
-				string objectFileName = ReadCString();
+				long savedPos = Stream.Position;
+				ModuleInfo mod = new ModuleInfo(Stream);
 
-				Trace.WriteLine($"[{moduleName}:{objectFileName}]");
+				long moduleSize = (Stream.Position - savedPos) + AlignStream(sizeof(int));
 
-				yield return new ModuleInfoInstance() {
-					Header = mod,
-					ModuleName = moduleName,
-					ObjectFileName = objectFileName
-				};
+				Trace.WriteLine($"[{mod.ModuleName}:{mod.ObjectFileName}]");
 
-				int moduleSize = Marshal.SizeOf<ModuleInfo>()
-					+ moduleName.Length + 1
-					+ objectFileName.Length + 1
-					+ AlignTo(sizeof(int));
+				yield return mod;
 
 				remaining -= moduleSize;
 			}

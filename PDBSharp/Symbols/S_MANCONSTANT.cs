@@ -20,7 +20,7 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_MANCONSTANT)]
 	public class S_MANCONSTANT : ConstSym
 	{
-		public S_MANCONSTANT(Stream stream) : base(stream) {
+		public S_MANCONSTANT(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			
 		}
 	}

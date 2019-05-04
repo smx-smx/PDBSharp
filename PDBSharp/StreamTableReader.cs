@@ -28,7 +28,7 @@ namespace Smx.PDBSharp
 			streamsData = new byte[NumStreams][];
 		}
 
-		public uint NumStreams;
+		public readonly uint NumStreams;
 		private byte[][] streamsData;
 
 		public UInt32[] ReadStreamSizes() {
@@ -46,7 +46,7 @@ namespace Smx.PDBSharp
 		/// </summary>
 		/// <param name="streamNumber"></param>
 		/// <returns></returns>
-		private IEnumerable<UInt32> GetListPages_Stream(uint streamNumber) {
+		private IEnumerable<UInt32> GetListPages_Stream(int streamNumber) {
 			var streamSize = StreamSizes[streamNumber];
 			
 			// skip the list of streams
@@ -69,7 +69,7 @@ namespace Smx.PDBSharp
 			return pageList;
 		}
 
-		private byte[] ReadStream(uint streamNumber) {
+		private byte[] ReadStream(int streamNumber) {
 			var pages = GetListPages_Stream(streamNumber);
 
 			// for each page in list, read the page data and combine
@@ -79,7 +79,7 @@ namespace Smx.PDBSharp
 				.ToArray();
 		}
 
-		public byte[] GetStream(uint streamNumber) {
+		public byte[] GetStream(int streamNumber) {
 			if(streamsData[streamNumber] != null)
 				return streamsData[streamNumber];
 

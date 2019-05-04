@@ -105,7 +105,7 @@ namespace Smx.PDBSharp
 			return new StructureReader<T>(new BinaryReader(Stream)).Read();
 		}
 
-		public int AlignTo(uint alignment) {
+		public int AlignStream(uint alignment) {
 			long position = (Stream.Position + alignment - 1) & ~(alignment - 1);
 			long skipped = position - Stream.Position;
 			Stream.Position = position;

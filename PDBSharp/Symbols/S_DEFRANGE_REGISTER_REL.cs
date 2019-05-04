@@ -28,8 +28,11 @@ namespace Smx.PDBSharp.Symbols
 
 		public S_DEFRANGE_REGISTER_REL(Stream stream) : base(stream) {
 			BaseRegister = ReadUInt16();
-			SpilledUdtMember = (ReadUInt16() & 1) == 1;
-			ParentVariableOffset = (UInt16)(ReadUInt16() & 0xFFF);
+
+			UInt16 flags = ReadUInt16();
+			SpilledUdtMember = (flags & 1) == 1;
+			ParentVariableOffset = (UInt16)((flags >> 4) & 0xFFF);
+
 			BaseRegisterOffset = ReadUInt32();
 			Range = new CV_LVAR_ADDR_RANGE(stream);
 			Gaps = CV_LVAR_ADDR_GAP.ReadGaps(stream);

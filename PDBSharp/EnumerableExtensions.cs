@@ -20,6 +20,13 @@ namespace Smx.PDBSharp
 				throw new ArgumentNullException("source");
 			return new CachedEnumerable<T>(source);
 		}
+
+		public static IList<T> GetCachedList<T>(this IEnumerable<T> source) {
+			if (!(source is CachedEnumerable<T> cachedEnumerable)) {
+				throw new InvalidCastException("Supplied Enumerable is not a CachedEnumerable");
+			}
+			return cachedEnumerable.ToList();
+		}
 	}
 
 	/// <summary>
@@ -37,6 +44,10 @@ namespace Smx.PDBSharp
 
 		public CachedEnumerable(IEnumerable<T> source) {
 			this.source = source;
+		}
+
+		public List<T> ToList() {
+			return cache;
 		}
 
 		public IEnumerator<T> GetEnumerator() {

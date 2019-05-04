@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp
 {
-	public enum DefaultStreams : uint
+	public enum DefaultStreams : Int16
 	{
 		PDB = 1,
 		TPI = 2,
@@ -35,15 +35,15 @@ namespace Smx.PDBSharp
 		private readonly Stream stream;
 
 		private readonly MSFReader rdr;
-		private readonly StreamTableReader stRdr;
+		public readonly StreamTableReader StreamTable;
 
 		private IEnumerable<IModule> modules;
 		private IEnumerable<ILeaf> types;
 
 		public IEnumerable<byte[]> Streams {
 			get {
-				for(uint i=0; i<stRdr.NumStreams; i++) {
-					yield return stRdr.GetStream(i);
+				for(int i=0; i<StreamTable.NumStreams; i++) {
+					yield return StreamTable.GetStream(i);
 				}
 			}
 		}
@@ -98,20 +98,20 @@ namespace Smx.PDBSharp
 
 			byte[] streamTable = rdr.StreamTable();
 			//streamTable.HexDump();
-			stRdr = new StreamTableReader(rdr, new MemoryStream(streamTable));
+			StreamTable = new StreamTableReader(rdr, new MemoryStream(streamTable));
 		}
 
 		public IEnumerable<IModule> ReadModules() {
-			byte[] dbi = stRdr.GetStream((uint)DefaultStreams.DBI);
+			byte[] dbi = StreamTable.GetStream((int)DefaultStreams.DBI);
 
-			DBIReader dbiRdr = new DBIReader(stRdr, new MemoryStream(dbi));
+			DBIReader dbiRdr = new DBIReader(this, StreamTable, new MemoryStream(dbi));
 			return dbiRdr.ReadModules();
 		}
 
 		public IEnumerable<ILeaf> ReadTypes() {
-			byte[] tpi = stRdr.GetStream((uint)DefaultStreams.TPI);
+			byte[] tpi = StreamTable.GetStream((int)DefaultStreams.TPI);
 
-			TPIReader tpiRdr = new TPIReader(stRdr, new MemoryStream(tpi));
+			TPIReader tpiRdr = new TPIReader(StreamTable, new MemoryStream(tpi));
 			return tpiRdr.ReadTypes();
 		}
 	}

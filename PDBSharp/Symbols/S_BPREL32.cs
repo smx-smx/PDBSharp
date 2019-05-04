@@ -14,6 +14,7 @@ using Smx.PDBSharp.Symbols.Structures;
 
 namespace Smx.PDBSharp.Symbols
 {
+	[SymbolReader(SymbolType.S_BPREL32)]
 	public class S_BPREL32 : SymbolDataReader
 	{
 		public readonly UInt32 Offset;

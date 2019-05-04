@@ -67,7 +67,11 @@ namespace Smx.PDBSharp
 		private DBIHeader hdr;
 		private readonly StreamTableReader stRdr;
 
-		public DBIReader(StreamTableReader stRdr, Stream stream) : base(stream) {
+		private readonly PDBFile pdb;
+
+		public DBIReader(PDBFile pdb, StreamTableReader stRdr, Stream stream) : base(stream) {
+			this.pdb = pdb;
+
 			this.stRdr = stRdr;
 			hdr = ReadStruct<DBIHeader>();
 
@@ -89,15 +93,22 @@ namespace Smx.PDBSharp
 			byte[] moduleList = ReadBytes((int)hdr.ModuleListSize);
 			var modListRdr = new ModuleListReader(new MemoryStream(moduleList));
 
-			IEnumerable<ModuleInfoInstance> moduleInfoList = modListRdr.Modules;
-			foreach (ModuleInfoInstance mod in moduleInfoList) {
-				int streamNumber = mod.Header.StreamNumber;
+			IEnumerable<ModuleInfo> moduleInfoList = modListRdr.Modules;
+			foreach (ModuleInfo mod in moduleInfoList) {
+				int streamNumber = mod.StreamNumber;
 				if (streamNumber < 0) {
-					yield return new ModuleWrapper(mod);
 					continue;
 				}
-				byte[] modStream = stRdr.GetStream((uint)streamNumber);
-				yield return new ModuleReader(mod, new MemoryStream(modStream));
+				byte[] modData = stRdr.GetStream(streamNumber);
+
+				MemoryStream modStream = new MemoryStream(modData);
+				UInt32 signature = new BinaryReader(modStream).ReadUInt32();
+				modStream.Position = 0;
+				if (Enum.IsDefined(typeof(CodeViewSignature), signature)) {
+					yield return new CodeViewModuleReader(pdb, mod, modStream);
+				} else {
+					yield return new SourceFileModuleReader(pdb, mod, modStream);
+				}
 			}
 		}
 

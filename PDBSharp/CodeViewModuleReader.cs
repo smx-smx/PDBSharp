@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp
 {
-	public enum ModuleSignature  : UInt32
+	public enum CodeViewSignature  : UInt32
 	{
 		C6 = 0,
 		C7 = 1,
@@ -24,9 +24,9 @@ namespace Smx.PDBSharp
 		C13 = 4
 	}
 
-	public class ModuleReader : ReaderBase, IModule
+	public class CodeViewModuleReader : ReaderBase, IModule
 	{
-		public ModuleInfoInstance Module { get; }
+		public ModuleInfo Module { get; }
 
 		public IEnumerable<ISymbol> Symbols {
 			get {
@@ -34,20 +34,23 @@ namespace Smx.PDBSharp
 			}
 		}
 
-		public ModuleReader(ModuleInfoInstance modInfo, Stream stream) : base(stream) {
+		private readonly PDBFile pdb;
+
+		public CodeViewModuleReader(PDBFile pdb, ModuleInfo modInfo, Stream stream) : base(stream) {
+			this.pdb = pdb;
 			this.Module = modInfo;
 
-			ModuleSignature signature = ReadEnum<ModuleSignature>();
-			if(signature != ModuleSignature.C13){
+			CodeViewSignature signature = ReadEnum<CodeViewSignature>();
+			if(signature != CodeViewSignature.C13){
 				throw new NotImplementedException($"CodeView {signature} not supported yet");
 			}
 		}
 
 		private IEnumerable<ISymbol> ReadSymbols() {
-			int symbolsSize = (int)Module.Header.SymbolsSize - sizeof(ModuleSignature); //exclude signature
+			int symbolsSize = (int)Module.SymbolsSize - sizeof(CodeViewSignature); //exclude signature
 			byte[] symbolsData = ReadBytes(symbolsSize);
 
-			var rdr = new SymbolsReader(new MemoryStream(symbolsData));
+			var rdr = new SymbolsReader(pdb, new MemoryStream(symbolsData));
 			return rdr.ReadSymbols();
 		}
 	}

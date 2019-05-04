@@ -14,7 +14,7 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_CONSTANT)]
 	public class S_CONSTANT : ConstSym
 	{
-		public S_CONSTANT(Stream stream) : base(stream) {
+		public S_CONSTANT(PDBFile pdb, Stream stream) : base(pdb, stream) {
 		}
 	}
 }

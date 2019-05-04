@@ -17,8 +17,9 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public readonly UInt16 Value;
 		public readonly string Name;
 
-		public ConstSym(Stream stream) : base(stream) {
+		public ConstSym(PDBFile pdb, Stream stream) : base(stream) {
 			TypeIndex = ReadUInt32();
+
 			//$TODO: Numeric Leaf
 			Value = ReadUInt16();
 			Name = ReadSymbolString();

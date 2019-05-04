@@ -25,19 +25,40 @@ namespace Smx.PDBSharp
 		private static readonly Dictionary<SymbolType, ConstructorInfo> symbolReaders;
 
 		static SymbolsReader() {
-			symbolReaders = Assembly
+			var readers = Assembly
 				.GetExecutingAssembly()
 				.GetTypes()
-				.Where(t => t.GetCustomAttribute<SymbolReaderAttribute>() != null)
+				.Where(t => t.GetCustomAttribute<SymbolReaderAttribute>() != null);
+
+			var withStream = readers
 				.ToDictionary(
 					// key
 					t => t.GetCustomAttribute<SymbolReaderAttribute>().Type,
 					// value
-					t => t.GetConstructor(new Type[] { typeof(Stream) }
-				));
+					t => t.GetConstructor(new Type[] {
+						typeof(Stream)
+					}
+				)).Where(p => p.Value != null);
+
+			var withContext = readers
+				.ToDictionary(
+					// key
+					t => t.GetCustomAttribute<SymbolReaderAttribute>().Type,
+					// value
+					t => t.GetConstructor(new Type[] {
+						typeof(PDBFile),
+						typeof(Stream)
+					}
+				)).Where(p => p.Value != null);
+
+			symbolReaders = withStream.Concat(withContext)
+				.ToDictionary(i => i.Key, i => i.Value);
 		}
 
-		public SymbolsReader(Stream stream) : base(stream) {
+		private readonly PDBFile pdb;
+
+		public SymbolsReader(PDBFile pdb, Stream stream) : base(stream) {
+			this.pdb = pdb;
 		}
 
 		public IEnumerable<ISymbol> ReadSymbols() {
@@ -62,7 +83,19 @@ namespace Smx.PDBSharp
 				symDataStream.Position = 0;
 
 				if (symbolReaders.ContainsKey(symbolType)) {
-					yield return (ISymbol)symbolReaders[symbolType].Invoke(new object[] { symDataStream });
+					ConstructorInfo ctor = symbolReaders[symbolType];
+					object[] args;
+					switch (ctor.GetParameters().Length) {
+						case 1:
+							args = new object[] { symDataStream };
+							break;
+						case 2:
+							args = new object[] { pdb, symDataStream };
+							break;
+						default:
+							throw new NotSupportedException();
+					}
+					yield return (ISymbol)symbolReaders[symbolType].Invoke(args);
 				} else {
 					throw new NotImplementedException();
 				}

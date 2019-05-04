@@ -15,7 +15,7 @@ namespace Smx.PDBSharp
 {
 	public interface IModule
 	{
-		ModuleInfoInstance Module { get; }
+		ModuleInfo Module { get; }
 		IEnumerable<ISymbol> Symbols { get; }
 	}
 }
