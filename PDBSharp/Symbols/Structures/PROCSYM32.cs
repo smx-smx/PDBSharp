@@ -40,7 +40,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 			TypeIndex = ReadUInt32();
 			Offset = ReadUInt32();
 			Segment = ReadUInt16();
-			Flags = ReadEnum<CV_PROCFLAGS>();
+			Flags = ReadFlagsEnum<CV_PROCFLAGS>();
 			Name = ReadSymbolString();
 		}
 	}

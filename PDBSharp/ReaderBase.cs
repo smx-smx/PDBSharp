@@ -49,9 +49,8 @@ namespace Smx.PDBSharp
 		public float ReadSingle() => Reader.ReadSingle();
 		public double ReadDouble() => Reader.ReadDouble();
 
-		public T ReadEnum<T>() where T : struct, IConvertible {
+		public T ReadFlagsEnum<T>() where T : struct, IConvertible {
 			Type enumType = typeof(T);
-
 			int enumSize = Marshal.SizeOf(Enum.GetUnderlyingType(enumType));
 
 			object value;
@@ -72,10 +71,15 @@ namespace Smx.PDBSharp
 					throw new NotImplementedException();
 			}
 
-			if (enumType.GetCustomAttribute<FlagsAttribute>() == null) {
-				if (!Enum.IsDefined(enumType, value)) {
-					throw new InvalidDataException($"Value 0x{value:X} not defined in enum {enumType.FullName}");
-				}
+			return (T)value;
+		}
+
+		public T ReadEnum<T>() where T : struct, IConvertible {
+			T value = ReadFlagsEnum<T>();
+
+			Type enumType = typeof(T);
+			if (!Enum.IsDefined(enumType, value)) {
+				throw new InvalidDataException($"Value 0x{value:X} not defined in enum {enumType.FullName}");
 			}
 
 			return (T)value;

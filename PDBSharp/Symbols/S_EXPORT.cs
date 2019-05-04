@@ -25,7 +25,7 @@ namespace Smx.PDBSharp.Symbols
 
 		public S_EXPORT(Stream stream) : base(stream) {
 			Ordinal = ReadUInt16();
-			Flags = ReadEnum<ExportSymFlags>();
+			Flags = ReadFlagsEnum<ExportSymFlags>();
 			Name = ReadSymbolString();
 		}
 	}

@@ -21,7 +21,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public CV_LVAR_ATTR(Stream stream) : base(stream) {
 			Offset = ReadUInt32();
 			Segment = ReadUInt16();
-			Flags = ReadEnum<CV_LVARFLAGS>();
+			Flags = ReadFlagsEnum<CV_LVARFLAGS>();
 		}
 	}
 }

@@ -27,7 +27,7 @@ namespace Smx.PDBSharp.Symbols
 
 		public S_DEFRANGE_SUBFIELD_REGISTER(Stream stream) : base(stream) {
 			Register = ReadUInt16();
-			Attributes = ReadEnum<RangeAttributes>();
+			Attributes = ReadFlagsEnum<RangeAttributes>();
 			ParentVariableOffset = ReadUInt32() & 0xFFF; //CV_OFFSET_PARENT_LENGTH_LIMIT
 			Range = new CV_LVAR_ADDR_RANGE(stream);
 			Gaps = CV_LVAR_ADDR_GAP.ReadGaps(stream);

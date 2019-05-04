@@ -25,7 +25,7 @@ namespace Smx.PDBSharp.Symbols
 
 		public S_LOCAL(Stream stream) : base(stream) {
 			TypeIndex = ReadUInt32();
-			Flags = ReadEnum<CV_LVARFLAGS>();
+			Flags = ReadFlagsEnum<CV_LVARFLAGS>();
 			Name = ReadSymbolString();
 		}
 	}

@@ -31,7 +31,7 @@ namespace Smx.PDBSharp.Leaves
 
 		public LF_MODIFIER(Stream stream) : base(stream) {
 			ModifiedType = ReadUInt32();
-			Flags = ReadEnum<LFModifierFlags>();
+			Flags = ReadFlagsEnum<LFModifierFlags>();
 		}
 	}
 }

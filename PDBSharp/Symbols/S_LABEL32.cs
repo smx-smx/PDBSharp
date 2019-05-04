@@ -27,7 +27,7 @@ namespace Smx.PDBSharp.Symbols
 		public S_LABEL32(Stream stream) : base(stream) {
 			Offset = ReadUInt32();
 			Segment = ReadUInt16();
-			Flags = ReadEnum<CV_PROCFLAGS>();
+			Flags = ReadFlagsEnum<CV_PROCFLAGS>();
 			Name = ReadSymbolString();
 
 		}

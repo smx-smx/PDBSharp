@@ -28,7 +28,7 @@ namespace Smx.PDBSharp.Leaves
 
 		public LF_CLASS(Stream stream) : base(stream) {
 			NumberOfElements = ReadUInt16();
-			FieldProperties = ReadEnum<TypeProperties>();
+			FieldProperties = ReadFlagsEnum<TypeProperties>();
 			FieldIndex = ReadUInt32();
 			DerivedTypeIndex = ReadUInt32();
 			VShapeTableTypeIndex = ReadUInt32();

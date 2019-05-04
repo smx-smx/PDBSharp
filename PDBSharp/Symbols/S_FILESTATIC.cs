@@ -27,7 +27,7 @@ namespace Smx.PDBSharp.Symbols
 		public S_FILESTATIC(Stream stream) : base(stream) {
 			TypeIndex = ReadUInt32();
 			ModuleFilenameOffset = ReadUInt32();
-			Flags = ReadEnum<CV_LVARFLAGS>();
+			Flags = ReadFlagsEnum<CV_LVARFLAGS>();
 			Name = ReadSymbolString();
 		}
 	}

@@ -27,7 +27,7 @@ namespace Smx.PDBSharp.Symbols
 
 		public S_DEFRANGE_REGISTER(Stream stream) : base(stream) {
 			Register = ReadUInt16();
-			Attributes = ReadEnum<RangeAttributes>();
+			Attributes = ReadFlagsEnum<RangeAttributes>();
 			Range = new CV_LVAR_ADDR_RANGE(stream);
 			Gaps = CV_LVAR_ADDR_GAP.ReadGaps(stream);
 		}

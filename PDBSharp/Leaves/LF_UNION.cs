@@ -24,7 +24,7 @@ namespace Smx.PDBSharp.Leaves
 
 		public LF_UNION(Stream stream) : base(stream) {
 			NumberOfElements = ReadUInt16();
-			Properties = ReadEnum<TypeProperties>();
+			Properties = ReadFlagsEnum<TypeProperties>();
 			FieldTypeIndex = ReadUInt32();
 
 			var varyingData = ReadVaryingType(out uint dataSize);

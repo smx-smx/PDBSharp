@@ -18,7 +18,7 @@ namespace Smx.PDBSharp.Leaves
 	public class LF_ENUM : TypeDataReader
 	{
 		public readonly UInt16 NumElements;
-		public readonly TypeProperties Property;
+		public readonly TypeProperties Properties;
 
 		public readonly UInt32 UnderlyingTypeIndex;
 		public readonly UInt32 FieldTypeIndex;
@@ -27,7 +27,7 @@ namespace Smx.PDBSharp.Leaves
 
 		public LF_ENUM(Stream stream) : base(stream) {
 			NumElements = ReadUInt16();
-			Property = ReadEnum<TypeProperties>();
+			Properties = ReadFlagsEnum<TypeProperties>();
 			UnderlyingTypeIndex = ReadUInt32();
 			FieldTypeIndex = ReadUInt32();
 			FieldName = ReadCString();

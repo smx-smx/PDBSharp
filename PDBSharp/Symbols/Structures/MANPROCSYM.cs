@@ -46,7 +46,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 			ComToken = ReadUInt32();
 			Offset = ReadUInt32();
 			Segment = ReadUInt16();
-			Flags = ReadEnum<CV_PROCFLAGS>();
+			Flags = ReadFlagsEnum<CV_PROCFLAGS>();
 			ReturnRegister = ReadUInt16();
 			Name = ReadSymbolString();
 		}
