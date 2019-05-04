@@ -38,12 +38,15 @@ namespace Smx.PDBSharp.Dumper
 			AppendIndent(sb, depth);
 
 			FieldInfo[] fields = t.GetFields(BindingFlags.Instance | BindingFlags.Public);
+			PropertyInfo[] props = t.GetProperties(BindingFlags.Instance | BindingFlags.Public);
 
 			if (obj == null) {
 				sb.Append("null");
 			} else if (t.IsPrimitive) {
 				sb.Append(obj.ToString());
-				sb.AppendFormat(" (0x{0:X})", obj);
+				if(t != typeof(bool)) {
+					sb.AppendFormat(" (0x{0:X})", obj);
+				}
 			} else if (t == typeof(string)) {
 				sb.Append($"\"{obj.ToString()}\"");
 			} else if (typeof(IEnumerable<object>).IsAssignableFrom(t)) {
@@ -63,6 +66,7 @@ namespace Smx.PDBSharp.Dumper
 				}
 			} else if (t.IsEnum) {
 				FlagsAttribute flags = t.GetCustomAttribute<FlagsAttribute>();
+				AppendIndent(sb, depth + 2);
 				if (flags != null) {
 					sb.Append("[FLAGS]: <");
 					int numFlags = 0;
@@ -79,13 +83,23 @@ namespace Smx.PDBSharp.Dumper
 				} else {
 					sb.Append(Enum.GetName(t, obj));
 				}
-			} else if(fields.Length > 0) {
+			} else if(fields.Length > 0 || props.Length > 0) {
 				foreach (FieldInfo field in fields) {
 					AppendIndent(sb, depth + 1);
 					sb.Append($"[{field.Name}] => ");
 
 					object value = field.GetValue(obj);
 					if (field.FieldType != t) {
+						sb.Append(new ObjectDumper(value, depth).ToString());
+					}
+				}
+
+				foreach(PropertyInfo prop in props) {
+					AppendIndent(sb, depth + 1);
+					sb.Append($"[{prop.Name}] => ");
+
+					object value = prop.GetValue(obj);
+					if(prop.PropertyType != t) {
 						sb.Append(new ObjectDumper(value, depth).ToString());
 					}
 				}
