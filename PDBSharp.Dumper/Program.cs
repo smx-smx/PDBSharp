@@ -26,7 +26,7 @@ namespace Smx.PDBSharp.Dumper
 			Console.WriteLine();
 
 			SymbolHeader symHdr;
-			if(symbol == null) {
+			if (symbol == null) {
 				symHdr = new SymbolHeaderReader(new MemoryStream(rawData)).Data;
 			} else {
 				symHdr = symbol.Header;
@@ -48,45 +48,76 @@ namespace Smx.PDBSharp.Dumper
 			}
 		}
 
+		static bool OptDumpStreams = false;
+		static bool OptVerbose = false;
+		static string PdbFilePath = null;
+
+		private static void ParseArguments(string[] args) {
+			for (int i = 0; i < args.Length; i++) {
+				string arg = args[i];
+				switch (arg) {
+					case "-dump":
+						OptDumpStreams = true;
+						break;
+					case "-verbose":
+						OptVerbose = true;
+						break;
+					default:
+						PdbFilePath = arg;
+						return;
+				}
+			}
+		}
+
 		static void Main(string[] args) {
-			if (args.Length < 1) {
-				Console.Error.WriteLine("Usage: [file.pdb]");
+			ParseArguments(args);
+
+			if (PdbFilePath == null) {
+				Console.Error.WriteLine("Usage: [-dump][-verbose] <file.pdb>");
 				Environment.Exit(1);
 			}
 
-			var file = new FileStream(args[0], FileMode.Open, FileAccess.Read);
+			var file = new FileStream(PdbFilePath, FileMode.Open, FileAccess.Read);
 			PDBFile pdb = new PDBFile(file);
 
-#if DEBUG
-			SymbolDataReader.OnDataRead += OnSymbolData;
-#endif
 
-#if FALSE
-			int i = 0;
-			foreach (byte[] stream in pdb.Streams){
-				File.WriteAllBytes($"stream{i}.bin", stream);
-				i++;
+			if (OptDumpStreams) {
+				DirectoryInfo dumpDir = Directory.CreateDirectory(Path.GetFileNameWithoutExtension(PdbFilePath));
+				for(int i=1; i<pdb.StreamTable.NumStreams; i++) {
+					string dumpPath = Path.Combine(dumpDir.ToString(), $"stream{i}.bin");
+
+					byte[] stream = pdb.StreamTable.GetStream(i);
+					File.WriteAllBytes(dumpPath, stream);
+				}
 			}
-#endif
 
-			foreach(var type in pdb.Types) {
+			pdb.Types.ForEach(type => {
+				if (OptVerbose) {
+					ObjectDumper.Dump(type);
+				}
+
 				switch (type) {
 					case LF_FIELDLIST flst:
-						flst.Fields.ForEach(leaf => ObjectDumper.Dump(leaf));
+						flst.Fields.ForEach(leaf => {
+							if (OptVerbose) {
+								ObjectDumper.Dump(leaf);
+							}
+						});
 						break;
 				}
-				ObjectDumper.Dump(type);
-			}
-			return;
+			});
 
-			// trigger enumeration
-			foreach (var mod in pdb.Modules) {
+			pdb.Modules.ForEach(mod => {
 				Console.WriteLine($"[MODULE => {mod.Module.ModuleName}]");
 				Console.WriteLine($"[OBJECT => {mod.Module.ObjectFileName}]");
 				Console.WriteLine();
-				foreach (var sym in mod.Symbols) {
-				}
-			}
+
+				mod.Symbols.ForEach(sym => {
+					if (OptVerbose) {
+						ObjectDumper.Dump(sym);
+					}
+				});
+			});
 
 			Console.WriteLine("Press Enter to continue...");
 			Console.ReadLine();
