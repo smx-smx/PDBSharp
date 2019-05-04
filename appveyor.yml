@@ -1,0 +1,17 @@
+version: 0.1.{build}
+
+image: Visual Studio 2017
+platform: x64
+
+configuration: Debug
+
+before_build:
+- nuget restore PDBSharp.sln
+
+# If you want more build spew, change the verbosity below
+build:
+  project: PDBSharp.sln
+  verbosity: minimal
+
+environment:
+  artifacts_dir: bin
