@@ -24,7 +24,7 @@ namespace Smx.PDBSharp.Leaves
 
 		public readonly VTableShapeDescriptor[] Descriptors;
 
-		public LF_VTSHAPE(Stream stream) : base(stream) {
+		public LF_VTSHAPE(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			NumberOfEntries = ReadUInt16();
 
 			//round up 4 bits (desctiptor size)

@@ -21,7 +21,7 @@ namespace Smx.PDBSharp.Symbols
 	{
 		public readonly UInt32 Id;
 
-		public S_BUILDINFO(Stream stream) : base(stream) {
+		public S_BUILDINFO(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Id = ReadUInt32();
 		}
 	}

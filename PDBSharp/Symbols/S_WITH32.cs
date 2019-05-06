@@ -16,7 +16,7 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_WITH32)]
 	public class S_WITH32 : SymbolDataReader
 	{
-		public S_WITH32(Stream stream) : base(stream) {
+		public S_WITH32(PDBFile pdb, Stream stream) : base(pdb, stream) {
 		}
 	}
 }

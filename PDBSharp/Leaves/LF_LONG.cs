@@ -21,7 +21,7 @@ namespace Smx.PDBSharp.Leaves
 	{
 		public readonly int Value;
 
-		public LF_LONG(Stream stream) : base(stream) {
+		public LF_LONG(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Value = ReadInt32();
 		}
 	}

@@ -17,14 +17,14 @@ namespace Smx.PDBSharp.Leaves
 	public class LF_VBCLASS : TypeDataReader
 	{
 		public readonly FieldAttributes Attributes;
-		public readonly UInt32 VirtualBaseClassTypeIndex;
-		public readonly UInt32 VirtualBasePointerTypeIndex;
+		public readonly Lazy<ILeaf> VirtualBaseClassType;
+		public readonly Lazy<ILeaf> VirtualBasePointerType;
 
 
-		public LF_VBCLASS(Stream stream) : base(stream) {
+		public LF_VBCLASS(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Attributes = new FieldAttributes(ReadUInt16());
-			VirtualBaseClassTypeIndex = ReadUInt32();
-			VirtualBasePointerTypeIndex = ReadUInt32();
+			VirtualBaseClassType = ReadIndexedTypeLazy();
+			VirtualBasePointerType = ReadIndexedTypeLazy();
 
 
 			//virtual base pointer offset from address point
@@ -37,7 +37,7 @@ namespace Smx.PDBSharp.Leaves
 	[LeafReader(LeafType.LF_IVBCLASS)]
 	public class LF_IVBCLASS : LF_VBCLASS
 	{
-		public LF_IVBCLASS(Stream stream) : base(stream) {
+		public LF_IVBCLASS(PDBFile pdb, Stream stream) : base(pdb, stream) {
 		}
 	}
 }

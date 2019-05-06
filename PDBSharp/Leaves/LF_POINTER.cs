@@ -32,11 +32,11 @@ namespace Smx.PDBSharp.Leaves
 	[LeafReader(LeafType.LF_POINTER)]
 	public class LF_POINTER : TypeDataReader
 	{
-		public readonly UInt32 UnderlyingTypeIndex;
+		public readonly Lazy<ILeaf> UnderlyingType;
 		public readonly PointerAttributes Attributes;
 
-		public LF_POINTER(Stream stream) : base(stream) {
-			UnderlyingTypeIndex = ReadUInt32();
+		public LF_POINTER(PDBFile pdb, Stream stream) : base(pdb, stream) {
+			UnderlyingType = ReadIndexedTypeLazy();
 			Attributes = new PointerAttributes(ReadUInt32());
 		}
 	}

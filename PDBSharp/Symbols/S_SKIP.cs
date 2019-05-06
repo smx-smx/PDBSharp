@@ -16,7 +16,7 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_SKIP)]
 	public class S_SKIP : SymbolDataReader
 	{
-		public S_SKIP(Stream stream) : base(stream) {
+		public S_SKIP(PDBFile pdb, Stream stream) : base(pdb, stream) {
 		}
 	}
 }

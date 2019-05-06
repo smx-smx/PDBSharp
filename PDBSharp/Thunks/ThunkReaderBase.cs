@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Thunks
 {
-	public class ThunkReaderBase : SymbolReaderBase
+	public class ThunkReaderBase : ReaderBase
 	{
 		public readonly SymbolHeader Header;
 

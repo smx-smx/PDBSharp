@@ -19,7 +19,7 @@ namespace Smx.PDBSharp.Leaves
 	public class LF_REAL32 : TypeDataReader
 	{
 		public readonly float Value;
-		public LF_REAL32(Stream stream) : base(stream) {
+		public LF_REAL32(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Value = ReadSingle();
 		}		
 	}

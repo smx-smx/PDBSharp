@@ -27,7 +27,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt16 ExceptionHandlerSection;
 		public readonly FrameProcSymFlags Flags;
 
-		public S_FRAMEPROC(Stream stream) : base(stream) {
+		public S_FRAMEPROC(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			FrameSize = ReadUInt32();
 			PaddingSize = ReadUInt32();
 			PaddingOffset = ReadUInt32();

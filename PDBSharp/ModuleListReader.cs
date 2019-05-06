@@ -128,9 +128,6 @@ namespace Smx.PDBSharp
 				ModuleInfo mod = new ModuleInfo(Stream);
 
 				long moduleSize = (Stream.Position - savedPos) + AlignStream(sizeof(int));
-
-				Trace.WriteLine($"[{mod.ModuleName}:{mod.ObjectFileName}]");
-
 				yield return mod;
 
 				remaining -= moduleSize;

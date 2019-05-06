@@ -25,7 +25,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt16 SymbolSegment;
 		public readonly string Name;
 
-		public S_COFFGROUP(Stream stream) : base(stream) {
+		public S_COFFGROUP(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Size = ReadUInt32();
 			Characteristics = ReadUInt32();
 			SymbolOffset = ReadUInt32();

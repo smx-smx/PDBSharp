@@ -48,6 +48,15 @@ namespace Smx.PDBSharp.Leaves
 		/// <summary>
 		/// scoped definition
 		/// </summary>
-		IsScoped =  1 << 9
+		IsScoped =  1 << 9,
+		/// <summary>
+		/// true if there is a decorated name following the regular name
+		/// </summary>
+		HasUniqueName = 1 << 10,
+		/// <summary>
+		/// true if class cannot be used as a base class
+		/// </summary>
+		IsSealed = 1 << 11,
+		//$TODO: hfa, intrinsic, mocom
 	}
 }

@@ -19,7 +19,7 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_UDT)]
 	public class S_UDT : UdtSym
 	{
-		public S_UDT(Stream stream) : base(stream) {
+		public S_UDT(PDBFile pdb, Stream stream) : base(pdb, stream) {
 		}
 	}
 }

@@ -97,7 +97,7 @@ namespace Smx.PDBSharp
 					}
 					yield return (ISymbol)symbolReaders[symbolType].Invoke(args);
 				} else {
-					throw new NotImplementedException();
+					throw new NotImplementedException($"Symbol type {symbolType} not supported yet");
 				}
 
 				if (symDataStream.Position != symDataStream.Length) {

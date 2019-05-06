@@ -64,6 +64,9 @@ namespace Smx.PDBSharp
 			}
 		}
 
+		public DBIReader DBI { get; private set; }
+		public TPIReader TPI { get; private set; }
+
 		public readonly PDBType FileType;
 
 		private PDBType DetectPdbType() {
@@ -102,17 +105,25 @@ namespace Smx.PDBSharp
 		}
 
 		public IEnumerable<IModule> ReadModules() {
-			byte[] dbi = StreamTable.GetStream((int)DefaultStreams.DBI);
-
-			DBIReader dbiRdr = new DBIReader(this, StreamTable, new MemoryStream(dbi));
-			return dbiRdr.ReadModules();
+			if (DBI == null) {
+				byte[] dbi = StreamTable.GetStream((int)DefaultStreams.DBI);
+				if (dbi.Length == 0) {
+					return Enumerable.Empty<IModule>();
+				}
+				DBI = new DBIReader(this, StreamTable, new MemoryStream(dbi));
+			}
+			return DBI.ReadModules();
 		}
 
 		public IEnumerable<ILeaf> ReadTypes() {
-			byte[] tpi = StreamTable.GetStream((int)DefaultStreams.TPI);
-
-			TPIReader tpiRdr = new TPIReader(StreamTable, new MemoryStream(tpi));
-			return tpiRdr.ReadTypes();
+			if (TPI == null) {
+				byte[] tpi = StreamTable.GetStream((int)DefaultStreams.TPI);
+				if(tpi.Length == 0) {
+					return Enumerable.Empty<ILeaf>();
+				}
+				TPI = new TPIReader(this, StreamTable, new MemoryStream(tpi));
+			}
+			return TPI.ReadTypes();
 		}
 	}
 }

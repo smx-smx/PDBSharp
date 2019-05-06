@@ -17,13 +17,13 @@ namespace Smx.PDBSharp.Leaves
 	public class LF_MEMBER : TypeDataReader
 	{
 		public readonly FieldAttributes Attributes;
-		public readonly UInt32 FieldTypeIndex;
+		public readonly Lazy<ILeaf> FieldType;
 
 		public readonly string Name;
 
-		public LF_MEMBER(Stream stream) : base(stream) {
+		public LF_MEMBER(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Attributes = new FieldAttributes(ReadUInt16());
-			FieldTypeIndex = ReadUInt32();
+			FieldType = ReadIndexedTypeLazy();
 
 			var varLength = ReadVaryingType(out uint dataSize);
 

@@ -6,6 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
+using Smx.PDBSharp.Leaves;
 using System;
 using System.IO;
 
@@ -13,15 +14,14 @@ namespace Smx.PDBSharp.Symbols.Structures
 {
 	public class ConstSym : SymbolDataReader
 	{
-		public readonly UInt32 TypeIndex;
-		public readonly UInt16 Value;
+		public readonly Lazy<ILeaf> Type;
+		public readonly ILeaf Value;
 		public readonly string Name;
 
-		public ConstSym(PDBFile pdb, Stream stream) : base(stream) {
-			TypeIndex = ReadUInt32();
+		public ConstSym(PDBFile pdb, Stream stream) : base(pdb, stream) {
+			Type = ReadIndexedTypeLazy();
 
-			//$TODO: Numeric Leaf
-			Value = ReadUInt16();
+			Value = ReadVaryingType(out uint dataSize);
 			Name = ReadSymbolString();
 		}
 	}

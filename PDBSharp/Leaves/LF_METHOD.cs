@@ -17,13 +17,13 @@ namespace Smx.PDBSharp.Leaves
 	public class LF_METHOD : TypeDataReader
 	{
 		public readonly UInt16 NumberOfOccurrences;
-		public readonly UInt32 MethodListRecordIndex;
+		public readonly Lazy<ILeaf> MethodListRecord;
 
 		public readonly string Name;
 
-		public LF_METHOD(Stream stream) : base(stream) {
+		public LF_METHOD(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			NumberOfOccurrences = ReadUInt16();
-			MethodListRecordIndex = ReadUInt32();
+			MethodListRecord = ReadIndexedTypeLazy();
 			Name = ReadCString();
 		}
 	}

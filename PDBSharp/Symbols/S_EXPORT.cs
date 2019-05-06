@@ -23,7 +23,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly ExportSymFlags Flags;
 		public readonly string Name;
 
-		public S_EXPORT(Stream stream) : base(stream) {
+		public S_EXPORT(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Ordinal = ReadUInt16();
 			Flags = ReadFlagsEnum<ExportSymFlags>();
 			Name = ReadSymbolString();

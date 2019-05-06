@@ -21,7 +21,7 @@ namespace Smx.PDBSharp.Leaves
 	{
 		public readonly byte Value;
 
-		public LF_CHAR(Stream stream) : base(stream) {
+		public LF_CHAR(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Value = ReadByte();
 		}
 	}

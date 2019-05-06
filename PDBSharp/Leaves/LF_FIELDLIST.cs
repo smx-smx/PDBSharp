@@ -21,14 +21,14 @@ namespace Smx.PDBSharp.Leaves
 
 		private IEnumerable<ILeaf> ReadFields(Stream dataStream) {
 			while(dataStream.Position < dataStream.Length) {
-				ILeaf leaf = new TypeDataReader(dataStream).ReadType(hasSize: false);
+				ILeaf leaf = new TypeDataReader(this.PDB, dataStream).ReadType(hasSize: false);
 				if (leaf == null)
 					yield break;
 				yield return leaf;
 			}
 		}
 
-		public LF_FIELDLIST(Stream stream) : base(stream) {
+		public LF_FIELDLIST(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Fields = ReadFields(stream).Cached();
 		}
 	}

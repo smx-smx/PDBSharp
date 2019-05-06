@@ -33,21 +33,54 @@ namespace Smx.PDBSharp
 			{ LeafType.LF_REAL128, 16 }
 		});
 
-		private static readonly Dictionary<LeafType, ConstructorInfo> parsers;
+		private static readonly Dictionary<LeafType, ConstructorInfo> readers;
 		static TypeDataReader() {
-			parsers = Assembly
+
+			var allReaders = Assembly
 				.GetExecutingAssembly()
 				.GetTypes()
-				.Where(t => t.GetCustomAttribute<LeafReaderAttribute>() != null)
-				.ToDictionary(
+				.Where(t => t.GetCustomAttribute<LeafReaderAttribute>() != null);
+
+			var withStream = allReaders.ToDictionary(
 					// key
 					t => t.GetCustomAttribute<LeafReaderAttribute>().Type,
 					// value
 					t => t.GetConstructor(new Type[] { typeof(Stream) }
-				));
+				)).Where(p => p.Value != null);
+
+			var withContext = allReaders.ToDictionary(
+					// key
+					t => t.GetCustomAttribute<LeafReaderAttribute>().Type,
+					// value
+					t => t.GetConstructor(new Type[] { typeof(PDBFile), typeof(Stream) }
+				)).Where(p => p.Value != null);
+
+			readers = withStream.Concat(withContext)
+				.ToDictionary(i => i.Key, i => i.Value);
+
 		}
 
-		public TypeDataReader(Stream stream) : base(stream) {
+		protected readonly PDBFile PDB;
+		public TypeDataReader(PDBFile pdb, Stream stream) : base(stream) {
+			this.PDB = pdb;
+		}
+
+		public Lazy<ILeaf> ReadIndexedTypeLazy() {
+			UInt32 TI = ReadUInt32();
+			return new Lazy<ILeaf>(() => {
+				if (TI == 0)
+					return null;
+				return PDB.TPI.GetTypeByIndex(TI);
+			});
+		}
+
+		public Lazy<ILeaf> ReadIndexedType16Lazy() {
+			UInt16 TI = ReadUInt16();
+			return new Lazy<ILeaf>(() => {
+				if (TI == 0)
+					return null;
+				return PDB.TPI.GetTypeByIndex(TI); //WidenTI
+			});
 		}
 
 		public LeafType LeafType { get; private set; }
@@ -75,7 +108,7 @@ namespace Smx.PDBSharp
 			dataSize = PrimitiveDataSizes[leafType];
 
 			Stream.Seek(-2, SeekOrigin.Current);
-			ILeaf leaf = new TypeDataReader(Stream).ReadType(hasSize: false);
+			ILeaf leaf = new TypeDataReader(this.PDB, Stream).ReadType(hasSize: false);
 			return leaf;
 
 		}
@@ -101,8 +134,20 @@ namespace Smx.PDBSharp
 			LeafType = ReadEnum<LeafType>();
 
 			ILeaf typeSym = null;
-			if (parsers.ContainsKey(LeafType)) {
-				typeSym = (ILeaf)parsers[LeafType].Invoke(new object[] { Stream });
+			if (readers.ContainsKey(LeafType)) {
+				ConstructorInfo ctor = readers[LeafType];
+				object[] args;
+				switch (ctor.GetParameters().Length) {
+					case 1:
+						args = new object[] { Stream };
+						break;
+					case 2:
+						args = new object[] { PDB, Stream };
+						break;
+					default:
+						throw new NotSupportedException();
+				}
+				typeSym = (ILeaf)readers[LeafType].Invoke(args);
 			} else {
 				throw new NotImplementedException($"{LeafType} not supported yet");
 			}
@@ -110,6 +155,83 @@ namespace Smx.PDBSharp
 			ConsumePadding();
 			return typeSym;
 
+		}
+
+		private string GetUdtName() {
+			switch (LeafType) {
+				case LeafType.LF_CLASS:
+					return ((LF_CLASS)this).Name;
+				default:
+					throw new NotImplementedException();
+			}
+		}
+
+		private bool IsUdtAnon() {
+			string[] utag = new string[] {
+				"::<unnamed-tag>",
+				"::__unnamed"
+			};
+
+			string UdtName = GetUdtName();
+			foreach(string tag in utag) {
+				if (UdtName.Contains(tag))
+					return true;
+			}
+			return false;
+		}
+
+		public bool IsUdtSourceLine() {
+			switch (LeafType) {
+				case LeafType.LF_UDT_SRC_LINE:
+				case LeafType.LF_UDT_MOD_SRC_LINE:
+					return true;
+				default:
+					return false;
+			}
+		}
+
+		public bool IsGlobalDefnUdtWithUniqueName() {
+			switch (LeafType) {
+				case LeafType.LF_CLASS:
+				case LeafType.LF_STRUCTURE:
+				case LeafType.LF_UNION:
+				case LeafType.LF_ENUM:
+				case LeafType.LF_INTERFACE:
+					break;
+				default:
+					return false;
+			}
+
+			LF_CLASS leaf = (LF_CLASS)this;
+			return (
+				!leaf.FieldProperties.HasFlag(TypeProperties.IsForwardReference) &&
+				!leaf.FieldProperties.HasFlag(TypeProperties.IsScoped) &&
+				leaf.FieldProperties.HasFlag(TypeProperties.HasUniqueName) &&
+				!IsUdtAnon()
+			);
+
+		}
+
+		public bool IsGlobalDefnUdt() {
+			switch (LeafType) {
+				case LeafType.LF_ALIAS:
+					return true;
+				case LeafType.LF_CLASS:
+				case LeafType.LF_STRUCTURE:
+				case LeafType.LF_UNION:
+				case LeafType.LF_ENUM:
+				case LeafType.LF_INTERFACE:
+					break;
+				default:
+					return false;
+			}
+
+			LF_CLASS leaf = (LF_CLASS)this;
+			return (
+				!leaf.FieldProperties.HasFlag(TypeProperties.IsForwardReference) &&
+				!leaf.FieldProperties.HasFlag(TypeProperties.IsScoped) &&
+				!IsUdtAnon()
+			);
 		}
 	}
 }

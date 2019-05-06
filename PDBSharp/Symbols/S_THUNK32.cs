@@ -31,7 +31,7 @@ namespace Smx.PDBSharp.Symbols
 
 		public readonly IThunk Thunk;
 
-		public S_THUNK32(Stream stream) : base(stream) {
+		public S_THUNK32(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Parent = ReadUInt32();
 			End = ReadUInt32();
 			Next = ReadUInt32();

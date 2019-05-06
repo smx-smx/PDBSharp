@@ -16,14 +16,14 @@ namespace Smx.PDBSharp.Leaves
 	[LeafReader(LeafType.LF_ARRAY)]
 	public class LF_ARRAY : TypeDataReader
 	{
-		public readonly UInt32 ElementTypeIndex;
-		public readonly UInt32 IndexingTypeIndex;
+		public readonly Lazy<ILeaf> ElementType;
+		public readonly Lazy<ILeaf> IndexingType;
 
 		public readonly string Name;
 
-		public LF_ARRAY(Stream stream) : base(stream) {
-			ElementTypeIndex = ReadUInt32();
-			IndexingTypeIndex = ReadUInt32();
+		public LF_ARRAY(PDBFile pdb, Stream stream) : base(pdb, stream) {
+			ElementType = ReadIndexedTypeLazy();
+			IndexingType = ReadIndexedTypeLazy();
 
 			var varyingData = ReadVaryingType(out uint dataSize);
 

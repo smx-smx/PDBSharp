@@ -18,12 +18,12 @@ namespace Smx.PDBSharp.Leaves
 	public class LF_ARGLIST : TypeDataReader
 	{
 		public UInt16 NumberOfArguments;
-		public UInt32[] ArgumentTypeIndices;
+		public Lazy<ILeaf>[] ArgumentTypes;
 
-		public LF_ARGLIST(Stream stream) : base(stream) {
+		public LF_ARGLIST(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			NumberOfArguments = ReadUInt16();
-			ArgumentTypeIndices = Enumerable.Range(1, NumberOfArguments)
-											.Select(_ => ReadUInt32())
+			ArgumentTypes = Enumerable.Range(1, NumberOfArguments)
+											.Select(_ => ReadIndexedTypeLazy())
 											.ToArray();
 		}
 	}

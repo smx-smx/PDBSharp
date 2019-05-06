@@ -14,7 +14,7 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_LMANPROC)]
 	public class S_LMANPROC : ManProcSym
 	{
-		public S_LMANPROC(Stream stream) : base(stream) {
+		public S_LMANPROC(PDBFile pdb, Stream stream) : base(pdb, stream) {
 		}
 	}
 }

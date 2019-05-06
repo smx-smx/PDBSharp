@@ -18,7 +18,7 @@ namespace Smx.PDBSharp.Leaves
 	[LeafReader(LeafType.LF_VARSTRING)]
 	public class LF_VARSTRING: SymbolDataReader, ILeaf<string>
 	{
-		public LF_VARSTRING(Stream stream) : base(stream) {
+		public LF_VARSTRING(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			UInt16 length = ReadUInt16();
 			byte[] data = ReadBytes((int)length);
 			Value = Encoding.ASCII.GetString(data);

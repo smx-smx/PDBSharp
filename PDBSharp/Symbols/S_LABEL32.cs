@@ -24,7 +24,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly CV_PROCFLAGS Flags;
 		public readonly string Name;
 
-		public S_LABEL32(Stream stream) : base(stream) {
+		public S_LABEL32(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Offset = ReadUInt32();
 			Segment = ReadUInt16();
 			Flags = ReadFlagsEnum<CV_PROCFLAGS>();

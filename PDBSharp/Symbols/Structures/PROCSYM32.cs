@@ -6,7 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using System;
+using Smx.PDBSharp.Leaves;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -24,20 +25,20 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public readonly UInt32 Length;
 		public readonly UInt32 DebugStartOffset;
 		public readonly UInt32 DebugEndOffset;
-		public readonly UInt32 TypeIndex;
+		public readonly Lazy<ILeaf> Type;
 		public readonly UInt32 Offset;
 		public readonly UInt16 Segment;
 		public readonly CV_PROCFLAGS Flags;
 		public readonly string Name;
 
-		public ProcSym32(Stream stream) : base(stream) {
+		public ProcSym32(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Parent = ReadUInt32();
 			End = ReadUInt32();
 			Next = ReadUInt32();
 			Length = ReadUInt32();
 			DebugStartOffset = ReadUInt32();
 			DebugEndOffset = ReadUInt32();
-			TypeIndex = ReadUInt32();
+			Type = ReadIndexedTypeLazy();
 			Offset = ReadUInt32();
 			Segment = ReadUInt16();
 			Flags = ReadFlagsEnum<CV_PROCFLAGS>();

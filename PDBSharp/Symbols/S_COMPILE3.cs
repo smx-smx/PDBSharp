@@ -31,7 +31,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt16 BackendQFEVersion;
 		public readonly string VersionString;
 
-		public S_COMPILE3(Stream stream) : base(stream) {
+		public S_COMPILE3(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Flags = new CompileSym3Flags(ReadUInt32());
 			Machine = ReadUInt16();
 			FrontendVersionMajor = ReadUInt16();

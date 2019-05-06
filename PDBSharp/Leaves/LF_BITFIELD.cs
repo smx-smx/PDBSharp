@@ -16,12 +16,12 @@ namespace Smx.PDBSharp.Leaves
 	[LeafReader(LeafType.LF_BITFIELD)]
 	public class LF_BITFIELD : TypeDataReader
 	{
-		public readonly UInt32 TypeIndex;
+		public readonly Lazy<ILeaf> Type;
 		public readonly byte Length;
 		public readonly byte Position;
 
-		public LF_BITFIELD(Stream stream) : base(stream) {
-			TypeIndex = ReadUInt32();
+		public LF_BITFIELD(PDBFile pdb, Stream stream) : base(pdb, stream) {
+			Type = ReadIndexedTypeLazy();
 			Length = ReadByte();
 			Position = ReadByte();
 		}

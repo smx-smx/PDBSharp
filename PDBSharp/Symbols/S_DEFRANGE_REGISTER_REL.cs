@@ -26,7 +26,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly CV_LVAR_ADDR_RANGE Range;
 		public readonly CV_LVAR_ADDR_GAP[] Gaps;
 
-		public S_DEFRANGE_REGISTER_REL(Stream stream) : base(stream) {
+		public S_DEFRANGE_REGISTER_REL(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			BaseRegister = ReadUInt16();
 
 			UInt16 flags = ReadUInt16();

@@ -36,7 +36,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public readonly UInt16 ReturnRegister;
 		public readonly string Name;
 
-		public ManProcSym(Stream stream) : base(stream) {
+		public ManProcSym(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Parent = ReadUInt32();
 			End = ReadUInt32();
 			Next = ReadUInt32();

@@ -18,7 +18,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public readonly UInt16 Segment;
 		public readonly string Name;
 
-		public DataSym32(Stream stream) : base(stream) {
+		public DataSym32(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			TypeIndex = ReadUInt32();
 			Offset = ReadUInt32();
 			Segment = ReadUInt16();

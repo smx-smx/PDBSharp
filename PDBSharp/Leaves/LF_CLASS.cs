@@ -19,30 +19,23 @@ namespace Smx.PDBSharp.Leaves
 		public readonly UInt16 NumberOfElements;
 		public TypeProperties FieldProperties;
 		public UInt32 FieldIndex;
-		public UInt32 DerivedTypeIndex;
-		public UInt32 VShapeTableTypeIndex;
+		public Lazy<ILeaf> DerivedType;
+		public Lazy<ILeaf> VShapeTableType;
 
 		//public UInt16 StructSize;
 
 		public readonly string Name;
 
-		public LF_CLASS(Stream stream) : base(stream) {
+		public LF_CLASS(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			NumberOfElements = ReadUInt16();
 			FieldProperties = ReadFlagsEnum<TypeProperties>();
 			FieldIndex = ReadUInt32();
-			DerivedTypeIndex = ReadUInt32();
-			VShapeTableTypeIndex = ReadUInt32();
+			DerivedType = ReadIndexedTypeLazy();
+			VShapeTableType = ReadIndexedTypeLazy();
 
 			var StructSize = ReadVaryingType(out uint dataSize);
 	
 			Name = ReadCString();
-		}
-	}
-
-	[LeafReader(LeafType.LF_STRUCTURE)]
-	public class LF_STRUCTURE : LF_CLASS
-	{
-		public LF_STRUCTURE(Stream stream) : base(stream) {
 		}
 	}
 }

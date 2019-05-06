@@ -17,22 +17,24 @@ namespace Smx.PDBSharp.Leaves
 	[LeafReader(LeafType.LF_MFUNCTION)]
 	public class LF_MFUNCTION : TypeDataReader
 	{
-		public readonly UInt32 ReturnValueTypeIndex;
-		public readonly UInt32 ContainingClassTypeIndex;
-		public readonly UInt32 ThisPointerTypeIndex;
+		public readonly Lazy<ILeaf> ReturnValueType;
+		public readonly Lazy<ILeaf> ContainingClassType;
+		public readonly Lazy<ILeaf> ThisPointerType;
 		public readonly CallingConvention CallingConvention;
 		public readonly UInt16 NumberOfParameters;
-		public readonly UInt32 ArgumentListTypeIndex;
+		public readonly Lazy<ILeaf> ArgumentListType;
 		public readonly UInt32 ThisAdjustor;
 
-		public LF_MFUNCTION(Stream stream) : base(stream) {
-			ReturnValueTypeIndex = ReadUInt32();
-			ContainingClassTypeIndex = ReadUInt32();
-			ThisPointerTypeIndex = ReadUInt32();
+		public readonly FunctionAttributes Attributes;
+
+		public LF_MFUNCTION(PDBFile pdb, Stream stream) : base(pdb, stream) {
+			ReturnValueType = ReadIndexedTypeLazy();
+			ContainingClassType = ReadIndexedTypeLazy();
+			ThisPointerType = ReadIndexedTypeLazy();
 			CallingConvention = ReadEnum<CallingConvention>();
-			ReadByte(); //reserved
+			Attributes = ReadFlagsEnum<FunctionAttributes>();
 			NumberOfParameters = ReadUInt16();
-			ArgumentListTypeIndex = ReadUInt32();
+			ArgumentListType = ReadIndexedTypeLazy();
 			ThisAdjustor = ReadUInt32();
 		}
 	}

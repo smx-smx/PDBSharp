@@ -14,7 +14,7 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_GDATA32)]
 	public class S_GDATA32 : DataSym32
 	{
-		public S_GDATA32(Stream stream) : base(stream) {
+		public S_GDATA32(PDBFile pdb, Stream stream) : base(pdb, stream) {
 		}
 	}
 }

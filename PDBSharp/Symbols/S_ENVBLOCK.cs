@@ -21,7 +21,7 @@ namespace Smx.PDBSharp.Symbols
 	{
 		public readonly string[] Data;
 
-		public S_ENVBLOCK(Stream stream) : base(stream) {
+		public S_ENVBLOCK(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			byte flags = ReadByte(); //fEC -> reserved (1 bit)
 
 			List<string> strLst = new List<string>(); ;

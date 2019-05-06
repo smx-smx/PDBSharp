@@ -30,7 +30,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly string VersionString;
 		public readonly string[] OptionalData;
 
-		public S_COMPILE2(Stream stream) : base(stream) {
+		public S_COMPILE2(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Flags = new CompileSymFlags(ReadUInt32());
 			Machine = ReadUInt16();
 			FrontendVersionMajor = ReadUInt16();

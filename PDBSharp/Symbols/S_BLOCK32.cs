@@ -26,7 +26,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt16 Segment;
 		public readonly string Name;
 
-		public S_BLOCK32(Stream stream) : base(stream) {
+		public S_BLOCK32(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Parent = ReadUInt32();
 			End = ReadUInt32();
 			Length = ReadUInt32();

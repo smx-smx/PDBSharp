@@ -19,8 +19,8 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE)]
 	public class S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE : SymbolDataReader
 	{
-		public S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE(Stream stream) : base(stream) {
-			
+		public S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE(PDBFile pdb, Stream stream) : base(pdb, stream) {
+
 		}
 	}
 }

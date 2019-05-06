@@ -18,31 +18,15 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Thunks
 {
-	[StructLayout(LayoutKind.Sequential, Pack = 1)]
-	public struct AdjustorThunk
-	{
-		public UInt16 Delta;
-	}
-
-	public struct AdjustorThunkInstance
-	{
-		public AdjustorThunk Header;
-		public string Name;
-	}
-
 	[ThunkReader(ThunkType.ADJUSTOR)]
 	public class ADJUSTOR : SymbolDataReader, IThunk
 	{
-		public readonly AdjustorThunkInstance Data;
+		public readonly UInt16 Delta;
+		public readonly string Name;
 
-		public ADJUSTOR(SymbolHeader symHeader, Stream stream) : base(symHeader, stream) {
-			AdjustorThunk header = ReadStruct<AdjustorThunk>();
-			string name = ReadSymbolString();
-
-			Data = new AdjustorThunkInstance() {
-				Header = header,
-				Name = name
-			};
+		public ADJUSTOR(PDBFile pdb, SymbolHeader symHeader, Stream stream) : base(pdb, symHeader, stream) {
+			Delta = ReadUInt16();
+			Name = ReadSymbolString();
 		}
 	}
 }

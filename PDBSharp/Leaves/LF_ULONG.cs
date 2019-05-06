@@ -19,7 +19,7 @@ namespace Smx.PDBSharp.Leaves
 	public class LF_ULONG : TypeDataReader
 	{
 		public readonly UInt32 Value;
-		public LF_ULONG(Stream stream) : base(stream) {
+		public LF_ULONG(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Value = ReadUInt32();
 		}
 	}

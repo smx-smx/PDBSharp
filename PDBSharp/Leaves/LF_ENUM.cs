@@ -20,16 +20,16 @@ namespace Smx.PDBSharp.Leaves
 		public readonly UInt16 NumElements;
 		public readonly TypeProperties Properties;
 
-		public readonly UInt32 UnderlyingTypeIndex;
-		public readonly UInt32 FieldTypeIndex;
+		public readonly Lazy<ILeaf> UnderlyingType;
+		public readonly Lazy<ILeaf> FieldType;
 
 		public readonly string FieldName;
 
-		public LF_ENUM(Stream stream) : base(stream) {
+		public LF_ENUM(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			NumElements = ReadUInt16();
 			Properties = ReadFlagsEnum<TypeProperties>();
-			UnderlyingTypeIndex = ReadUInt32();
-			FieldTypeIndex = ReadUInt32();
+			UnderlyingType = ReadIndexedTypeLazy();
+			FieldType = ReadIndexedTypeLazy();
 			FieldName = ReadCString();
 
 		}

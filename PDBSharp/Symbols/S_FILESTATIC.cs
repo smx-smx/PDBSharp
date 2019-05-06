@@ -6,7 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using Smx.PDBSharp.Symbols.Structures;
+using Smx.PDBSharp.Leaves;
+using Smx.PDBSharp.Symbols.Structures;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,13 +20,13 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_FILESTATIC)]
 	public class S_FILESTATIC : SymbolDataReader
 	{
-		public readonly UInt32 TypeIndex;
+		public readonly Lazy<ILeaf> Type;
 		public readonly UInt32 ModuleFilenameOffset;
 		public readonly CV_LVARFLAGS Flags;
 		public readonly string Name;
 
-		public S_FILESTATIC(Stream stream) : base(stream) {
-			TypeIndex = ReadUInt32();
+		public S_FILESTATIC(PDBFile pdb, Stream stream) : base(pdb, stream) {
+			Type = ReadIndexedTypeLazy();
 			ModuleFilenameOffset = ReadUInt32();
 			Flags = ReadFlagsEnum<CV_LVARFLAGS>();
 			Name = ReadSymbolString();

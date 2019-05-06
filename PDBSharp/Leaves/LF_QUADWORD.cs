@@ -20,7 +20,7 @@ namespace Smx.PDBSharp.Leaves
 	{
 		public readonly long Value;
 
-		public LF_QUADWORD(Stream stream) : base(stream) {
+		public LF_QUADWORD(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Value = ReadInt64();
 		}
 	}

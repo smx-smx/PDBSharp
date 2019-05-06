@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp
 {
-	public class SymbolDataReader: SymbolReaderBase, ISymbol {
+	public class SymbolDataReader: TypeDataReader, ISymbol {
 		private static readonly Dictionary<ThunkType, ConstructorInfo> thunkReaders;
 
 		static SymbolDataReader() {
@@ -39,14 +39,16 @@ namespace Smx.PDBSharp
 		protected readonly SymbolHeader Header;
 		SymbolHeader ISymbol.Header => Header;
 
-		protected readonly PDBFile Context;
+		protected readonly PDBFile PDB;
 
-		public SymbolDataReader(SymbolHeader header, Stream stream) : base(stream) {
+		public SymbolDataReader(PDBFile pdb, SymbolHeader header, Stream stream) : base(pdb, stream) {
+			this.PDB = pdb;
 			Header = header;
 			CheckHeader();
 		}
 
-		public SymbolDataReader(Stream stream) : base(stream) {
+		public SymbolDataReader(PDBFile pdb, Stream stream) : base(pdb, stream) {
+			this.PDB = pdb;
 			Header = ReadHeader();
 			CheckHeader();
 		}

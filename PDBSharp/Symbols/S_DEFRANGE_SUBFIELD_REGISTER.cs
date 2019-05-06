@@ -25,7 +25,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly CV_LVAR_ADDR_RANGE Range;
 		public readonly CV_LVAR_ADDR_GAP[] Gaps;
 
-		public S_DEFRANGE_SUBFIELD_REGISTER(Stream stream) : base(stream) {
+		public S_DEFRANGE_SUBFIELD_REGISTER(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Register = ReadUInt16();
 			Attributes = ReadFlagsEnum<RangeAttributes>();
 			ParentVariableOffset = ReadUInt32() & 0xFFF; //CV_OFFSET_PARENT_LENGTH_LIMIT

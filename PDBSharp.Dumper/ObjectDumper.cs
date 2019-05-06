@@ -6,9 +6,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using System;
+using Smx.PDBSharp.Leaves;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -16,110 +19,216 @@ namespace Smx.PDBSharp.Dumper
 {
 	class ObjectDumper
 	{
+		private readonly StringBuilder sb = new StringBuilder();
+		private readonly Type t;
 		private readonly object obj;
 		private readonly int depth;
+		private int depthOffset = 0;
 
 		private ObjectDumper(object obj, int depth = 0) {
 			this.obj = obj;
 			this.depth = depth;
+			if (obj != null)
+				t = obj.GetType();
 		}
 
-		private void AppendIndent(StringBuilder sb, int depth) {
+		private static void AppendIndent(StringBuilder sb, int depth) {
 			for (int i = 0; i < depth; i++)
 				sb.Append("\t");
 		}
 
-		private string GetString(Type t) {
-			StringBuilder sb = new StringBuilder($"{{{t.FullName}}}\t");
-
-			if(!t.IsPrimitive && t != typeof(string))
-				sb.AppendLine();
-
-			AppendIndent(sb, depth);
-
-			FieldInfo[] fields = t.GetFields(BindingFlags.Instance | BindingFlags.Public);
-			PropertyInfo[] props = t.GetProperties(BindingFlags.Instance | BindingFlags.Public);
-
-			if (obj == null) {
-				sb.Append("null");
-			} else if (t.IsPrimitive) {
-				sb.Append(obj.ToString());
-				if(t != typeof(bool)) {
-					sb.AppendFormat(" (0x{0:X})", obj);
-				}
-			} else if (t == typeof(string)) {
-				sb.Append($"\"{obj.ToString()}\"");
-			} else if (typeof(IEnumerable<object>).IsAssignableFrom(t)) {
-				int i = 0;
-				foreach (var item in (IEnumerable)obj) {
-					AppendIndent(sb, depth + 1);
-					sb.AppendFormat("[{0:D}]: {1}", i++, new ObjectDumper(item, depth + 2).ToString());
-					sb.AppendLine();
-				}
-			} else if (t.IsArray) {
-				sb.AppendLine();
-				Type elType = t.GetElementType();
-				Array array = (Array)obj;
-				for (int i = 0; i < array.Length; i++) {
-					AppendIndent(sb, depth + 1);
-					sb.AppendFormat("[{0:D}]: {1}", i, new ObjectDumper(array.GetValue(i), depth + 2).ToString());
-				}
-			} else if (t.IsEnum) {
-				FlagsAttribute flags = t.GetCustomAttribute<FlagsAttribute>();
-				AppendIndent(sb, depth + 2);
-				if (flags != null) {
-					sb.Append("[FLAGS]: <");
-					int numFlags = 0;
-					foreach (Enum value in Enum.GetValues(t)) {
-						if (((Enum)obj).HasFlag(value)) {
-							sb.AppendFormat($"{value.ToString()},");
-							numFlags++;
-						}
-					}
-					if (numFlags > 0) {
-						sb.Length--;
-					}
-					sb.Append(">");
-				} else {
-					sb.Append(Enum.GetName(t, obj));
-				}
-			} else if(fields.Length > 0 || props.Length > 0) {
-				foreach (FieldInfo field in fields) {
-					AppendIndent(sb, depth + 1);
-					sb.Append($"[{field.Name}] => ");
-
-					object value = field.GetValue(obj);
-					if (field.FieldType != t) {
-						sb.Append(new ObjectDumper(value, depth).ToString());
-					}
-				}
-
-				foreach(PropertyInfo prop in props) {
-					AppendIndent(sb, depth + 1);
-					sb.Append($"[{prop.Name}] => ");
-
-					object value = prop.GetValue(obj);
-					if(prop.PropertyType != t) {
-						sb.Append(new ObjectDumper(value, depth).ToString());
-					}
-				}
-			} else {
-				sb.Append(obj.ToString());
-			}
-
+		private static void NewIndentedLine(StringBuilder sb, int depth) {
 			sb.AppendLine();
+			AppendIndent(sb, depth);
+		}
+
+		private void CrIndent(StringBuilder sb) {
+			NewIndentedLine(sb, depth + depthOffset);
+		}
+
+		private void CrIndentPush(StringBuilder sb) {
+			++depthOffset;
+			CrIndent(sb);
+		}
+
+		private string HandleNullType() {
+			sb.Append("null");
 			return sb.ToString();
 		}
 
-		public override string ToString() {
-			if (obj == null)
-				return "null";
-			return GetString(obj.GetType());
+		private string HandleStringType() {
+			// string: print inline
+			sb.Append($"\"{obj.ToString()}\"");
+			return sb.ToString();
+		}
+
+		private string HandlePrimitiveType() {
+			// primitive: print inline
+			sb.Append(obj.ToString());
+
+			if (t != typeof(bool)) {
+				sb.AppendFormat(" (0x{0:X})", obj);
+			}
+			return sb.ToString();
+		}
+
+		private static Type GetEnumerableType(Type type) {
+			foreach (Type intType in type.GetInterfaces()) {
+				if (intType.IsGenericType
+					&& intType.GetGenericTypeDefinition() == typeof(IEnumerable<>)) {
+					return intType.GetGenericArguments()[0];
+				}
+			}
+			return null;
+		}
+
+		public static int CountEnumerable(IEnumerable data) {
+			ICollection list = data as ICollection;
+			if (list != null) return list.Count;
+			int count = 0;
+			IEnumerator iter = data.GetEnumerator();
+			using (iter as IDisposable) {
+				while (iter.MoveNext()) count++;
+			}
+			return count;
+		}
+
+		private string HandleGenericType() {
+			Type baseType = t.GetGenericTypeDefinition();
+			if(GetEnumerableType(t) != null) {
+				IEnumerable ienum = (IEnumerable)obj;
+				int numElements = CountEnumerable(ienum);
+				if(numElements > 0) {
+					CrIndentPush(sb);
+				}
+
+				int i = 0;
+				foreach (var item in ienum) {
+					sb.AppendFormat("[{0:D}]: {1}", i++, new ObjectDumper(item, depth + depthOffset).GetString());
+					if(i + 1 < numElements) {
+						CrIndent(sb);
+					}
+				}
+				return sb.ToString();
+			}
+
+			if (baseType == typeof(Lazy<>)) {
+				object value = t.GetProperty("Value").GetValue(obj);
+				CrIndentPush(sb);
+				sb.Append(new ObjectDumper(value, depth + depthOffset).GetString());
+			}
+
+			return sb.ToString();
+		}
+
+		private string HandleArrayType() {
+			Array array = (Array)obj;
+			for (int i = 0; i < array.Length; i++) {
+				sb.AppendFormat("[{0:D}]: {1}", i, new ObjectDumper(array.GetValue(i), depth).GetString());
+			}
+
+			return sb.ToString();
+		}
+
+		private string HandleEnumType() {
+			FlagsAttribute flags = t.GetCustomAttribute<FlagsAttribute>();
+			if (flags != null) {
+				CrIndentPush(sb);
+				sb.Append("[FLAGS]: <");
+				int numFlags = 0;
+				foreach (Enum value in Enum.GetValues(t)) {
+					if (((Enum)obj).HasFlag(value)) {
+						sb.AppendFormat($"{value.ToString()},");
+						numFlags++;
+					}
+				}
+				if (numFlags > 0) {
+					sb.Length--;
+				}
+				sb.Append(">");
+			} else {
+				sb.Append(Enum.GetName(t, obj));
+			}
+
+			return sb.ToString();
+		}
+
+		private string HandleComplexTypeRecursive() {
+			FieldInfo[] fields = t.GetFields(BindingFlags.Instance | BindingFlags.Public);
+			PropertyInfo[] props = t.GetProperties(BindingFlags.Instance | BindingFlags.Public);
+
+			CrIndentPush(sb);
+
+			if (fields.Length == 0 && props.Length == 0) {
+				sb.Append(obj.ToString());
+				return sb.ToString();
+			}
+
+
+			for (int i = 0; i < props.Length; i++) {
+				PropertyInfo prop = props[i];
+
+				sb.Append($"[{prop.Name}] => ");
+
+				object value = prop.GetValue(obj);
+				sb.Append(new ObjectDumper(value, depth + depthOffset).GetString());
+
+				if (i + 1 < props.Length) {
+					CrIndent(sb);
+				}
+			}
+
+			if (fields.Length > 0)
+				CrIndent(sb);
+
+			for(int i=0; i<fields.Length; i++) {
+				FieldInfo field = fields[i];
+				sb.Append($"[{field.Name}] => ");
+
+				object value = field.GetValue(obj);
+				sb.Append(new ObjectDumper(value, depth + depthOffset).GetString());
+
+				if (i + 1 < fields.Length) {
+					CrIndent(sb);
+				}
+			}
+
+			return sb.ToString();
+		}
+
+		private string HandleComplexType() {
+			if (t.IsGenericType) {
+				return HandleGenericType();
+			} else if (t.IsArray) {
+				return HandleArrayType();
+			} else if (t.IsEnum) {
+				return HandleEnumType();
+			} else {
+				return HandleComplexTypeRecursive();
+			}
+		}
+
+		private string GetString() {
+			if (obj == null) {
+				return HandleNullType();
+			}
+
+			sb.Append($"{{{t.FullName}}}\t");
+
+			if (t == typeof(string)) {
+				return HandleStringType();
+			}
+
+			if (t.IsPrimitive) {
+				return HandlePrimitiveType();
+			}
+
+			return HandleComplexType();
 		}
 
 
 		public static void Dump(object obj) {
-			Console.WriteLine(new ObjectDumper(obj).ToString());
+			Console.WriteLine(new ObjectDumper(obj).GetString() + Environment.NewLine);
 		}
 	}
 }

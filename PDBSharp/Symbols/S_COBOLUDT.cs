@@ -22,7 +22,7 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_COBOLUDT)]
 	public class S_COBOLUDT : UdtSym
 	{
-		public S_COBOLUDT(Stream stream) : base(stream) {
+		public S_COBOLUDT(PDBFile pdb, Stream stream) : base(pdb, stream) {
 		}
 	}
 }

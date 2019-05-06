@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <!--<TargetFramework>netcoreapp2.1</TargetFramework>-->
+    <TargetFramework>net472</TargetFramework>
     <AssemblyName>Smx.PDBSharp.Dumper</AssemblyName>
     <StartupObject>Smx.PDBSharp.Dumper.Program</StartupObject>
   </PropertyGroup>

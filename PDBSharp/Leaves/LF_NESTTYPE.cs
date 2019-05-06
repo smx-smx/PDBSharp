@@ -16,12 +16,12 @@ namespace Smx.PDBSharp.Leaves
 	[LeafReader(LeafType.LF_NESTTYPE)]
 	public class LF_NESTTYPE : TypeDataReader
 	{
-		public readonly UInt32 NestedTypeDefIndex;
+		public readonly Lazy<ILeaf> NestedTypeDef;
 		public readonly string Name;
 
-		public LF_NESTTYPE(Stream stream) : base(stream) {
+		public LF_NESTTYPE(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			ReadUInt16(); //padding
-			NestedTypeDefIndex = ReadUInt32();
+			NestedTypeDef = ReadIndexedTypeLazy();
 			Name = ReadCString();
 		}
 	}

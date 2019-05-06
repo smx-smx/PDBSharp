@@ -20,7 +20,7 @@ namespace Smx.PDBSharp.Leaves
 	{
 		public readonly UInt16 Value;
 
-		public LF_USHORT(Stream stream) : base(stream) {
+		public LF_USHORT(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Value = ReadUInt16();
 		}
 	}

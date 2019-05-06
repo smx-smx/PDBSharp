@@ -19,7 +19,7 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_GMANPROC)]
 	public class S_GMANPROC : ManProcSym
 	{
-		public S_GMANPROC(Stream stream) : base(stream) {
+		public S_GMANPROC(PDBFile pdb, Stream stream) : base(pdb, stream) {
 		}
 	}
 }

@@ -23,7 +23,7 @@ namespace Smx.PDBSharp.Symbols
 		public CV_LVAR_ADDR_RANGE Range;
 		public CV_LVAR_ADDR_GAP[] Gaps;
 
-		public S_DEFRANGE_FRAMEPOINTER_REL(Stream stream) : base(stream) {
+		public S_DEFRANGE_FRAMEPOINTER_REL(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			FramePointerOffset = ReadUInt32();
 			Range = new CV_LVAR_ADDR_RANGE(stream);
 			Gaps = CV_LVAR_ADDR_GAP.ReadGaps(stream);

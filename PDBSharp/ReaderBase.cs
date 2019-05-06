@@ -85,6 +85,13 @@ namespace Smx.PDBSharp
 			return (T)value;
 		}
 
+		public void PerformAt(long offset, Action action) {
+			long curPos = Stream.Position;
+			Stream.Position = offset;
+			action.Invoke();
+			Stream.Position = curPos;
+		}
+
 		public T PerformAt<T>(long offset, Func<T> action) {
 			long curPos = Stream.Position;
 			Stream.Position = offset;

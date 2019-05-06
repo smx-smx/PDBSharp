@@ -16,17 +16,17 @@ namespace Smx.PDBSharp.Leaves
 	[LeafReader(LeafType.LF_PROCEDURE)]
 	public class LF_PROCEDURE : TypeDataReader
 	{
-		public readonly UInt32 ReturnValueTypeIndex;
+		public readonly Lazy<ILeaf> ReturnValueType;
 		public readonly CallingConvention CallingConvention;
 		public readonly UInt16 NumberOfParameters;
-		public readonly UInt32 ArgumentListTypeIndex;
+		public readonly Lazy<ILeaf> ArgumentListType;
 
-		public LF_PROCEDURE(Stream stream) : base(stream) {
-			ReturnValueTypeIndex = ReadUInt32();
+		public LF_PROCEDURE(PDBFile pdb, Stream stream) : base(pdb, stream) {
+			ReturnValueType = ReadIndexedTypeLazy();
 			CallingConvention = ReadEnum<CallingConvention>();
 			ReadByte(); //reserved
 			NumberOfParameters = ReadUInt16();
-			ArgumentListTypeIndex = ReadUInt32();
+			ArgumentListType = ReadIndexedTypeLazy();
 		}
 	}
 }

@@ -24,7 +24,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly CookieType Type;
 		public readonly byte Flags;
 
-		public S_FRAMECOOKIE(Stream stream) : base(stream) {
+		public S_FRAMECOOKIE(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Offset = ReadUInt32();
 			RegisterIndex = ReadUInt16();
 			Type = ReadEnum<CookieType>();

@@ -19,7 +19,7 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_LPROC32)]
 	public class S_LPROC32 : ProcSym32
 	{
-		public S_LPROC32(Stream stream) : base(stream) {
+		public S_LPROC32(PDBFile pdb, Stream stream) : base(pdb, stream) {
 		}
 	}
 }

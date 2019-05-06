@@ -21,7 +21,7 @@ namespace Smx.PDBSharp.Symbols
 	{
 		public readonly string NamespaceName;
 
-		public UNameSpaceReader(Stream stream) : base(stream) {
+		public UNameSpaceReader(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			NamespaceName = ReadSymbolString();
 		}
 	}

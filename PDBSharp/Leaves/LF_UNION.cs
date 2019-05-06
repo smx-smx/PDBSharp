@@ -18,14 +18,14 @@ namespace Smx.PDBSharp.Leaves
 	{
 		public readonly UInt16 NumberOfElements;
 		public readonly TypeProperties Properties;
-		public readonly UInt32 FieldTypeIndex;
+		public readonly Lazy<ILeaf> FieldType;
 
 		public readonly string Name;
 
-		public LF_UNION(Stream stream) : base(stream) {
+		public LF_UNION(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			NumberOfElements = ReadUInt16();
 			Properties = ReadFlagsEnum<TypeProperties>();
-			FieldTypeIndex = ReadUInt32();
+			FieldType = ReadIndexedTypeLazy();
 
 			var varyingData = ReadVaryingType(out uint dataSize);
 			Name = ReadCString();

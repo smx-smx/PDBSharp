@@ -22,7 +22,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt32 NumberOfFunctions;
 		public readonly UInt32[] Functions;
 
-		public S_CALLEES(Stream stream) : base(stream) {
+		public S_CALLEES(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			NumberOfFunctions = ReadUInt32();
 			Functions = Enumerable
 				.Range(1, (int)NumberOfFunctions)

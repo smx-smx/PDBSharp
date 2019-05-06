@@ -20,7 +20,7 @@ namespace Smx.PDBSharp.Leaves
 	{
 		public readonly double Value;
 
-		public LF_REAL64(Stream stream) : base(stream) {
+		public LF_REAL64(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Value = ReadDouble();
 		}
 	}

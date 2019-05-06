@@ -6,7 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using Smx.PDBSharp.Symbols.Structures;
+using Smx.PDBSharp.Leaves;
+using Smx.PDBSharp.Symbols.Structures;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,13 +21,13 @@ namespace Smx.PDBSharp.Symbols
 	public class S_REGREL32 : SymbolDataReader
 	{
 		public readonly UInt32 Offset;
-		public readonly UInt32 TypeIndex;
+		public readonly Lazy<ILeaf> Type;
 		public readonly UInt16 RegisterIndex;
 		public readonly string Name;
 
-		public S_REGREL32(Stream stream) : base(stream) {
+		public S_REGREL32(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Offset = ReadUInt32();
-			TypeIndex = ReadUInt32();
+			Type = ReadIndexedTypeLazy();
 			RegisterIndex = ReadUInt16();
 			Name = ReadSymbolString();
 		}

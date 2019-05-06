@@ -22,7 +22,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt32 Signature;
 		public readonly string Name;
 
-		public S_OBJNAME(Stream stream) : base(stream) {
+		public S_OBJNAME(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Signature = ReadUInt32();
 			Name = ReadSymbolString();
 		}

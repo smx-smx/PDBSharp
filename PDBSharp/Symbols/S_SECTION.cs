@@ -23,13 +23,13 @@ namespace Smx.PDBSharp.Symbols
 		/// <summary>
 		/// Alignment of this section (power of 2)
 		/// </summary>
-		public byte Alignment;
-		public UInt32 Rva;
-		public UInt32 Length;
-		public UInt32 Characteristics;
-		public string Name;
+		public readonly byte Alignment;
+		public readonly UInt32 Rva;
+		public readonly UInt32 Length;
+		public readonly UInt32 Characteristics;
+		public readonly string Name;
 
-		public S_SECTION(Stream stream) : base(stream) {
+		public S_SECTION(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			SectionNumber = ReadUInt16();
 			Alignment = ReadByte();
 			ReadByte(); //reserved

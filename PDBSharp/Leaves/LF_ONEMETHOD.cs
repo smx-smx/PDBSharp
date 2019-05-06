@@ -17,14 +17,14 @@ namespace Smx.PDBSharp.Leaves
 	public class LF_ONEMETHOD : TypeDataReader
 	{
 		public readonly FieldAttributes Attributes;
-		public readonly UInt32 ProcedureTypeIndex;
+		public readonly Lazy<ILeaf> ProcedureType;
 		public readonly UInt32 VBaseOffset;
 
 		public readonly string Name;
 
-		public LF_ONEMETHOD(Stream stream) : base(stream) {
+		public LF_ONEMETHOD(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Attributes = new FieldAttributes(ReadUInt16());
-			ProcedureTypeIndex = ReadUInt32();
+			ProcedureType = ReadIndexedTypeLazy();
 
 			switch (Attributes.MethodProperties) {
 				case MethodProperties.Intro:
