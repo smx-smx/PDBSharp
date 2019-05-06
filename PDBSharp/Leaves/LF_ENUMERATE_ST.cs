@@ -19,7 +19,7 @@ using System.IO;
 namespace Smx.PDBSharp.Leaves
 {
 	[LeafReader(LeafType.LF_ENUMERATE_ST)]
-	public class LF_ENUMERATE_ST : TypeDataReader
+	public class LF_ENUMERATE_ST : LF_ENUMERATE
 	{
 		public LF_ENUMERATE_ST(PDBFile pdb, Stream stream) : base(pdb, stream) {
 		}
