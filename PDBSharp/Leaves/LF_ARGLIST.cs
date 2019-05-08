@@ -22,6 +22,7 @@ namespace Smx.PDBSharp.Leaves
 
 		public LF_ARGLIST(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			NumberOfArguments = ReadUInt16();
+			ReadUInt16(); //padding
 			ArgumentTypes = Enumerable.Range(1, NumberOfArguments)
 											.Select(_ => ReadIndexedTypeLazy())
 											.ToArray();
