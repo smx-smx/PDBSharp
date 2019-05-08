@@ -13,6 +13,7 @@ using Smx.PDBSharp.Symbols;
 using Smx.PDBSharp.Symbols.Structures;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -74,14 +75,11 @@ namespace Smx.PDBSharp
 
 	public class TPIReader : ReaderBase
 	{
-		private readonly StreamTableReader stRdr;
-
-
 		public readonly TPIHeader Header;
-
-		private readonly HashDataReader TPIHash;
-
 		public IEnumerable<ILeaf> Types;
+
+		private readonly StreamTableReader stRdr;
+		private readonly HashDataReader TPIHash;
 
 
 		private (uint, uint) GetClosestTIOFF(UInt32 typeIndex) {
@@ -113,9 +111,17 @@ namespace Smx.PDBSharp
 			return TypeIndex >= Header.MinTypeIndex && TypeIndex < Header.NumTypes;
 		}
 
+		private bool IsBuiltinTi(UInt32 TypeIndex) {
+			return TypeIndex <= ((uint)SpecialTypeMode.NearPointer128 | 0xFF);
+		}
+
 		public ILeaf GetTypeByIndex(UInt32 TypeIndex) {
-			if (!HasTi(TypeIndex))
+			if (!HasTi(TypeIndex)) {
+				if (IsBuiltinTi(TypeIndex)) {
+					return new BuiltinTypeLeaf(TypeIndex);
+				}
 				return null;
+			}
 
 			UInt32 typeOffset;
 			if (TPIHash.TypeIndexToOffset.Contains(TypeIndex)) {

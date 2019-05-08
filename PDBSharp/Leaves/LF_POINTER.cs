@@ -18,10 +18,17 @@ namespace Smx.PDBSharp.Leaves
 		private readonly UInt32 attrs;
 		public PointerAttributes(UInt32 attrs) {
 			this.attrs = attrs;
+
+			if(!Enum.IsDefined(typeof(PointerType), this.PointerType)){
+				throw new InvalidDataException();
+			}
+			if(!Enum.IsDefined(typeof(PointerMode), this.PointerMode)) {
+				throw new InvalidDataException();
+			}
 		}
 
-		public UInt32 PointerType => attrs & 0x1F;
-		public UInt32 PointerMode => (attrs >> 5) & 0x7;
+		public PointerType PointerType => (PointerType)(attrs & 0x1F);
+		public PointerMode PointerMode => (PointerMode)((attrs >> 5) & 0x7);
 		public bool IsFlat32 => ((attrs >> 8) & 1) == 1;
 		public bool IsVolatile => ((attrs >> 9) & 1) == 1;
 		public bool IsConst => ((attrs >> 10) & 1) == 1;

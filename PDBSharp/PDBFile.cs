@@ -29,8 +29,8 @@ namespace Smx.PDBSharp
 	public class PDBFile
 	{
 
-		private const string SMALL_MAGIC = "Microsoft C/C++ program database 2.00\r\n\x1a" + "JG";
-		private const string BIG_MAGIC = "Microsoft C/C++ MSF 7.00\r\n\x1a" + "DS";
+		public const string SMALL_MAGIC = "Microsoft C/C++ program database 2.00\r\n\x1a" + "JG";
+		public const string BIG_MAGIC = "Microsoft C/C++ MSF 7.00\r\n\x1a" + "DS";
 
 		private readonly Stream stream;
 
