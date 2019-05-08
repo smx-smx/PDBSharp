@@ -6,7 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using System;
+using Smx.PDBSharp.Symbols;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;

@@ -83,8 +83,6 @@ namespace Smx.PDBSharp
 			});
 		}
 
-		public LeafType LeafType { get; private set; }
-
 		/// <summary>
 		/// Read a varying leaf which can be either a leaf type or a raw data marker
 		/// </summary>
@@ -131,12 +129,13 @@ namespace Smx.PDBSharp
 			if (hasSize) {
 				size = ReadUInt16();
 			}
-			LeafType = ReadEnum<LeafType>();
+			LeafType leafType = ReadEnum<LeafType>();
 
 			ILeaf typeSym = null;
-			if (readers.ContainsKey(LeafType)) {
-				ConstructorInfo ctor = readers[LeafType];
+			if (readers.ContainsKey(leafType)) {
+				ConstructorInfo ctor = readers[leafType];
 				object[] args;
+
 				switch (ctor.GetParameters().Length) {
 					case 1:
 						args = new object[] { Stream };
@@ -147,9 +146,10 @@ namespace Smx.PDBSharp
 					default:
 						throw new NotSupportedException();
 				}
-				typeSym = (ILeaf)readers[LeafType].Invoke(args);
+
+				typeSym = (ILeaf)readers[leafType].Invoke(args);
 			} else {
-				throw new NotImplementedException($"{LeafType} not supported yet");
+				throw new NotImplementedException($"{leafType} not supported yet");
 			}
 
 			ConsumePadding();
@@ -158,9 +158,9 @@ namespace Smx.PDBSharp
 		}
 
 		private string GetUdtName() {
-			switch (LeafType) {
-				case LeafType.LF_CLASS:
-					return ((LF_CLASS)this).Name;
+			switch (this) {
+				case LF_CLASS lfClass:
+					return lfClass.Name;
 				default:
 					throw new NotImplementedException();
 			}
@@ -181,22 +181,23 @@ namespace Smx.PDBSharp
 		}
 
 		public bool IsUdtSourceLine() {
-			switch (LeafType) {
-				case LeafType.LF_UDT_SRC_LINE:
-				case LeafType.LF_UDT_MOD_SRC_LINE:
-					return true;
+			switch (this) {
+				//$TODO
+				/*case LF_UDT_SRC_LINE:
+				case LF_UDT_MOD_SRC_LINE:
+					return true;*/
 				default:
 					return false;
 			}
 		}
 
 		public bool IsGlobalDefnUdtWithUniqueName() {
-			switch (LeafType) {
-				case LeafType.LF_CLASS:
-				case LeafType.LF_STRUCTURE:
-				case LeafType.LF_UNION:
-				case LeafType.LF_ENUM:
-				case LeafType.LF_INTERFACE:
+			switch (this) {
+				case LF_CLASS _:
+				case LF_UNION _:
+				case LF_ENUM _:
+				//$TODO
+				//case LF_INTERFACE _:
 					break;
 				default:
 					return false;
@@ -213,19 +214,20 @@ namespace Smx.PDBSharp
 		}
 
 		public bool IsGlobalDefnUdt() {
-			switch (LeafType) {
-				case LeafType.LF_ALIAS:
-					return true;
-				case LeafType.LF_CLASS:
-				case LeafType.LF_STRUCTURE:
-				case LeafType.LF_UNION:
-				case LeafType.LF_ENUM:
-				case LeafType.LF_INTERFACE:
+			switch (this) {
+				//$TODO
+				/*case LF_ALIAS _:
+					return true;*/
+				case LF_CLASS _:
+				case LF_UNION _:
+				case LF_ENUM _:
+				//case LF_INTERFACE _:
 					break;
 				default:
 					return false;
 			}
 
+			//$TODO: not tested
 			LF_CLASS leaf = (LF_CLASS)this;
 			return (
 				!leaf.FieldProperties.HasFlag(TypeProperties.IsForwardReference) &&

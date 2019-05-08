@@ -178,7 +178,7 @@ namespace Smx.PDBSharp.Dumper
 				}
 			}
 
-			if (fields.Length > 0)
+			if (props.Length > 0 && fields.Length > 0)
 				CrIndent(sb);
 
 			for(int i=0; i<fields.Length; i++) {

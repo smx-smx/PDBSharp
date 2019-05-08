@@ -39,16 +39,12 @@ namespace Smx.PDBSharp
 		protected readonly SymbolHeader Header;
 		SymbolHeader ISymbol.Header => Header;
 
-		protected readonly PDBFile PDB;
-
 		public SymbolDataReader(PDBFile pdb, SymbolHeader header, Stream stream) : base(pdb, stream) {
-			this.PDB = pdb;
 			Header = header;
 			CheckHeader();
 		}
 
 		public SymbolDataReader(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			this.PDB = pdb;
 			Header = ReadHeader();
 			CheckHeader();
 		}
