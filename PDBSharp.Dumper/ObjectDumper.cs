@@ -53,6 +53,7 @@ namespace Smx.PDBSharp.Dumper
 
 		private string HandleNullType() {
 			sb.Append("null");
+			CrIndent(sb);
 			return sb.ToString();
 		}
 
