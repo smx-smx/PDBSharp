@@ -67,6 +67,7 @@ namespace Smx.PDBSharp
 
 		public Lazy<ILeaf> ReadIndexedTypeLazy() {
 			UInt32 TI = ReadUInt32();
+
 			return new Lazy<ILeaf>(() => {
 				if (TI == 0)
 					return null;

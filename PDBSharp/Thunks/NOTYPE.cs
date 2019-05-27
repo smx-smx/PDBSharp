@@ -17,9 +17,9 @@ using Smx.PDBSharp.Symbols.Structures;
 namespace Smx.PDBSharp.Thunks
 {
 	[ThunkReader(ThunkType.NOTYPE)]
-	public class NOTYPE : ThunkReaderBase, IThunk
+	public class NOTYPE : SymbolDataReader, IThunk
 	{
-		public NOTYPE(SymbolHeader symHeader, Stream stream) : base(symHeader, stream) {
+		public NOTYPE(PDBFile pdb, SymbolHeader symHeader, Stream stream) : base(pdb, symHeader, stream) {
 		}
 	}
 }

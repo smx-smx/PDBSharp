@@ -32,7 +32,7 @@ namespace Smx.PDBSharp
 					// key
 					t => t.GetCustomAttribute<ThunkReaderAttribute>().Type,
 					// value
-					t => t.GetConstructor(new Type[] { typeof(SymbolHeader), typeof(Stream) }
+					t => t.GetConstructor(new Type[] { typeof(PDBFile), typeof(SymbolHeader), typeof(Stream) }
 				));
 		}
 
@@ -76,7 +76,7 @@ namespace Smx.PDBSharp
 				throw new InvalidDataException();
 			}
 
-			return (IThunk)thunkReaders[type].Invoke(new object[] { Header, Stream });
+			return (IThunk)thunkReaders[type].Invoke(new object[] { PDB, Header, Stream });
 		}
 	}
 }
