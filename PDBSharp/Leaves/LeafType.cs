@@ -39,7 +39,7 @@ namespace Smx.PDBSharp.Leaves
 		LF_OEM_16t = 0x0015,       // oem definable type string
 		LF_TYPESERVER_ST = 0x0016,       // not referenced from symbol
 
-		// leaf indices starting records but referenced only from type records
+		// ILeaf indices starting records but referenced only from type records
 
 		LF_SKIP_16t = 0x0200,
 		LF_ARGLIST_16t = 0x0201,
@@ -94,7 +94,7 @@ namespace Smx.PDBSharp.Leaves
 		LF_ALIAS_ST = 0x1010,       // alias (typedef) type
 		LF_OEM2 = 0x1011,       // oem definable type string
 
-		// leaf indices starting records but referenced only from type records
+		// ILeaf indices starting records but referenced only from type records
 
 		LF_SKIP = 0x1200,
 		LF_ARGLIST = 0x1201,
@@ -225,5 +225,6 @@ namespace Smx.PDBSharp.Leaves
 		LF_PAD14 = 0xfe,
 		LF_PAD15 = 0xff,
 
+		SPECIAL_BUILTIN = 0xffff,
 	}
 }

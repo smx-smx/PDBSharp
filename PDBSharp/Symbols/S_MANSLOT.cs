@@ -22,7 +22,7 @@ namespace Smx.PDBSharp.Symbols
 	public class S_MANSLOT : SymbolDataReader
 	{
 		public readonly UInt32 SlotIndex;
-		public readonly Lazy<ILeaf> Type;
+		public readonly ILeaf Type;
 		public readonly CV_LVAR_ATTR Attributes;
 		public readonly string Name;
 

@@ -21,7 +21,7 @@ namespace Smx.PDBSharp.Leaves
 
 		public LF_ENUMERATE(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Attributes = new FieldAttributes(ReadUInt16());
-			ILeaf type = ReadVaryingType(out uint leafSize);
+			ILeaf type = ReadVaryingType(out uint ILeafSize);
 			FieldName = ReadCString();
 		}
 	}

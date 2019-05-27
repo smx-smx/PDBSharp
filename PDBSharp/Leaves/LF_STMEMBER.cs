@@ -17,7 +17,7 @@ namespace Smx.PDBSharp.Leaves
 	public class LF_STMEMBER : TypeDataReader
 	{
 		public readonly FieldAttributes Attributes;
-		public readonly Lazy<ILeaf> TypeRecord;
+		public readonly ILeaf TypeRecord;
 		public readonly string Name;
 
 		public LF_STMEMBER(PDBFile pdb, Stream stream) : base(pdb, stream) {

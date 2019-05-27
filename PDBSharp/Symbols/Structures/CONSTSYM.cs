@@ -14,7 +14,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 {
 	public class ConstSym : SymbolDataReader
 	{
-		public readonly Lazy<ILeaf> Type;
+		public readonly ILeaf Type;
 		public readonly ILeaf Value;
 		public readonly string Name;
 

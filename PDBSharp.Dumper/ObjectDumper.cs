@@ -171,7 +171,18 @@ namespace Smx.PDBSharp.Dumper
 
 				sb.Append($"[{prop.Name}] => ");
 
-				object value = prop.GetValue(obj);
+				object value = null;
+
+				bool shouldGetValue = true;
+				if(obj is LazyLeafProvider llp && (llp.Leaf == null || !Program.OptVerbose)) {
+					shouldGetValue = false;
+					if (llp.Leaf != null) {
+						value = "<...>";
+					}
+				}
+				if (shouldGetValue) {
+					value = prop.GetValue(obj);
+				}
 				sb.Append(new ObjectDumper(value, depth + depthOffset).GetString());
 
 				if (i + 1 < props.Length) {

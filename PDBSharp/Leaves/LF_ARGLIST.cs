@@ -18,7 +18,7 @@ namespace Smx.PDBSharp.Leaves
 	public class LF_ARGLIST : TypeDataReader
 	{
 		public UInt16 NumberOfArguments;
-		public Lazy<ILeaf>[] ArgumentTypes;
+		public ILeaf[] ArgumentTypes;
 
 		public LF_ARGLIST(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			NumberOfArguments = ReadUInt16();

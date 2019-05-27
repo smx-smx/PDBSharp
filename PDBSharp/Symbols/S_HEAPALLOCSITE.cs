@@ -12,7 +12,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt32 CallSiteOffset;
 		public readonly UInt16 SectionIndex;
 		public readonly UInt16 HeapAllocationInstructionSize;
-		public readonly Lazy<ILeaf> FunctionSignature;
+		public readonly ILeaf FunctionSignature;
 
 		public S_HEAPALLOCSITE(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			CallSiteOffset = ReadUInt32();

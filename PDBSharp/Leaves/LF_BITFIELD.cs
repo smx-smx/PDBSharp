@@ -16,7 +16,7 @@ namespace Smx.PDBSharp.Leaves
 	[LeafReader(LeafType.LF_BITFIELD)]
 	public class LF_BITFIELD : TypeDataReader
 	{
-		public readonly Lazy<ILeaf> Type;
+		public readonly ILeaf Type;
 		public readonly byte Length;
 		public readonly byte Position;
 

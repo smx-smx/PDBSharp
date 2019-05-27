@@ -17,8 +17,8 @@ namespace Smx.PDBSharp.Leaves
 	public class LF_VBCLASS : TypeDataReader
 	{
 		public readonly FieldAttributes Attributes;
-		public readonly Lazy<ILeaf> VirtualBaseClassType;
-		public readonly Lazy<ILeaf> VirtualBasePointerType;
+		public readonly ILeaf VirtualBaseClassType;
+		public readonly ILeaf VirtualBasePointerType;
 
 
 		public LF_VBCLASS(PDBFile pdb, Stream stream) : base(pdb, stream) {
@@ -31,13 +31,6 @@ namespace Smx.PDBSharp.Leaves
 			var dyn1 = ReadVaryingType(out uint dynSize1);
 			//virtual base offset from vbtable
 			var dyn2 = ReadVaryingType(out uint dynSize2);
-		}
-	}
-
-	[LeafReader(LeafType.LF_IVBCLASS)]
-	public class LF_IVBCLASS : LF_VBCLASS
-	{
-		public LF_IVBCLASS(PDBFile pdb, Stream stream) : base(pdb, stream) {
 		}
 	}
 }

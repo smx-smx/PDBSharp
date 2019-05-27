@@ -20,8 +20,8 @@ namespace Smx.PDBSharp.Leaves
 		public readonly UInt16 NumElements;
 		public readonly TypeProperties Properties;
 
-		public readonly Lazy<ILeaf> UnderlyingType;
-		public readonly Lazy<ILeaf> FieldType;
+		public readonly ILeaf UnderlyingType;
+		public readonly ILeaf FieldType;
 
 		public readonly string FieldName;
 

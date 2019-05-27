@@ -21,7 +21,7 @@ namespace Smx.PDBSharp.Symbols
 	public class S_REGREL32 : SymbolDataReader
 	{
 		public readonly UInt32 Offset;
-		public readonly Lazy<ILeaf> Type;
+		public readonly ILeaf Type;
 		public readonly UInt16 RegisterIndex;
 		public readonly string Name;
 

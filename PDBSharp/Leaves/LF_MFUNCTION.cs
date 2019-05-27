@@ -17,12 +17,12 @@ namespace Smx.PDBSharp.Leaves
 	[LeafReader(LeafType.LF_MFUNCTION)]
 	public class LF_MFUNCTION : TypeDataReader
 	{
-		public readonly Lazy<ILeaf> ReturnValueType;
-		public readonly Lazy<ILeaf> ContainingClassType;
-		public readonly Lazy<ILeaf> ThisPointerType;
+		public readonly ILeaf ReturnValueType;
+		public readonly ILeaf ContainingClassType;
+		public readonly ILeaf ThisPointerType;
 		public readonly CallingConvention CallingConvention;
 		public readonly UInt16 NumberOfParameters;
-		public readonly Lazy<ILeaf> ArgumentListType;
+		public readonly ILeaf ArgumentListType;
 		public readonly UInt32 ThisAdjustor;
 
 		public readonly FunctionAttributes Attributes;

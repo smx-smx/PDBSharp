@@ -17,7 +17,7 @@ namespace Smx.PDBSharp.Leaves
 	public class LF_ONEMETHOD : TypeDataReader
 	{
 		public readonly FieldAttributes Attributes;
-		public readonly Lazy<ILeaf> ProcedureType;
+		public readonly ILeaf ProcedureType;
 		public readonly UInt32 VBaseOffset;
 
 		public readonly string Name;

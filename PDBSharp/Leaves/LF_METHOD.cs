@@ -17,7 +17,7 @@ namespace Smx.PDBSharp.Leaves
 	public class LF_METHOD : TypeDataReader
 	{
 		public readonly UInt16 NumberOfOccurrences;
-		public readonly Lazy<ILeaf> MethodListRecord;
+		public readonly ILeaf MethodListRecord;
 
 		public readonly string Name;
 

@@ -28,7 +28,7 @@ namespace Smx.PDBSharp
 	{
 		public ModuleInfo Module { get; }
 
-		public IEnumerable<ISymbol> Symbols {
+		public IEnumerable<Symbol> Symbols {
 			get {
 				return ReadSymbols().Cached();
 			}
@@ -46,7 +46,7 @@ namespace Smx.PDBSharp
 			}
 		}
 
-		private IEnumerable<ISymbol> ReadSymbols() {
+		private IEnumerable<Symbol> ReadSymbols() {
 			int symbolsSize = (int)Module.SymbolsSize - sizeof(CodeViewSignature); //exclude signature
 			byte[] symbolsData = ReadBytes(symbolsSize);
 

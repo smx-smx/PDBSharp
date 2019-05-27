@@ -7,9 +7,9 @@ using System.Text;
 namespace Smx.PDBSharp
 {
 	/// <summary>
-	/// A virtual leaf representing a builtin type
+	/// A virtual ILeaf representing a builtin type
 	/// </summary>
-	public class BuiltinTypeLeaf : ILeaf
+	public class BuiltinTypeLeaf : ILeafData
 	{
 		public readonly SpecialType SpecialType;
 		public readonly SpecialTypeMode TypeMode;

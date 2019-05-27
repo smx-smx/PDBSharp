@@ -25,7 +25,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public readonly UInt32 Length;
 		public readonly UInt32 DebugStartOffset;
 		public readonly UInt32 DebugEndOffset;
-		public readonly Lazy<ILeaf> Type;
+		public readonly ILeaf Type;
 		public readonly UInt32 Offset;
 		public readonly UInt16 Segment;
 		public readonly CV_PROCFLAGS Flags;

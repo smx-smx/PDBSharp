@@ -19,7 +19,7 @@ using System.Reflection;
 
 namespace Smx.PDBSharp.Dumper
 {
-	class Program
+	public class Program
 	{
 		static void OnSymbolData(ISymbol symbol, byte[] rawData) {
 			Console.WriteLine(new string('=', 80));
@@ -48,9 +48,9 @@ namespace Smx.PDBSharp.Dumper
 			}
 		}
 
-		static bool OptDumpStreams = false;
-		static bool OptVerbose = false;
-		static string PdbFilePath = null;
+		public static bool OptDumpStreams = false;
+		public static bool OptVerbose = false;
+		public static string PdbFilePath = null;
 
 		private static void ParseArguments(string[] args) {
 			for (int i = 0; i < args.Length; i++) {
@@ -92,11 +92,9 @@ namespace Smx.PDBSharp.Dumper
 			}
 
 			pdb.Types.ForEach(type => {
-				if (OptVerbose) {
-					ObjectDumper.Dump(type);
-				}
+				ObjectDumper.Dump(type);
 
-				switch (type) {
+				switch (type.Data) {
 					case LF_FIELDLIST flst:
 						flst.Fields.ForEach(leaf => {
 							if (OptVerbose) {

@@ -17,7 +17,7 @@ namespace Smx.PDBSharp.Leaves
 	public class LF_VFTPATH_16t : TypeDataReader
 	{
 		public readonly UInt16 NumElements;
-		public readonly Lazy<ILeaf> Bases;
+		public readonly ILeaf Bases;
 
 		public LF_VFTPATH_16t(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			NumElements = ReadUInt16();

@@ -18,7 +18,7 @@ namespace Smx.PDBSharp.Leaves
 	{
 		public readonly UInt16 NumberOfElements;
 		public readonly TypeProperties Properties;
-		public readonly Lazy<ILeaf> FieldType;
+		public readonly ILeaf FieldType;
 
 		public readonly string Name;
 

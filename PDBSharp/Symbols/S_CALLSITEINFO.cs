@@ -22,7 +22,7 @@ namespace Smx.PDBSharp.Symbols
 	{
 		public readonly UInt32 Offset;
 		public readonly UInt16 SectionIndex;
-		public readonly Lazy<ILeaf> Type;
+		public readonly ILeaf Type;
 
 		public S_CALLSITEINFO(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Offset = ReadUInt32();

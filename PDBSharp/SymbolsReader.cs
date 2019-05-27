@@ -22,46 +22,107 @@ namespace Smx.PDBSharp
 {
 	public class SymbolsReader : ReaderBase
 	{
-		private static readonly Dictionary<SymbolType, ConstructorInfo> symbolReaders;
-
-		static SymbolsReader() {
-			var readers = Assembly
-				.GetExecutingAssembly()
-				.GetTypes()
-				.Where(t => t.GetCustomAttribute<SymbolReaderAttribute>() != null);
-
-			var withStream = readers
-				.ToDictionary(
-					// key
-					t => t.GetCustomAttribute<SymbolReaderAttribute>().Type,
-					// value
-					t => t.GetConstructor(new Type[] {
-						typeof(Stream)
-					}
-				)).Where(p => p.Value != null);
-
-			var withContext = readers
-				.ToDictionary(
-					// key
-					t => t.GetCustomAttribute<SymbolReaderAttribute>().Type,
-					// value
-					t => t.GetConstructor(new Type[] {
-						typeof(PDBFile),
-						typeof(Stream)
-					}
-				)).Where(p => p.Value != null);
-
-			symbolReaders = withStream.Concat(withContext)
-				.ToDictionary(i => i.Key, i => i.Value);
-		}
-
 		private readonly PDBFile pdb;
 
 		public SymbolsReader(PDBFile pdb, Stream stream) : base(stream) {
 			this.pdb = pdb;
 		}
 
-		public IEnumerable<ISymbol> ReadSymbols() {
+		private ISymbol ReadSymbol(SymbolType symbolType, Stream Stream) {
+			switch (symbolType) {
+				case SymbolType.S_BLOCK32:
+					return new S_BLOCK32(pdb, Stream);
+				case SymbolType.S_BPREL32:
+					return new S_BPREL32(pdb, Stream);
+				case SymbolType.S_BUILDINFO:
+					return new S_BUILDINFO(pdb, Stream);
+				case SymbolType.S_CALLEES:
+					return new S_CALLEES(pdb, Stream);
+				case SymbolType.S_CALLSITEINFO:
+					return new S_CALLSITEINFO(pdb, Stream);
+				case SymbolType.S_COFFGROUP:
+					return new S_COFFGROUP(pdb, Stream);
+				case SymbolType.S_COMPILE2:
+					return new S_COMPILE2(pdb, Stream);
+				case SymbolType.S_COMPILE3:
+					return new S_COMPILE3(pdb, Stream);
+				case SymbolType.S_CONSTANT:
+					return new S_CONSTANT(pdb, Stream);
+				case SymbolType.S_DEFRANGE_FRAMEPOINTER_REL:
+					return new S_DEFRANGE_FRAMEPOINTER_REL(pdb, Stream);
+				case SymbolType.S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE:
+					return new S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE(pdb, Stream);
+				case SymbolType.S_DEFRANGE_REGISTER:
+					return new S_DEFRANGE_REGISTER(pdb, Stream);
+				case SymbolType.S_DEFRANGE_REGISTER_REL:
+					return new S_DEFRANGE_REGISTER_REL(pdb, Stream);
+				case SymbolType.S_DEFRANGE_SUBFIELD_REGISTER:
+					return new S_DEFRANGE_SUBFIELD_REGISTER(pdb, Stream);
+				case SymbolType.S_END:
+					// S_END has no data because it's used as marker
+					return null;
+				case SymbolType.S_ENVBLOCK:
+					return new S_ENVBLOCK(pdb, Stream);
+				case SymbolType.S_EXPORT:
+					return new S_EXPORT(pdb, Stream);
+				case SymbolType.S_FILESTATIC:
+					return new S_FILESTATIC(pdb, Stream);
+				case SymbolType.S_FRAMECOOKIE:
+					return new S_FRAMECOOKIE(pdb, Stream);
+				case SymbolType.S_FRAMEPROC:
+					return new S_FRAMEPROC(pdb, Stream);
+				case SymbolType.S_GDATA32:
+				case SymbolType.S_LDATA32:
+				case SymbolType.S_LMANDATA:
+					return new DataSym32(pdb, Stream);
+				case SymbolType.S_GMANPROC:
+				case SymbolType.S_LMANPROC:
+					return new ManProcSym(pdb, Stream);
+				case SymbolType.S_GPROC32:
+				case SymbolType.S_LPROC32:
+					return new ProcSym32(pdb, Stream);
+				case SymbolType.S_HEAPALLOCSITE:
+					return new S_HEAPALLOCSITE(pdb, Stream);
+				case SymbolType.S_LABEL32:
+					return new S_LABEL32(pdb, Stream);
+				case SymbolType.S_LOCAL:
+					return new S_LOCAL(pdb, Stream);
+				case SymbolType.S_MANCONSTANT:
+					return new ConstSym(pdb, Stream);
+				case SymbolType.S_MANSLOT:
+					return new S_MANSLOT(pdb, Stream);
+				case SymbolType.S_OBJNAME:
+					return new S_OBJNAME(pdb, Stream);
+				case SymbolType.S_OEM:
+					return new S_OEM(pdb, Stream);
+				case SymbolType.S_REGISTER:
+					return new S_REGISTER(pdb, Stream);
+				case SymbolType.S_REGREL32:
+					return new S_REGREL32(pdb, Stream);
+				case SymbolType.S_SECTION:
+					return new S_SECTION(pdb, Stream);
+				case SymbolType.S_SEPCODE:
+					return new S_SEPCODE(pdb, Stream);
+				case SymbolType.S_SKIP:
+					return null;
+				case SymbolType.S_THUNK32:
+					return new S_THUNK32(pdb, Stream);
+				case SymbolType.S_TRAMPOLINE:
+					return new S_TRAMPOLINE(pdb, Stream);
+				case SymbolType.S_COBOLUDT:
+				case SymbolType.S_UDT:
+					return new UdtSym(pdb, Stream);
+				case SymbolType.S_UNAMESPACE:
+					return new S_UNAMESPACE(pdb, Stream);
+				case SymbolType.S_WITH32:
+				case SymbolType.S_WITH32_ST:
+					return new S_WITH32(pdb, Stream);
+				default:
+					throw new NotImplementedException($"Symbol type {symbolType} not implemented yet");
+			}
+		}
+
+		public IEnumerable<Symbol> ReadSymbols() {
 			var remaining = Stream.Length;
 
 			while (remaining > 0) {
@@ -82,23 +143,9 @@ namespace Smx.PDBSharp
 				wr.Write(data);
 				symDataStream.Position = 0;
 
-				if (symbolReaders.ContainsKey(symbolType)) {
-					ConstructorInfo ctor = symbolReaders[symbolType];
-					object[] args;
-					switch (ctor.GetParameters().Length) {
-						case 1:
-							args = new object[] { symDataStream };
-							break;
-						case 2:
-							args = new object[] { pdb, symDataStream };
-							break;
-						default:
-							throw new NotSupportedException();
-					}
-					yield return (ISymbol)symbolReaders[symbolType].Invoke(args);
-				} else {
-					throw new NotImplementedException($"Symbol type {symbolType} not supported yet");
-				}
+				ISymbol sym = ReadSymbol(symbolType, symDataStream);
+				yield return new Symbol(symbolType, sym);
+				
 
 				if (symDataStream.Position != symDataStream.Length) {
 					Trace.WriteLine($"WARNING: {symbolType} didn't consume {symDataStream.Length - symDataStream.Position} bytes");

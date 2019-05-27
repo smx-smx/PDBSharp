@@ -16,14 +16,13 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp.Leaves
 {
 	[LeafReader(LeafType.LF_VARSTRING)]
-	public class LF_VARSTRING: SymbolDataReader, ILeaf<string>
+	public class LF_VARSTRING : TypeDataReader
 	{
+		public readonly string Value;
 		public LF_VARSTRING(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			UInt16 length = ReadUInt16();
 			byte[] data = ReadBytes((int)length);
 			Value = Encoding.ASCII.GetString(data);
 		}
-
-		public string Value { get; }
 	}
 }

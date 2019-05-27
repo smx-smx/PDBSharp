@@ -8,7 +8,7 @@ namespace Smx.PDBSharp.Leaves
 	[LeafReader(LeafType.LF_INDEX)]
 	class LF_INDEX : TypeDataReader
 	{
-		public readonly Lazy<ILeaf> Referenced;
+		public readonly ILeaf Referenced;
 
 		public LF_INDEX(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Referenced = ReadIndexedTypeLazy();

@@ -21,21 +21,6 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp
 {
 	public class SymbolDataReader: TypeDataReader, ISymbol {
-		private static readonly Dictionary<ThunkType, ConstructorInfo> thunkReaders;
-
-		static SymbolDataReader() {
-			thunkReaders = Assembly
-				.GetExecutingAssembly()
-				.GetTypes()
-				.Where(t => t.GetCustomAttribute<ThunkReaderAttribute>() != null)
-				.ToDictionary(
-					// key
-					t => t.GetCustomAttribute<ThunkReaderAttribute>().Type,
-					// value
-					t => t.GetConstructor(new Type[] { typeof(PDBFile), typeof(SymbolHeader), typeof(Stream) }
-				));
-		}
-
 		protected readonly SymbolHeader Header;
 		SymbolHeader ISymbol.Header => Header;
 
@@ -76,7 +61,18 @@ namespace Smx.PDBSharp
 				throw new InvalidDataException();
 			}
 
-			return (IThunk)thunkReaders[type].Invoke(new object[] { PDB, Header, Stream });
+			switch (type) {
+				case ThunkType.ADJUSTOR:
+					return new ADJUSTOR(PDB, Header, Stream);
+				case ThunkType.NOTYPE:
+					return new NOTYPE(PDB, Header, Stream);
+				case ThunkType.PCODE:
+					return new PCODE(PDB, Header, Stream);
+				case ThunkType.VCALL:
+					return new VCALL(PDB, Header, Stream);
+				default:
+					throw new NotImplementedException($"Thunk '{type}' not implemented yet");
+			}
 		}
 	}
 }

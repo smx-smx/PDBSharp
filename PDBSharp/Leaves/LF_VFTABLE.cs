@@ -16,8 +16,8 @@ namespace Smx.PDBSharp.Leaves
 	[LeafReader(LeafType.LF_VFTABLE)]
 	public class LF_VFTABLE : TypeDataReader
 	{
-		public readonly Lazy<ILeaf> Type;
-		public readonly Lazy<ILeaf> BaseVfTable;
+		public readonly ILeaf Type;
+		public readonly ILeaf BaseVfTable;
 		public readonly UInt32 OffsetInObjectLayout;
 		/// <summary>
 		/// Size in Bytes

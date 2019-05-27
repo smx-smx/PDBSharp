@@ -76,7 +76,7 @@ namespace Smx.PDBSharp
 	public class TPIReader : ReaderBase
 	{
 		public readonly TPIHeader Header;
-		public IEnumerable<ILeaf> Types;
+		public IEnumerable<ILeafData> Types;
 
 		private readonly StreamTableReader stRdr;
 		private readonly HashDataReader TPIHash;
@@ -118,7 +118,8 @@ namespace Smx.PDBSharp
 		public ILeaf GetTypeByIndex(UInt32 TypeIndex) {
 			if (!HasTi(TypeIndex)) {
 				if (IsBuiltinTi(TypeIndex)) {
-					return new BuiltinTypeLeaf(TypeIndex);
+					ILeafData builtin = new BuiltinTypeLeaf(TypeIndex);
+					return new DirectLeafProvider(LeafType.SPECIAL_BUILTIN, builtin);
 				}
 				return null;
 			}

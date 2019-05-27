@@ -39,7 +39,7 @@ namespace Smx.PDBSharp.Leaves
 	[LeafReader(LeafType.LF_POINTER)]
 	public class LF_POINTER : TypeDataReader
 	{
-		public readonly Lazy<ILeaf> UnderlyingType;
+		public readonly ILeaf UnderlyingType;
 		public readonly PointerAttributes Attributes;
 
 		public LF_POINTER(PDBFile pdb, Stream stream) : base(pdb, stream) {

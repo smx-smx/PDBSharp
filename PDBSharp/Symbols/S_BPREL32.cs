@@ -19,7 +19,7 @@ namespace Smx.PDBSharp.Symbols
 	public class S_BPREL32 : SymbolDataReader
 	{
 		public readonly UInt32 Offset;
-		public readonly Lazy<ILeaf> Type;
+		public readonly ILeaf Type;
 		public readonly string Name;
 	
 		public S_BPREL32(PDBFile pdb, Stream stream) : base(pdb, stream) {

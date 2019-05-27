@@ -16,8 +16,8 @@ namespace Smx.PDBSharp.Leaves
 	[LeafReader(LeafType.LF_ARRAY)]
 	public class LF_ARRAY : TypeDataReader
 	{
-		public readonly Lazy<ILeaf> ElementType;
-		public readonly Lazy<ILeaf> IndexingType;
+		public readonly ILeaf ElementType;
+		public readonly ILeaf IndexingType;
 
 		public readonly string Name;
 

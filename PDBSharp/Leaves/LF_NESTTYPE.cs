@@ -16,7 +16,7 @@ namespace Smx.PDBSharp.Leaves
 	[LeafReader(LeafType.LF_NESTTYPE)]
 	public class LF_NESTTYPE : TypeDataReader
 	{
-		public readonly Lazy<ILeaf> NestedTypeDef;
+		public readonly ILeaf NestedTypeDef;
 		public readonly string Name;
 
 		public LF_NESTTYPE(PDBFile pdb, Stream stream) : base(pdb, stream) {

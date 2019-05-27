@@ -19,8 +19,8 @@ namespace Smx.PDBSharp.Leaves
 		public readonly UInt16 NumberOfElements;
 		public TypeProperties FieldProperties;
 		public UInt32 FieldIndex;
-		public Lazy<ILeaf> DerivedType;
-		public Lazy<ILeaf> VShapeTableType;
+		public ILeaf DerivedType;
+		public ILeaf VShapeTableType;
 
 		//public UInt16 StructSize;
 

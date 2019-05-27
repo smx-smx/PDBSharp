@@ -16,12 +16,12 @@ using System.Threading.Tasks;
 namespace Smx.PDBSharp.Leaves
 {
 	[LeafReader(LeafType.LF_UQUADWORD)]
-	public class LF_UQUADWORD: SymbolDataReader, ILeaf<ulong>
+	public class LF_UQUADWORD : TypeDataReader
 	{
+		public readonly ulong Value;
+
 		public LF_UQUADWORD(PDBFile pdb, Stream stream) : base(pdb, stream) {
 			Value = ReadUInt64();
 		}
-
-		public ulong Value { get; }
 	}
 }

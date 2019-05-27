@@ -14,10 +14,10 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Leaves
 {
-	public interface ILeaf {
+	public interface ILeafData {
 	}
 
-	public interface ILeaf<T> : ILeaf
+	public interface ILeaf<T> : ILeafData
 	{
 		T Value { get; }
 	}

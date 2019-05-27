@@ -14,7 +14,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 {
 	public class UdtSym : SymbolDataReader
 	{
-		public readonly Lazy<ILeaf> Type;
+		public readonly ILeaf Type;
 		public readonly string Name;
 
 		public UdtSym(PDBFile pdb, Stream stream) : base(pdb, stream) {

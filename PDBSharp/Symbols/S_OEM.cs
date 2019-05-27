@@ -21,7 +21,7 @@ namespace Smx.PDBSharp.Symbols
 	public class S_OEM : SymbolDataReader
 	{
 		public readonly Guid Id;
-		public readonly Lazy<ILeaf> Type;
+		public readonly ILeaf Type;
 		public readonly byte[] UserData;
 
 		public S_OEM(PDBFile pdb, Stream stream) : base(pdb, stream) {

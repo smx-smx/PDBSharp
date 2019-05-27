@@ -88,6 +88,6 @@ namespace Smx.PDBSharp
 
 		public ModuleInfo Module { get; }
 
-		public IEnumerable<ISymbol> Symbols => Enumerable.Empty<ISymbol>();
+		public IEnumerable<Symbol> Symbols => Enumerable.Empty<Symbol>();
 	}
 }

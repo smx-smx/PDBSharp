@@ -17,7 +17,7 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_REGISTER)]
 	public class S_REGISTER : SymbolDataReader
 	{
-		public readonly Lazy<ILeaf> Type;
+		public readonly ILeaf Type;
 		public readonly UInt16 Register;
 		public readonly string Name;
 

@@ -20,7 +20,7 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_FILESTATIC)]
 	public class S_FILESTATIC : SymbolDataReader
 	{
-		public readonly Lazy<ILeaf> Type;
+		public readonly ILeaf Type;
 		public readonly UInt32 ModuleFilenameOffset;
 		public readonly CV_LVARFLAGS Flags;
 		public readonly string Name;

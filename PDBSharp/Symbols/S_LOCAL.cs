@@ -20,7 +20,7 @@ namespace Smx.PDBSharp.Symbols
 	[SymbolReader(SymbolType.S_LOCAL)]
 	public class S_LOCAL : SymbolDataReader
 	{
-		public readonly Lazy<ILeaf> Type;
+		public readonly ILeaf Type;
 		public readonly CV_LVARFLAGS Flags;
 		public readonly string Name;
 
