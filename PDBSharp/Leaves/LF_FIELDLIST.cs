@@ -20,7 +20,7 @@ namespace Smx.PDBSharp.Leaves
 		public readonly IEnumerable<ILeaf> Fields;
 
 		private IEnumerable<ILeaf> ReadFields(Stream dataStream) {
-			while(dataStream.Position < dataStream.Length) {
+			while(dataStream.Position + sizeof(UInt16) < dataStream.Length) {
 				ILeaf leaf = new TypeDataReader(this.PDB, dataStream).ReadType(hasSize: false);
 				if (leaf == null)
 					yield break;

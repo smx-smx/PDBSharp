@@ -167,7 +167,9 @@ namespace Smx.PDBSharp
 				throw new InvalidDataException();
 			}
 
-			TPIHash = new HashDataReader(this, new MemoryStream(stRdr.GetStream(Header.Hash.StreamNumber)));
+			if(((int)Header.Hash.StreamNumber) != -1){
+				TPIHash = new HashDataReader(this, new MemoryStream(stRdr.GetStream(Header.Hash.StreamNumber)));
+			}
 
 
 #if false
