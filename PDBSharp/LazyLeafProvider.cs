@@ -33,6 +33,10 @@ namespace Smx.PDBSharp
 			lazy = new Lazy<ILeaf>(ReadLeaf);
 		}
 
+		public LazyLeafProvider(Lazy<ILeaf> lazyProvider) {
+			lazy = lazyProvider;
+		}
+
 		public LeafType Type => Leaf.Type;
 		public ILeafData Data => Leaf.Data;
 	}

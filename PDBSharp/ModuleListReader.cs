@@ -111,16 +111,12 @@ namespace Smx.PDBSharp
 	public class ModuleListReader : ReaderBase
 	{
 		public ModuleListReader(Stream stream) : base(stream) {
+			lazyModules = new Lazy<IEnumerable<ModuleInfo>>(ReadModules);
 		}
 
-		private IEnumerable<ModuleInfo> modules;
-		public IEnumerable<ModuleInfo> Modules {
-			get {
-				if (modules == null)
-					modules = ReadModules().Cached();
-				return modules;
-			}
-		}
+		private Lazy<IEnumerable<ModuleInfo>> lazyModules;
+
+		public IEnumerable<ModuleInfo> Modules => lazyModules.Value;
 
 		private IEnumerable<ModuleInfo> ReadModules() {
 			var remaining = Stream.Length;

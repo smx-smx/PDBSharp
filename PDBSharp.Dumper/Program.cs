@@ -21,33 +21,9 @@ namespace Smx.PDBSharp.Dumper
 {
 	public class Program
 	{
-		static void OnSymbolData(ISymbol symbol, byte[] rawData) {
-			Console.WriteLine(new string('=', 80));
-			Console.WriteLine();
-
-			SymbolHeader symHdr;
-			if (symbol == null) {
-				symHdr = new SymbolHeaderReader(new MemoryStream(rawData)).Data;
-			} else {
-				symHdr = symbol.Header;
-			}
-
-			Console.WriteLine($"[{symHdr.Type}]");
-			rawData.HexDump();
-			Console.WriteLine();
-
-			if (symbol == null)
-				return;
-
-			FieldInfo data = symbol.GetType().GetField("Data");
-
-			object obj;
-			if (data != null) {
-				obj = data.GetValue(symbol);
-				ObjectDumper.Dump(obj);
-			}
-		}
-
+		public static bool OptDumpModules = false;
+		public static bool OptDumpLeaves = false;
+		public static bool OptDumpSymbols = false;
 		public static bool OptDumpStreams = false;
 		public static bool OptVerbose = false;
 		public static string PdbFilePath = null;
@@ -58,6 +34,15 @@ namespace Smx.PDBSharp.Dumper
 				switch (arg) {
 					case "-dump":
 						OptDumpStreams = true;
+						break;
+					case "-dump-modules":
+						OptDumpModules = true;
+						break;
+					case "-dump-leaves":
+						OptDumpLeaves = true;
+						break;
+					case "-dump-syms":
+						OptDumpSymbols = true;
 						break;
 					case "-verbose":
 						OptVerbose = true;
@@ -80,6 +65,12 @@ namespace Smx.PDBSharp.Dumper
 			var file = new FileStream(PdbFilePath, FileMode.Open, FileAccess.Read);
 			PDBFile pdb = new PDBFile(file);
 
+			if (OptDumpLeaves) {
+				pdb.OnTpiInit += Pdb_OnTpiInit;
+			}
+			if (OptDumpModules || OptDumpSymbols) {
+				pdb.OnDbiInit += Pdb_OnDbiInit;
+			}
 
 			if (OptDumpStreams) {
 				DirectoryInfo dumpDir = Directory.CreateDirectory(Path.GetFileNameWithoutExtension(PdbFilePath));
@@ -94,7 +85,7 @@ namespace Smx.PDBSharp.Dumper
 			pdb.Types.ForEach(type => {
 				ObjectDumper.Dump(type);
 
-				switch (type.Data) {
+				/*switch (type.Data) {
 					case LF_FIELDLIST flst:
 						flst.Fields.ForEach(leaf => {
 							if (OptVerbose) {
@@ -102,14 +93,15 @@ namespace Smx.PDBSharp.Dumper
 							}
 						});
 						break;
-				}
+				}*/
 			});
 
-			pdb.Modules.ForEach(mod => {
-				Console.WriteLine($"[MODULE => {mod.Module.ModuleName}]");
-				Console.WriteLine($"[OBJECT => {mod.Module.ObjectFileName}]");
+			pdb.Modules.ForEach(container => {
+				Console.WriteLine($"[MODULE => {container.Info.ModuleName}]");
+				Console.WriteLine($"[OBJECT => {container.Info.ObjectFileName}]");
 				Console.WriteLine();
 
+				IModule mod = container.Module;
 				mod.Symbols.ForEach(sym => {
 					if (OptVerbose) {
 						ObjectDumper.Dump(sym);
@@ -119,6 +111,34 @@ namespace Smx.PDBSharp.Dumper
 
 			Console.WriteLine("Press Enter to continue...");
 			Console.ReadLine();
+		}
+
+		private static void Pdb_OnDbiInit(DBIReader DBI) {
+			if (OptDumpModules) {
+				DBI.OnModuleData += DBI_OnModuleData;
+			}
+			DBI.OnModuleReaderInit += DBI_OnModuleReaderInit;
+		}
+
+		private static void DBI_OnModuleReaderInit(IModule module) {
+			module.OnSymbolData += Module_OnSymbolData;
+		}
+
+		private static void Module_OnSymbolData(byte[] data) {
+			data.HexDump();
+		}
+
+		private static void Pdb_OnTpiInit(TPIReader TPI) {
+			TPI.OnLeafData += TPI_OnLeafData;
+		}
+
+		private static void TPI_OnLeafData(byte[] data) {
+			data.HexDump();
+		}
+
+		private static void DBI_OnModuleData(ModuleInfo modInfo, byte[] data) {
+			Console.WriteLine($"===== {modInfo.ModuleName}");
+			data.HexDump();
 		}
 	}
 }

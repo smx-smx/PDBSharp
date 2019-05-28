@@ -26,31 +26,35 @@ namespace Smx.PDBSharp
 
 	public class CodeViewModuleReader : ReaderBase, IModule
 	{
-		public ModuleInfo Module { get; }
-
-		public IEnumerable<Symbol> Symbols {
-			get {
-				return ReadSymbols().Cached();
-			}
-		}
-
 		private readonly PDBFile pdb;
+		private readonly ModuleInfo modInfo;
+
+		private readonly Lazy<IEnumerable<Symbol>> lazySymbols;
+
+		public event OnSymbolDataDelegate OnSymbolData;
+
+		public IEnumerable<Symbol> Symbols => lazySymbols.Value;
 
 		public CodeViewModuleReader(PDBFile pdb, ModuleInfo modInfo, Stream stream) : base(stream) {
 			this.pdb = pdb;
-			this.Module = modInfo;
+			this.modInfo = modInfo;
 
 			CodeViewSignature signature = ReadEnum<CodeViewSignature>();
 			if(signature != CodeViewSignature.C13){
 				throw new NotImplementedException($"CodeView {signature} not supported yet");
 			}
+
+			lazySymbols = new Lazy<IEnumerable<Symbol>>(ReadSymbols);
 		}
 
 		private IEnumerable<Symbol> ReadSymbols() {
-			int symbolsSize = (int)Module.SymbolsSize - sizeof(CodeViewSignature); //exclude signature
+			int symbolsSize = (int)modInfo.SymbolsSize - sizeof(CodeViewSignature); //exclude signature
 			byte[] symbolsData = ReadBytes(symbolsSize);
 
 			var rdr = new SymbolsReader(pdb, new MemoryStream(symbolsData));
+			if(OnSymbolData != null) {
+				rdr.OnSymbolData += OnSymbolData;
+			}
 			return rdr.ReadSymbols();
 		}
 	}

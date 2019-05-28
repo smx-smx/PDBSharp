@@ -6,15 +6,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-using Smx.PDBSharp.Symbols;
-using System.Collections;
+using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Smx.PDBSharp
 {
-	public interface IModule
+	public delegate void OnModuleDataDelegate(ModuleInfo modInfo, byte[] data);
+
+	public interface IModuleContainer
 	{
-		event OnSymbolDataDelegate OnSymbolData;
-		IEnumerable<Symbol> Symbols { get; }
+		event OnModuleDataDelegate OnModuleData;
+		ModuleInfo Info { get; }
+		IModule Module { get; }
 	}
 }

@@ -31,9 +31,14 @@ namespace Smx.PDBSharp
 		public readonly string FileName;
 
 
-		public SourceFileModuleReader(PDBFile pdb, ModuleInfo mod, Stream stream) : base(stream) {
+		private readonly ModuleInfo modInfo;
+
+		public event OnSymbolDataDelegate OnSymbolData;
+
+		public IEnumerable<Symbol> Symbols => Enumerable.Empty<Symbol>();
+
+		public SourceFileModuleReader(PDBFile pdb, Stream stream) : base(stream) {
 			this.pdb = pdb;
-			this.Module = mod;
 
 			// including .c file
 			NumberOfFiles = ReadUInt16();
@@ -81,13 +86,9 @@ namespace Smx.PDBSharp
 			// skip it for now, and go read child headers
 			Children = childFileOffsets.Select(offset => {
 				return PerformAt<SourceFileModuleReader>(offset, () => {
-					return new SourceFileModuleReader(this.pdb, this.Module, this.Stream);
+					return new SourceFileModuleReader(this.pdb, this.Stream);
 				});
 			}).ToArray();
 		}
-
-		public ModuleInfo Module { get; }
-
-		public IEnumerable<Symbol> Symbols => Enumerable.Empty<Symbol>();
 	}
 }

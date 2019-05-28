@@ -20,9 +20,13 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp
 {
+	public delegate void OnSymbolDataDelegate(byte[] data);
+
 	public class SymbolsReader : ReaderBase
 	{
 		private readonly PDBFile pdb;
+
+		public event OnSymbolDataDelegate OnSymbolData;
 
 		public SymbolsReader(PDBFile pdb, Stream stream) : base(stream) {
 			this.pdb = pdb;
@@ -136,6 +140,7 @@ namespace Smx.PDBSharp
 				Stream symDataStream = new MemoryStream(new byte[dataSize]);
 
 				byte[] data = ReadBytes((int)length - sizeof(UInt16));
+				OnSymbolData?.Invoke(data);
 
 				BinaryWriter wr = new BinaryWriter(symDataStream);
 				wr.Write(length);

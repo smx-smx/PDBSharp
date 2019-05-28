@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,8 +18,13 @@ namespace Smx.PDBSharp
 	{
 		const int STRING_OFFSET = 62;
 
+		private static IEnumerable<byte> GetChunk(byte[] bytes, int index, int size) {
+			for (int i = index; i < index + size; i++) {
+				yield return bytes[i];
+			}
+		}
+
 		public static void HexDump(this byte[] bytes, int? optBytesLength = null) {
-			IEnumerable<byte> seq = bytes;
 			StringBuilder sb = new StringBuilder();
 
 			int index = 0;
@@ -27,17 +32,18 @@ namespace Smx.PDBSharp
 
 			char[] lineBuf = new char[16];
 			int lineBufIdx = 0;
-			while(index < bytes.Length) {
+
+			while (index < bytes.Length) {
 				if ((index % 16) == 0) {
 					sb.AppendFormat("{0:X8}   ", index);
 					lineLength = 8 + 3;
 					lineBufIdx = 0;
 				}
 
-				int takeLength = Math.Min(seq.Count(), 8);
-				var chunk = bytes.Skip(index).Take(takeLength);
+				int takeLength = Math.Min(bytes.Length - index, 8);
+				for (int i = 0, j = index; j < index + takeLength; j++, i++) {
+					byte b = bytes[j];
 
-				chunk.All(b => {
 					char c = Convert.ToChar(b);
 					if (char.IsControl(c) || c >= sbyte.MaxValue) {
 						c = '.';
@@ -47,13 +53,9 @@ namespace Smx.PDBSharp
 
 					sb.AppendFormat("{0:X2} ", b);
 					lineLength += 3;
+				}
 
-					return true;
-				});
-				
-				seq = seq.Skip(takeLength);
 				index += takeLength;
-
 				if (takeLength == 8) {
 					sb.Append(" ");
 					lineLength++;

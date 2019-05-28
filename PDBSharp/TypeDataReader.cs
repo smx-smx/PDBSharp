@@ -20,6 +20,7 @@ namespace Smx.PDBSharp
 {
 	public class TypeDataReader : ReaderBase, ILeafData
 	{
+
 		private static readonly ReadOnlyDictionary<LeafType, uint> PrimitiveDataSizes = new ReadOnlyDictionary<LeafType, uint>(new Dictionary<LeafType, uint>() {
 			{ LeafType.LF_CHAR, 1 },
 			{ LeafType.LF_SHORT, 2 },
@@ -71,7 +72,7 @@ namespace Smx.PDBSharp
 			dataSize = PrimitiveDataSizes[leafType];
 
 			Stream.Seek(-2, SeekOrigin.Current);
-			ILeaf leaf = new TypeDataReader(this.PDB, Stream).ReadType(hasSize: false);
+			ILeaf leaf = new TypeDataReader(this.PDB, Stream).ReadTypeLazy(hasSize: false);
 			return leaf;
 
 		}
@@ -171,7 +172,14 @@ namespace Smx.PDBSharp
 			}
 		}
 
-		public ILeaf ReadType(bool hasSize = true) {
+		public ILeaf ReadTypeLazy(bool hasSize = true) {
+			Lazy<ILeaf> delayedLeaf = new Lazy<ILeaf>(() => {
+				return ReadTypeDirect(hasSize);
+			});
+			return new LazyLeafProvider(delayedLeaf);
+		}
+
+		public ILeaf ReadTypeDirect(bool hasSize = true) {
 			UInt16 size = 0;
 			if (hasSize) {
 				size = ReadUInt16();

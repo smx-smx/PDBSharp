@@ -70,6 +70,13 @@ namespace Smx.PDBSharp
 
 		private readonly PDBFile pdb;
 
+		private readonly Lazy<IEnumerable<IModuleContainer>> lazyModuleContainers;
+
+		public IEnumerable<IModuleContainer> Modules => lazyModuleContainers.Value;
+
+		public event OnModuleDataDelegate OnModuleData;
+		public event OnModuleReaderInitDelegate OnModuleReaderInit;
+
 		public DBIReader(PDBFile pdb, StreamTableReader stRdr, Stream stream) : base(stream) {
 			this.pdb = pdb;
 
@@ -88,30 +95,27 @@ namespace Smx.PDBSharp
 			) {
 				throw new InvalidDataException();
 			}
+
+			lazyModuleContainers = new Lazy<IEnumerable<IModuleContainer>>(ReadModules);
 		}
 
-		public IEnumerable<IModule> ReadModules() {
+
+		private IEnumerable<IModuleContainer> ReadModules() {
 			byte[] moduleList = ReadBytes((int)hdr.ModuleListSize);
 			var modListRdr = new ModuleListReader(new MemoryStream(moduleList));
 
 			IEnumerable<ModuleInfo> moduleInfoList = modListRdr.Modules;
 			foreach (ModuleInfo mod in moduleInfoList) {
-				int streamNumber = mod.StreamNumber;
-				if (streamNumber < 0) {
-					continue;
+				LazyModuleProvider provider = new LazyModuleProvider(pdb, stRdr, mod);
+				
+				if (OnModuleReaderInit != null) {
+					provider.OnModuleReaderInit += OnModuleReaderInit;
 				}
-				byte[] modData = stRdr.GetStream(streamNumber);
-
-				MemoryStream modStream = new MemoryStream(modData);
-				UInt32 signature = new BinaryReader(modStream).ReadUInt32();
-				modStream.Position = 0;
-				if (Enum.IsDefined(typeof(CodeViewSignature), signature)) {
-					yield return new CodeViewModuleReader(pdb, mod, modStream);
-				} else {
-					yield return new SourceFileModuleReader(pdb, mod, modStream);
+				if (OnModuleData != null) {
+					provider.OnModuleData += OnModuleData;
 				}
+				yield return provider;
 			}
 		}
-
 	}
 }

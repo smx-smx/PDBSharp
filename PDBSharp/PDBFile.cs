@@ -26,8 +26,13 @@ namespace Smx.PDBSharp
 		IPI = 4
 	}
 
+	public delegate void OnTpiInitDelegate(TPIReader TPI);
+	public delegate void OnDbiInitDelegate(DBIReader DBI);
+
 	public class PDBFile
 	{
+		public event OnTpiInitDelegate OnTpiInit;
+		public event OnDbiInitDelegate OnDbiInit;
 
 		public const string SMALL_MAGIC = "Microsoft C/C++ program database 2.00\r\n\x1a" + "JG";
 		public const string BIG_MAGIC = "Microsoft C/C++ MSF 7.00\r\n\x1a" + "DS";
@@ -48,21 +53,11 @@ namespace Smx.PDBSharp
 			}
 		}
 
-		public IEnumerable<IModule> Modules {
-			get {
-				if (modules == null)
-					modules = ReadModules().Cached();
-				return modules;
-			}
-		}
+		public IEnumerable<IModuleContainer> Modules => ReadModules();
 
-		public IEnumerable<ILeaf> Types {
-			get {
-				if (types == null)
-					types = ReadTypes().Cached();
-				return types;
-			}
-		}
+		private readonly Lazy<IEnumerable<ILeaf>> lazyLeaves;
+
+		public IEnumerable<ILeaf> Types => lazyLeaves.Value;
 
 		public DBIReader DBI { get; private set; }
 		public TPIReader TPI { get; private set; }
@@ -100,19 +95,21 @@ namespace Smx.PDBSharp
 			this.rdr = new MSFReader(this.stream, FileType);
 
 			byte[] streamTable = rdr.StreamTable();
-			//streamTable.HexDump();
 			StreamTable = new StreamTableReader(rdr, new MemoryStream(streamTable));
+
+			lazyLeaves = new Lazy<IEnumerable<ILeaf>>(ReadTypes);
 		}
 
-		public IEnumerable<IModule> ReadModules() {
+		public IEnumerable<IModuleContainer> ReadModules() {
 			if (DBI == null) {
 				byte[] dbi = StreamTable.GetStream((int)DefaultStreams.DBI);
 				if (dbi.Length == 0) {
-					return Enumerable.Empty<IModule>();
+					return Enumerable.Empty<IModuleContainer>();
 				}
 				DBI = new DBIReader(this, StreamTable, new MemoryStream(dbi));
+				OnDbiInit?.Invoke(DBI);
 			}
-			return DBI.ReadModules();
+			return DBI.Modules;
 		}
 
 		public IEnumerable<ILeaf> ReadTypes() {
@@ -122,6 +119,7 @@ namespace Smx.PDBSharp
 					return Enumerable.Empty<ILeaf>();
 				}
 				TPI = new TPIReader(this, StreamTable, new MemoryStream(tpi));
+				OnTpiInit?.Invoke(TPI);
 			}
 			return TPI.ReadTypes();
 		}

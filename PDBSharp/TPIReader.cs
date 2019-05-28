@@ -73,10 +73,13 @@ namespace Smx.PDBSharp
 		V80 = 20040203
 	}
 
+	public delegate void OnLeafDataDelegate(byte[] data);
+
 	public class TPIReader : ReaderBase
 	{
 		public readonly TPIHeader Header;
-		public IEnumerable<ILeafData> Types;
+
+		public event OnLeafDataDelegate OnLeafData;
 
 		private readonly StreamTableReader stRdr;
 		private readonly HashDataReader TPIHash;
@@ -187,14 +190,18 @@ namespace Smx.PDBSharp
 			}
 
 			int dataSize = length + sizeof(UInt16);
-			byte[] symDataBuf = new byte[dataSize];
+			byte[] leafDataBuf = new byte[dataSize];
 
-			BinaryWriter wr = new BinaryWriter(new MemoryStream(symDataBuf));
+			MemoryStream stream = new MemoryStream(leafDataBuf);
+			BinaryWriter wr = new BinaryWriter(stream);
 			wr.Write(length);
 			wr.Write(ReadBytes(length));
 
-			TypeDataReader rdr = new TypeDataReader(pdb, new MemoryStream(symDataBuf));
-			return rdr.ReadType();
+			OnLeafData?.Invoke(leafDataBuf);
+
+			stream.Position = 0;
+			TypeDataReader rdr = new TypeDataReader(pdb, stream);
+			return rdr.ReadTypeLazy();
 		}
 
 		public IEnumerable<ILeaf> ReadTypes() {

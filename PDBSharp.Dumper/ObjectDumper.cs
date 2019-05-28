@@ -11,6 +11,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -165,6 +166,7 @@ namespace Smx.PDBSharp.Dumper
 				return sb.ToString();
 			}
 
+			bool shouldGetValue;
 
 			for (int i = 0; i < props.Length; i++) {
 				PropertyInfo prop = props[i];
@@ -172,14 +174,19 @@ namespace Smx.PDBSharp.Dumper
 				sb.Append($"[{prop.Name}] => ");
 
 				object value = null;
+				shouldGetValue = true;
 
-				bool shouldGetValue = true;
-				if(obj is LazyLeafProvider llp && (llp.Leaf == null || !Program.OptVerbose)) {
-					shouldGetValue = false;
-					if (llp.Leaf != null) {
-						value = "<...>";
-					}
+				switch (obj) {
+					case LazyLeafProvider llp:
+						if (llp.Leaf == null || !Program.OptVerbose) {
+							shouldGetValue = false;
+							if (llp.Leaf != null) {
+								value = "<...>";
+							}
+						}
+						break;
 				}
+			
 				if (shouldGetValue) {
 					value = prop.GetValue(obj);
 				}
@@ -195,9 +202,20 @@ namespace Smx.PDBSharp.Dumper
 
 			for(int i=0; i<fields.Length; i++) {
 				FieldInfo field = fields[i];
+				// workaround for stack overflow on async methods
+				if (field.Name.StartsWith("<>") && field.Name.EndsWith("__this")) {
+					continue;
+				}
+
 				sb.Append($"[{field.Name}] => ");
 
-				object value = field.GetValue(obj);
+				shouldGetValue = true;
+				object value = null;
+
+				if (shouldGetValue) {
+					value = field.GetValue(obj);
+				}
+
 				sb.Append(new ObjectDumper(value, depth + depthOffset).GetString());
 
 				if (i + 1 < fields.Length) {
