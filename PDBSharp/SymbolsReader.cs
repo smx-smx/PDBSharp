@@ -77,6 +77,8 @@ namespace Smx.PDBSharp
 					return new S_FRAMEPROC(pdb, Stream);
 				case SymbolType.S_GDATA32:
 					return new S_GDATA32(pdb, Stream);
+				case SymbolType.S_INLINESITE:
+					return new S_INLINESITE(pdb, Stream);
 				case SymbolType.S_LDATA32:
 					return new S_LDATA32(pdb, Stream);
 				case SymbolType.S_LMANDATA:
@@ -114,6 +116,7 @@ namespace Smx.PDBSharp
 				case SymbolType.S_SEPCODE:
 					return new S_SEPCODE(pdb, Stream);
 				case SymbolType.S_SKIP:
+				case SymbolType.S_INLINESITE_END:
 					return null;
 				case SymbolType.S_THUNK32:
 					return new S_THUNK32(pdb, Stream);
@@ -156,7 +159,9 @@ namespace Smx.PDBSharp
 				symDataStream.Position = 0;
 
 				ISymbol sym = ReadSymbol(symbolType, symDataStream);
-				yield return new Symbol(symbolType, sym);
+				if (sym != null) {
+					yield return new Symbol(symbolType, sym);
+				}
 
 #if false
 				if (symDataStream.Position != symDataStream.Length) {
