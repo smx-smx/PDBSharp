@@ -16,10 +16,12 @@ using Smx.PDBSharp.Symbols.Structures;
 
 namespace Smx.PDBSharp.Thunks
 {
-	[ThunkReader(ThunkType.NOTYPE)]
 	public class NOTYPE : SymbolDataReader, IThunk
 	{
 		public NOTYPE(PDBFile pdb, SymbolHeader symHeader, Stream stream) : base(pdb, symHeader, stream) {
+		}
+
+		public void Write(SymbolDataWriter w) {
 		}
 	}
 }

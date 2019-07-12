@@ -13,17 +13,25 @@ using System.Text;
 
 namespace Smx.PDBSharp.Leaves
 {
-	[LeafReader(LeafType.LF_BITFIELD)]
-	public class LF_BITFIELD : TypeDataReader
+	public class LF_BITFIELD : ILeaf
 	{
-		public readonly ILeaf Type;
+		public readonly ILeafContainer Type;
 		public readonly byte Length;
 		public readonly byte Position;
 
-		public LF_BITFIELD(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			Type = ReadIndexedTypeLazy();
-			Length = ReadByte();
-			Position = ReadByte();
+		public LF_BITFIELD(PDBFile pdb, Stream stream) {
+			TypeDataReader r = new TypeDataReader(pdb, stream);
+			Type = r.ReadIndexedTypeLazy();
+			Length = r.ReadByte();
+			Position = r.ReadByte();
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_BITFIELD);
+			w.WriteIndexedType(Type);
+			w.WriteByte(Length);
+			w.WriteByte(Position);
+			w.WriteLeafHeader();
 		}
 	}
 }

@@ -43,7 +43,7 @@ namespace Smx.PDBSharp
 		public readonly StreamTableReader StreamTable;
 
 		private IEnumerable<IModule> modules;
-		private IEnumerable<ILeaf> types;
+		private IEnumerable<LeafBase> types;
 
 		public IEnumerable<byte[]> Streams {
 			get {
@@ -55,9 +55,9 @@ namespace Smx.PDBSharp
 
 		public IEnumerable<IModuleContainer> Modules => ReadModules();
 
-		private readonly Lazy<IEnumerable<ILeaf>> lazyLeaves;
+		private readonly Lazy<IEnumerable<ILeafContainer>> lazyLeaves;
 
-		public IEnumerable<ILeaf> Types => lazyLeaves.Value;
+		public IEnumerable<ILeafContainer> Types => lazyLeaves.Value;
 
 		public DBIReader DBI { get; private set; }
 		public TPIReader TPI { get; private set; }
@@ -97,7 +97,7 @@ namespace Smx.PDBSharp
 			byte[] streamTable = rdr.StreamTable();
 			StreamTable = new StreamTableReader(rdr, new MemoryStream(streamTable));
 
-			lazyLeaves = new Lazy<IEnumerable<ILeaf>>(ReadTypes);
+			lazyLeaves = new Lazy<IEnumerable<ILeafContainer>>(ReadTypes);
 		}
 
 		public IEnumerable<IModuleContainer> ReadModules() {
@@ -112,11 +112,11 @@ namespace Smx.PDBSharp
 			return DBI.Modules;
 		}
 
-		public IEnumerable<ILeaf> ReadTypes() {
+		public IEnumerable<ILeafContainer> ReadTypes() {
 			if (TPI == null) {
 				byte[] tpi = StreamTable.GetStream((int)DefaultStreams.TPI);
 				if(tpi.Length == 0) {
-					return Enumerable.Empty<ILeaf>();
+					return Enumerable.Empty<ILeafContainer>();
 				}
 				TPI = new TPIReader(this, StreamTable, new MemoryStream(tpi));
 				OnTpiInit?.Invoke(TPI);

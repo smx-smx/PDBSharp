@@ -16,8 +16,20 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
-	[SymbolReader(SymbolType.S_SECTION)]
-	public class S_SECTION : SymbolDataReader
+	public class SectionSym
+	{
+		public UInt16 SectionNumber { get; set; }
+		/// <summary>
+		/// Alignment of this section (power of 2)
+		/// </summary>
+		public byte Alignment { get; set; }
+		public UInt32 Rva { get; set; }
+		public UInt32 Length { get; set; }
+		public UInt32 Characteristics { get; set; }
+		public string Name { get; set; }
+	}
+
+	public class S_SECTION : ISymbol
 	{
 		public readonly UInt16 SectionNumber;
 		/// <summary>
@@ -29,14 +41,38 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt32 Characteristics;
 		public readonly string Name;
 
-		public S_SECTION(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			SectionNumber = ReadUInt16();
-			Alignment = ReadByte();
-			ReadByte(); //reserved
-			Rva = ReadUInt32();
-			Length = ReadUInt32();
-			Characteristics = ReadUInt32();
-			Name = ReadSymbolString();
+		public S_SECTION(PDBFile pdb, Stream stream) {
+			var r = new SymbolDataReader(pdb, stream);
+
+			SectionNumber = r.ReadUInt16();
+			Alignment = r.ReadByte();
+			r.ReadByte(); //reserved
+			Rva = r.ReadUInt32();
+			Length = r.ReadUInt32();
+			Characteristics = r.ReadUInt32();
+			Name = r.ReadSymbolString();
+		}
+
+		public S_SECTION(SectionSym data) {
+			SectionNumber = data.SectionNumber;
+			Alignment = data.Alignment;
+			Rva = data.Rva;
+			Length = data.Length;
+			Characteristics = data.Characteristics;
+			Name = data.Name;
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_SECTION);
+			w.WriteUInt16(SectionNumber);
+			w.WriteByte(Alignment);
+			w.WriteByte(0x00);
+			w.WriteUInt32(Rva);
+			w.WriteUInt32(Length);
+			w.WriteUInt32(Characteristics);
+			w.WriteSymbolString(Name);
+
+			w.WriteSymbolHeader();
 		}
 	}
 }

@@ -7,12 +7,12 @@
  */
 #endregion
 using Smx.PDBSharp.Leaves;
+using System.IO;
 
 namespace Smx.PDBSharp
 {
 	public interface ILeaf
 	{
-		LeafType Type { get; }
-		ILeafData Data { get; }
+		void Write(PDBFile pdb, Stream stream);
 	}
 }

@@ -11,7 +11,7 @@ using System;
 namespace Smx.PDBSharp.Symbols.Structures
 {
 	[Flags]
-	internal enum CompileSym3FlagsEnum : UInt32
+	public enum CompileSym3FlagsEnum : UInt32
 	{
 		CompiledForEC = 1 << 8,
 		NoDebugInfo = 1 << 9,
@@ -29,12 +29,14 @@ namespace Smx.PDBSharp.Symbols.Structures
 
 	public class CompileSym3Flags
 	{
+		public static explicit operator CompileSym3FlagsEnum(CompileSym3Flags flags) => flags.flags;
+
 		private readonly CompileSym3FlagsEnum flags;
 		public CompileSym3Flags(UInt32 flags) {
 			this.flags = (CompileSym3FlagsEnum)flags;
 		}
 
-		public byte LanguageIndex => (byte)((uint)flags & 8);
+		public byte LanguageIndex => (byte)((uint)flags & 0xFF);
 		public bool CompiledForEC => flags.HasFlag(CompileSym3FlagsEnum.CompiledForEC);
 		public bool NoDebugInfo => flags.HasFlag(CompileSym3FlagsEnum.NoDebugInfo);
 		public bool HasLTCG => flags.HasFlag(CompileSym3FlagsEnum.HasLTCG);

@@ -16,6 +16,9 @@ namespace Smx.PDBSharp.Leaves
 	public class PointerAttributes
 	{
 		private readonly UInt32 attrs;
+
+		public static explicit operator UInt32(PointerAttributes attrs) => attrs.attrs;
+
 		public PointerAttributes(UInt32 attrs) {
 			this.attrs = attrs;
 
@@ -36,15 +39,23 @@ namespace Smx.PDBSharp.Leaves
 		public bool IsRestricted => ((attrs >> 12) & 1) == 1;
 	}
 
-	[LeafReader(LeafType.LF_POINTER)]
-	public class LF_POINTER : TypeDataReader
+	public class LF_POINTER : ILeaf
 	{
-		public readonly ILeaf UnderlyingType;
+		public readonly ILeafContainer UnderlyingType;
 		public readonly PointerAttributes Attributes;
 
-		public LF_POINTER(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			UnderlyingType = ReadIndexedTypeLazy();
-			Attributes = new PointerAttributes(ReadUInt32());
+		public LF_POINTER(PDBFile pdb, Stream stream) {
+			TypeDataReader r = new TypeDataReader(pdb, stream);
+
+			UnderlyingType = r.ReadIndexedTypeLazy();
+			Attributes = new PointerAttributes(r.ReadUInt32());
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_POINTER);
+			w.WriteIndexedType(UnderlyingType);
+			w.WriteUInt32((uint)Attributes);
+			w.WriteLeafHeader();
 		}
 	}
 }

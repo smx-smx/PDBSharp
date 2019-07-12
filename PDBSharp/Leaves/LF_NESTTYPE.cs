@@ -13,16 +13,25 @@ using System.Text;
 
 namespace Smx.PDBSharp.Leaves
 {
-	[LeafReader(LeafType.LF_NESTTYPE)]
-	public class LF_NESTTYPE : TypeDataReader
+	public class LF_NESTTYPE : ILeaf
 	{
-		public readonly ILeaf NestedTypeDef;
+		public readonly ILeafContainer NestedTypeDef;
 		public readonly string Name;
 
-		public LF_NESTTYPE(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			ReadUInt16(); //padding
-			NestedTypeDef = ReadIndexedTypeLazy();
-			Name = ReadCString();
+		public LF_NESTTYPE(PDBFile pdb, Stream stream) {
+			TypeDataReader r = new TypeDataReader(pdb, stream);
+
+			r.ReadUInt16(); //padding
+			NestedTypeDef = r.ReadIndexedTypeLazy();
+			Name = r.ReadCString();
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_NESTTYPE);
+			w.WriteUInt16(0x00);
+			w.WriteIndexedType(NestedTypeDef);
+			w.WriteCString(Name);
+			w.WriteLeafHeader();
 		}
 	}
 }

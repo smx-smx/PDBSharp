@@ -17,19 +17,45 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
-	[SymbolReader(SymbolType.S_REGREL32)]
-	public class S_REGREL32 : SymbolDataReader
+	public class RegRel32
+	{
+		public UInt32 Offset { get; set; }
+		public LeafBase Type { get; set; }
+		public UInt16 RegisterIndex { get; set; }
+		public string Name { get; set; }
+	}
+
+	public class S_REGREL32 : ISymbol
 	{
 		public readonly UInt32 Offset;
-		public readonly ILeaf Type;
+		public readonly ILeafContainer Type;
 		public readonly UInt16 RegisterIndex;
 		public readonly string Name;
 
-		public S_REGREL32(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			Offset = ReadUInt32();
-			Type = ReadIndexedTypeLazy();
-			RegisterIndex = ReadUInt16();
-			Name = ReadSymbolString();
+		public S_REGREL32(PDBFile pdb, Stream stream) {
+			var r = new SymbolDataReader(pdb, stream);
+
+			Offset = r.ReadUInt32();
+			Type = r.ReadIndexedTypeLazy();
+			RegisterIndex = r.ReadUInt16();
+			Name = r.ReadSymbolString();
+		}
+
+		public S_REGREL32(RegRel32 data) {
+			Offset = data.Offset;
+			Type = data.Type;
+			RegisterIndex = data.RegisterIndex;
+			Name = data.Name;
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_REGREL32);
+			w.WriteUInt32(Offset);
+			w.WriteIndexedType(Type);
+			w.WriteUInt16(RegisterIndex);
+			w.WriteSymbolString(Name);
+
+			w.WriteSymbolHeader();
 		}
 	}
 }

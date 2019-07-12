@@ -16,58 +16,51 @@ namespace Smx.PDBSharp
 {
 	public static class ByteArrayExtensions
 	{
-		const int STRING_OFFSET = 62;
+		private static readonly int ROW_PRESIZE = 0x3E;
+		private static readonly int ROW_POSTSIZE = 16 + Environment.NewLine.Length;
+		private static readonly int ROW_SIZE = ROW_PRESIZE + ROW_POSTSIZE;
 
-		private static IEnumerable<byte> GetChunk(byte[] bytes, int index, int size) {
-			for (int i = index; i < index + size; i++) {
-				yield return bytes[i];
-			}
+		private static int ROUND_UP_DIV(int val, int div) {
+			return (val + div - 1) / div;
 		}
 
 		public static void HexDump(this byte[] bytes, int? optBytesLength = null) {
-			StringBuilder sb = new StringBuilder();
+			int max = ROUND_UP_DIV(bytes.Length, ROW_SIZE) * ROW_SIZE;
+			StringBuilder sb = new StringBuilder(max);
 
-			int index = 0;
-			int lineLength = 0;
-
-			char[] lineBuf = new char[16];
-			int lineBufIdx = 0;
-
-			while (index < bytes.Length) {
-				if ((index % 16) == 0) {
-					sb.AppendFormat("{0:X8}   ", index);
-					lineLength = 8 + 3;
-					lineBufIdx = 0;
+			int i = 0, j = 0, octets = 0;
+			while(i<bytes.Length) {
+				int offset = i & 15;
+				if (offset == 0) {
+					sb.AppendFormat("{0:X8}   ", i);
 				}
 
-				int takeLength = Math.Min(bytes.Length - index, 8);
-				for (int i = 0, j = index; j < index + takeLength; j++, i++) {
-					byte b = bytes[j];
+				sb.AppendFormat("{0:X2} ", bytes[i++]);
 
-					char c = Convert.ToChar(b);
-					if (char.IsControl(c) || c >= sbyte.MaxValue) {
-						c = '.';
+				if(i > 0 && (i & 7) == 0) {
+					if (++octets == 2)
+						sb.Append("  ");
+					else
+						sb.Append(' ');
+				}
+
+				if(octets == 2 || i == bytes.Length) {
+					int ws = sb.Length % ROW_SIZE;
+					if(ws < ROW_PRESIZE) {
+						sb.Append(new string(' ', ROW_PRESIZE - ws));
 					}
-					lineBuf[lineBufIdx++] = c;
-					lineBufIdx %= 16;
 
-					sb.AppendFormat("{0:X2} ", b);
-					lineLength += 3;
-				}
-
-				index += takeLength;
-				if (takeLength == 8) {
-					sb.Append(" ");
-					lineLength++;
-				}
-
-				if ((index % 16) == 0 || index >= bytes.Length) {
-					sb.Append(new string(' ', STRING_OFFSET - lineLength));
-					int sz = index % 16;
-					if (sz == 0)
-						sz = 16;
-					sb.Append(lineBuf.Take(sz).ToArray());
+					// go back to saved pos, and print the bytes content
+					for(int k=j; k<i; k++) {
+						if (bytes[k] < 0x20)
+							sb.Append('.');
+						else
+							sb.Append((char)(bytes[k]));
+					}
 					sb.AppendLine();
+
+					j = i;
+					octets = 0;
 				}
 			}
 

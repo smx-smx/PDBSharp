@@ -7,39 +7,43 @@
  */
 #endregion
 using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace Smx.PDBSharp.Symbols.Structures
 {
 	[Flags]
-	internal enum CompileSymFlagsEnum : UInt32
+	public enum CompileSymFlagsEnum : UInt32
 	{
-		CompiledForEC = 1 << 8,
-		NoDebugInfo = 1 << 9,
-		HasLTCG = 1 << 10,
-		NoDataAlign = 1 << 11,
-		IsManaged = 1 << 12,
-		HasSecurityChecks = 1 << 13,
-		HasHotPatch = 1 << 14,
-		ConvertedWithCVTCIL = 1 << 15,
-		IsMSILMModule = 1 << 16
+		HasPCode = 1 << 8,
+		Is32Bit = 1 << 20
 	}
 
 	public class CompileSymFlags
 	{
+		public static explicit operator CompileSymFlagsEnum(CompileSymFlags flags) => flags.flags;
+
 		private readonly CompileSymFlagsEnum flags;
+
 		public CompileSymFlags(UInt32 flags) {
 			this.flags = (CompileSymFlagsEnum)flags;
 		}
 
-		public byte LanguageIndex => (byte)((uint)flags & 8);
-		public bool CompiledForEC => flags.HasFlag(CompileSymFlagsEnum.CompiledForEC);
-		public bool NoDebugInfo => flags.HasFlag(CompileSymFlagsEnum.NoDebugInfo);
-		public bool HasLTCG => flags.HasFlag(CompileSymFlagsEnum.HasLTCG);
-		public bool NoDataAlign => flags.HasFlag(CompileSymFlagsEnum.NoDataAlign);
-		public bool IsManaged => flags.HasFlag(CompileSymFlagsEnum.IsManaged);
-		public bool HasSecurityChecks => flags.HasFlag(CompileSymFlagsEnum.HasSecurityChecks);
-		public bool HasHotPatch => flags.HasFlag(CompileSymFlagsEnum.HasHotPatch);
-		public bool ConvertedWithCVTCIL => flags.HasFlag(CompileSymFlagsEnum.ConvertedWithCVTCIL);
-		public bool IsMSILMModule => flags.HasFlag(CompileSymFlagsEnum.IsMSILMModule);
+		//0
+		public byte LanguageIndex => (byte)((uint)flags & 0xFF);
+		//8 [+8]
+		public bool HasPCode => flags.HasFlag(CompileSymFlagsEnum.HasPCode);
+		//9 [+1]
+		public byte FloatPrecision => (byte)(((uint)flags >> 9) & 3);
+		//11 [+2]
+		public byte FloatPackage => (byte)(((uint)flags >> 11) & 3);
+		//13 [+2]
+		public byte AmbientDataModel => (byte)(((uint)flags >> 13) & 7);
+		//16 [+3]
+		public byte AmbientDataCode => (byte)(((uint)flags >> 16) & 7);
+		//19 [+3]
+		public bool Is32Bit => flags.HasFlag(CompileSymFlagsEnum.Is32Bit);
+		//20 [+1]
+
 	}
 }

@@ -18,10 +18,10 @@ using Smx.PDBSharp.Symbols;
 
 namespace Smx.PDBSharp
 {
-	public class TypeDataReader : ReaderBase, ILeafData
+	public class TypeDataReader : ReaderBase
 	{
 
-		private static readonly ReadOnlyDictionary<LeafType, uint> PrimitiveDataSizes = new ReadOnlyDictionary<LeafType, uint>(new Dictionary<LeafType, uint>() {
+		public static readonly ReadOnlyDictionary<LeafType, uint> PrimitiveDataSizes = new ReadOnlyDictionary<LeafType, uint>(new Dictionary<LeafType, uint>() {
 			{ LeafType.LF_CHAR, 1 },
 			{ LeafType.LF_SHORT, 2 },
 			{ LeafType.LF_USHORT, 2 },
@@ -39,12 +39,12 @@ namespace Smx.PDBSharp
 			this.PDB = pdb;
 		}
 
-		public ILeaf ReadIndexedTypeLazy() {
+		public ILeafContainer ReadIndexedTypeLazy() {
 			UInt32 TI = ReadUInt32();
 			return new LazyLeafProvider(PDB, TI);
 		}
 
-		public ILeaf ReadIndexedType16Lazy() {
+		public ILeafContainer ReadIndexedType16Lazy() {
 			UInt16 TI = ReadUInt16();
 			return new LazyLeafProvider(PDB, TI);
 		}
@@ -55,7 +55,7 @@ namespace Smx.PDBSharp
 		/// <param name="dataSize"></param>
 		/// <param name="leafType"></param>
 		/// <returns>true if we found a ILeaf, false if we found raw data marker</returns>
-		protected ILeaf ReadVaryingType(out uint dataSize) {
+		public ILeafContainer ReadVaryingType(out uint dataSize) {
 			UInt16 leafValue = ReadUInt16();
 			if (leafValue < (ushort)LeafType.LF_NUMERIC) {
 				// $TODO: ILeafValue is not a ILeaf marker, but it's still a valid ushort
@@ -72,7 +72,7 @@ namespace Smx.PDBSharp
 			dataSize = PrimitiveDataSizes[leafType];
 
 			Stream.Seek(-2, SeekOrigin.Current);
-			ILeaf leaf = new TypeDataReader(this.PDB, Stream).ReadTypeLazy(hasSize: false);
+			ILeafContainer leaf = new TypeDataReader(this.PDB, Stream).ReadTypeLazy(hasSize: false);
 			return leaf;
 
 		}
@@ -90,7 +90,7 @@ namespace Smx.PDBSharp
 			}
 		}
 
-		private ILeafData ReadLeaf(LeafType leafType) {
+		private ILeaf ReadLeaf(LeafType leafType) {
 			switch (leafType) {
 				case LeafType.LF_ARGLIST:
 					return new LF_ARGLIST(PDB, Stream);
@@ -172,103 +172,23 @@ namespace Smx.PDBSharp
 			}
 		}
 
-		public ILeaf ReadTypeLazy(bool hasSize = true) {
-			Lazy<ILeaf> delayedLeaf = new Lazy<ILeaf>(() => {
+		public ILeafContainer ReadTypeLazy(bool hasSize = true) {
+			Lazy<ILeafContainer> delayedLeaf = new Lazy<ILeafContainer>(() => {
 				return ReadTypeDirect(hasSize);
 			});
 			return new LazyLeafProvider(delayedLeaf);
 		}
 
-		public ILeaf ReadTypeDirect(bool hasSize = true) {
+		public LeafBase ReadTypeDirect(bool hasSize = true) {
 			UInt16 size = 0;
 			if (hasSize) {
 				size = ReadUInt16();
 			}
 			LeafType leafType = ReadEnum<LeafType>();
-			ILeafData typeSym = ReadLeaf(leafType);
+			ILeaf typeSym = ReadLeaf(leafType);
 
 			ConsumePadding();
-			return new DirectLeafProvider(leafType, typeSym);
-
-		}
-
-		private string GetUdtName() {
-			switch (this) {
-				case LF_CLASS lfClass:
-					return lfClass.Name;
-				default:
-					throw new NotImplementedException();
-			}
-		}
-
-		private bool IsUdtAnon() {
-			string[] utag = new string[] {
-				"::<unnamed-tag>",
-				"::__unnamed"
-			};
-
-			string UdtName = GetUdtName();
-			foreach(string tag in utag) {
-				if (UdtName.Contains(tag))
-					return true;
-			}
-			return false;
-		}
-
-		public bool IsUdtSourceLine() {
-			switch (this) {
-				//$TODO
-				/*case LF_UDT_SRC_LINE:
-				case LF_UDT_MOD_SRC_LINE:
-					return true;*/
-				default:
-					return false;
-			}
-		}
-
-		public bool IsGlobalDefnUdtWithUniqueName() {
-			switch (this) {
-				case LF_CLASS _:
-				case LF_UNION _:
-				case LF_ENUM _:
-				//$TODO
-				//case LF_INTERFACE _:
-					break;
-				default:
-					return false;
-			}
-
-			LF_CLASS leaf = (LF_CLASS)this;
-			return (
-				!leaf.FieldProperties.HasFlag(TypeProperties.IsForwardReference) &&
-				!leaf.FieldProperties.HasFlag(TypeProperties.IsScoped) &&
-				leaf.FieldProperties.HasFlag(TypeProperties.HasUniqueName) &&
-				!IsUdtAnon()
-			);
-
-		}
-
-		public bool IsGlobalDefnUdt() {
-			switch (this) {
-				//$TODO
-				/*case LF_ALIAS _:
-					return true;*/
-				case LF_CLASS _:
-				case LF_UNION _:
-				case LF_ENUM _:
-				//case LF_INTERFACE _:
-					break;
-				default:
-					return false;
-			}
-
-			//$TODO: not tested
-			LF_CLASS leaf = (LF_CLASS)this;
-			return (
-				!leaf.FieldProperties.HasFlag(TypeProperties.IsForwardReference) &&
-				!leaf.FieldProperties.HasFlag(TypeProperties.IsScoped) &&
-				!IsUdtAnon()
-			);
+			return new DirectLeafProvider(0, leafType, typeSym);
 		}
 	}
 }

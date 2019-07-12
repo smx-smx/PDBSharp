@@ -13,15 +13,23 @@ using System.Text;
 
 namespace Smx.PDBSharp.Leaves
 {
-	[LeafReader(LeafType.LF_MODIFIER_16t)]
-	public class LF_MODIFIER_16t : TypeDataReader
+	public class LF_MODIFIER_16t : ILeaf
 	{
 		public readonly CVModifier Attributes;
-		public readonly ILeaf ModifiedType;
+		public readonly ILeafContainer ModifiedType;
 
-		public LF_MODIFIER_16t(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			Attributes = ReadFlagsEnum<CVModifier>();
-			ModifiedType = ReadIndexedType16Lazy();
+		public LF_MODIFIER_16t(PDBFile pdb, Stream stream) {
+			TypeDataReader r = new TypeDataReader(pdb, stream);
+
+			Attributes = r.ReadFlagsEnum<CVModifier>();
+			ModifiedType = r.ReadIndexedType16Lazy();
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_MODIFIER_16t);
+			w.WriteEnum<CVModifier>(Attributes);
+			w.WriteIndexedType16(ModifiedType);
+			w.WriteLeafHeader();
 		}
 	}
 }

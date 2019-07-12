@@ -13,10 +13,14 @@ using System.Text;
 
 namespace Smx.PDBSharp.Symbols
 {
-	[SymbolReader(SymbolType.S_WITH32)]
-	public class S_WITH32 : SymbolDataReader
+	public class S_WITH32 : ISymbol
 	{
-		public S_WITH32(PDBFile pdb, Stream stream) : base(pdb, stream) {
+		public S_WITH32(PDBFile pdb, Stream stream) {
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			SymbolDataWriter w = new SymbolDataWriter(pdb, stream, SymbolType.S_WITH32);
+			w.WriteSymbolHeader();
 		}
 	}
 }

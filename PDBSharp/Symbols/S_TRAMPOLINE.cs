@@ -16,8 +16,35 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
-	[SymbolReader(SymbolType.S_TRAMPOLINE)]
-	public class S_TRAMPOLINE : SymbolDataReader
+	public class TrampolineSym
+	{
+		/// <summary>
+		/// trampoline sym subtype
+		/// </summary>
+		public TrampolineType TrampolineType { get; set; }
+		/// <summary>
+		/// size of the thunk
+		/// </summary>
+		public UInt16 ThunkSize { get; set; }
+		/// <summary>
+		/// offset of the thunk
+		/// </summary>
+		public UInt32 ThunkOffset { get; set; }
+		/// <summary>
+		/// offset of the target of the thunk
+		/// </summary>
+		public UInt32 TargetOffset { get; set; }
+		/// <summary>
+		/// section index of the thunk
+		/// </summary>
+		public UInt16 ThunkSection { get; set; }
+		/// <summary>
+		/// section index of the target of the thunk
+		/// </summary>
+		public UInt16 TargetSection { get; set; }
+	}
+
+	public class S_TRAMPOLINE : ISymbol
 	{
 		/// <summary>
 		/// trampoline sym subtype
@@ -44,13 +71,36 @@ namespace Smx.PDBSharp.Symbols
 		/// </summary>
 		public readonly UInt16 TargetSection;
 
-		public S_TRAMPOLINE(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			TrampolineType = ReadEnum<TrampolineType>();
-			ThunkSize = ReadUInt16();
-			ThunkOffset = ReadUInt32();
-			TargetOffset = ReadUInt32();
-			ThunkSection = ReadUInt16();
-			TargetSection = ReadUInt16();
+		public S_TRAMPOLINE(PDBFile pdb, Stream stream) {
+			var r = new SymbolDataReader(pdb, stream);
+
+			TrampolineType = r.ReadEnum<TrampolineType>();
+			ThunkSize = r.ReadUInt16();
+			ThunkOffset = r.ReadUInt32();
+			TargetOffset = r.ReadUInt32();
+			ThunkSection = r.ReadUInt16();
+			TargetSection = r.ReadUInt16();
+		}
+
+		public S_TRAMPOLINE(TrampolineSym data) {
+			TrampolineType = data.TrampolineType;
+			ThunkSize = data.ThunkSize;
+			ThunkOffset = data.ThunkOffset;
+			TargetOffset = data.TargetOffset;
+			ThunkSection = data.ThunkSection;
+			TargetSection = data.TargetSection;
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_TRAMPOLINE);
+			w.WriteEnum<TrampolineType>(TrampolineType);
+			w.WriteUInt16(ThunkSize);
+			w.WriteUInt32(ThunkOffset);
+			w.WriteUInt32(TargetOffset);
+			w.WriteUInt16(ThunkSection);
+			w.WriteUInt16(TargetSection);
+
+			w.WriteSymbolHeader();
 		}
 	}
 }

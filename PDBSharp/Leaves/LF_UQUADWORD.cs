@@ -15,13 +15,20 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Leaves
 {
-	[LeafReader(LeafType.LF_UQUADWORD)]
-	public class LF_UQUADWORD : TypeDataReader
+	public class LF_UQUADWORD : ILeaf
 	{
 		public readonly ulong Value;
 
-		public LF_UQUADWORD(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			Value = ReadUInt64();
+		public LF_UQUADWORD(PDBFile pdb, Stream stream) {
+			TypeDataReader r = new TypeDataReader(pdb, stream);
+
+			Value = r.ReadUInt64();
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_UQUADWORD);
+			w.WriteUInt64(Value);
+			w.WriteLeafHeader();
 		}
 	}
 }

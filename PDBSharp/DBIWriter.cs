@@ -6,19 +6,22 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp
 {
-	public class SymbolReaderAttribute : Attribute
+	public class DBIWriter : WriterBase
 	{
-		public readonly SymbolType Type;
-		public SymbolReaderAttribute(SymbolType type) {
-			this.Type = type;
+		private readonly PDBFile pdb;
+
+		public DBIWriter(PDBFile pdb, StreamTableWriter stWr, Stream stream) : base(stream) {
+		}
+
+		public void WriteModule(ModuleInfo mod) {
+			
 		}
 	}
 }

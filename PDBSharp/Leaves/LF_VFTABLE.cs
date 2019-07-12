@@ -13,11 +13,10 @@ using System.Text;
 
 namespace Smx.PDBSharp.Leaves
 {
-	[LeafReader(LeafType.LF_VFTABLE)]
-	public class LF_VFTABLE : TypeDataReader
+	public class LF_VFTABLE : ILeaf
 	{
-		public readonly ILeaf Type;
-		public readonly ILeaf BaseVfTable;
+		public readonly ILeafContainer Type;
+		public readonly ILeafContainer BaseVfTable;
 		public readonly UInt32 OffsetInObjectLayout;
 		/// <summary>
 		/// Size in Bytes
@@ -25,22 +24,36 @@ namespace Smx.PDBSharp.Leaves
 		public readonly UInt32 NamesSize;
 		public readonly string[] Names;
 
-		public LF_VFTABLE(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			Type = ReadIndexedTypeLazy();
-			BaseVfTable = ReadIndexedTypeLazy();
-			OffsetInObjectLayout = ReadUInt32();
-			NamesSize = ReadUInt32();
+		public LF_VFTABLE(PDBFile pdb, Stream stream) {
+			TypeDataReader r = new TypeDataReader(pdb, stream);
+
+			Type = r.ReadIndexedTypeLazy();
+			BaseVfTable = r.ReadIndexedTypeLazy();
+			OffsetInObjectLayout = r.ReadUInt32();
+			NamesSize = r.ReadUInt32();
 
 			List<string> lstNames = new List<string>();
 
 			uint read = 0;
 			long savedPos = stream.Position;
 			while(read < NamesSize) {
-				lstNames.Add(ReadCString());
+				lstNames.Add(r.ReadCString());
 				read += (uint)(stream.Position - savedPos);
 				savedPos = stream.Position;
 			}
 			Names = lstNames.ToArray();
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_VFTABLE);
+			w.WriteIndexedType(Type);
+			w.WriteIndexedType(BaseVfTable);
+			w.WriteUInt32(OffsetInObjectLayout);
+			w.WriteUInt32(NamesSize);
+			foreach(string name in Names) {
+				w.WriteCString(name);
+			}
+			w.WriteLeafHeader();
 		}
 	}
 }

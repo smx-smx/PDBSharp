@@ -8,22 +8,32 @@
 #endregion
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using Smx.PDBSharp.Leaves;
 
 namespace Smx.PDBSharp
 {
-	public class DirectLeafProvider : ILeaf
+	public class DirectLeafProvider : LeafBase
 	{
+		private readonly uint typeIndex;
 		private readonly LeafType type;
-		private readonly ILeafData data;
+		private readonly ILeaf data;
 
-		public DirectLeafProvider(LeafType type, ILeafData data) {
+		public DirectLeafProvider(uint typeIndex, LeafType type, ILeaf data) {
+			this.typeIndex = typeIndex;
 			this.type = type;
 			this.data = data;
 		}
 
-		public LeafType Type => type;
-		public ILeafData Data => data;
+		public override uint TypeIndex => typeIndex;
+
+		public override LeafType Type => type;
+
+		public override ILeaf Data => data;
+
+		public override void Write(PDBFile pdb, Stream stream) {
+			data.Write(pdb, stream);
+		}
 	}
 }

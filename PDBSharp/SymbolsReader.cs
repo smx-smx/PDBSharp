@@ -46,12 +46,12 @@ namespace Smx.PDBSharp
 					return new S_CALLSITEINFO(pdb, Stream);
 				case SymbolType.S_COFFGROUP:
 					return new S_COFFGROUP(pdb, Stream);
+				case SymbolType.S_COMPILE:
+					return new S_COMPILE(pdb, Stream);
 				case SymbolType.S_COMPILE2:
 					return new S_COMPILE2(pdb, Stream);
 				case SymbolType.S_COMPILE3:
 					return new S_COMPILE3(pdb, Stream);
-				case SymbolType.S_CONSTANT:
-					return new S_CONSTANT(pdb, Stream);
 				case SymbolType.S_DEFRANGE_FRAMEPOINTER_REL:
 					return new S_DEFRANGE_FRAMEPOINTER_REL(pdb, Stream);
 				case SymbolType.S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE:
@@ -76,23 +76,29 @@ namespace Smx.PDBSharp
 				case SymbolType.S_FRAMEPROC:
 					return new S_FRAMEPROC(pdb, Stream);
 				case SymbolType.S_GDATA32:
+					return new S_GDATA32(pdb, Stream);
 				case SymbolType.S_LDATA32:
+					return new S_LDATA32(pdb, Stream);
 				case SymbolType.S_LMANDATA:
-					return new DataSym32(pdb, Stream);
+					return new S_LMANDATA(pdb, Stream);
 				case SymbolType.S_GMANPROC:
+					return new S_GMANPROC(pdb, Stream);
 				case SymbolType.S_LMANPROC:
-					return new ManProcSym(pdb, Stream);
+					return new S_LMANPROC(pdb, Stream);
 				case SymbolType.S_GPROC32:
+					return new S_GPROC32(pdb, Stream);
 				case SymbolType.S_LPROC32:
-					return new ProcSym32(pdb, Stream);
+					return new S_LPROC32(pdb, Stream);
 				case SymbolType.S_HEAPALLOCSITE:
 					return new S_HEAPALLOCSITE(pdb, Stream);
 				case SymbolType.S_LABEL32:
 					return new S_LABEL32(pdb, Stream);
 				case SymbolType.S_LOCAL:
 					return new S_LOCAL(pdb, Stream);
+				case SymbolType.S_CONSTANT:
+					return new S_CONSTANT(pdb, Stream);
 				case SymbolType.S_MANCONSTANT:
-					return new ConstSym(pdb, Stream);
+					return new S_MANCONSTANT(pdb, Stream);
 				case SymbolType.S_MANSLOT:
 					return new S_MANSLOT(pdb, Stream);
 				case SymbolType.S_OBJNAME:
@@ -114,8 +120,9 @@ namespace Smx.PDBSharp
 				case SymbolType.S_TRAMPOLINE:
 					return new S_TRAMPOLINE(pdb, Stream);
 				case SymbolType.S_COBOLUDT:
+					return new S_COBOLUDT(pdb, Stream);
 				case SymbolType.S_UDT:
-					return new UdtSym(pdb, Stream);
+					return new S_UDT(pdb, Stream);
 				case SymbolType.S_UNAMESPACE:
 					return new S_UNAMESPACE(pdb, Stream);
 				case SymbolType.S_WITH32:
@@ -150,11 +157,12 @@ namespace Smx.PDBSharp
 
 				ISymbol sym = ReadSymbol(symbolType, symDataStream);
 				yield return new Symbol(symbolType, sym);
-				
 
+#if false
 				if (symDataStream.Position != symDataStream.Length) {
 					Trace.WriteLine($"WARNING: {symbolType} didn't consume {symDataStream.Length - symDataStream.Position} bytes");
 				}
+#endif
 
 				remaining -= dataSize;
 			}

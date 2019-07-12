@@ -15,8 +15,19 @@ using System.Text;
 
 namespace Smx.PDBSharp.Symbols
 {
-	[SymbolReader(SymbolType.S_SEPCODE)]
-	public class S_SEPCODE : SymbolDataReader
+	public class SepCodeSym
+	{
+		public UInt32 Parent { get; set; }
+		public UInt32 End { get; set; }
+		public UInt32 Size { get; set; }
+		public CV_SEPCODEFLAGS Flags { get; set; }
+		public UInt32 Offset { get; set; }
+		public UInt32 ParentOffset { get; set; }
+		public UInt16 Section { get; set; }
+		public UInt16 ParentSection { get; set; }
+	}
+
+	public class S_SEPCODE : ISymbol
 	{
 		public readonly UInt32 Parent;
 		public readonly UInt32 End;
@@ -27,18 +38,45 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt16 Section;
 		public readonly UInt16 ParentSection;
 
-		public S_SEPCODE(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			Parent = ReadUInt32();
-			End = ReadUInt32();
+		public S_SEPCODE(PDBFile pdb, Stream stream) {
+			var r = new SymbolDataReader(pdb, stream);
 
-			Size = ReadUInt32();
-			Flags = ReadFlagsEnum<CV_SEPCODEFLAGS>();
+			Parent = r.ReadUInt32();
+			End = r.ReadUInt32();
 
-			Offset = ReadUInt32();
-			ParentOffset = ReadUInt32();
+			Size = r.ReadUInt32();
+			Flags = r.ReadFlagsEnum<CV_SEPCODEFLAGS>();
 
-			Section = ReadUInt16();
-			ParentSection = ReadUInt16();
+			Offset = r.ReadUInt32();
+			ParentOffset = r.ReadUInt32();
+
+			Section = r.ReadUInt16();
+			ParentSection = r.ReadUInt16();
+		}
+
+		public S_SEPCODE(SepCodeSym data) {
+			Parent = data.Parent;
+			End = data.End;
+			Size = data.Size;
+			Flags = data.Flags;
+			Offset = data.Offset;
+			ParentOffset = data.ParentOffset;
+			Section = data.Section;
+			ParentSection = data.ParentSection;
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_SEPCODE);
+			w.WriteUInt32(Parent);
+			w.WriteUInt32(End);
+			w.WriteUInt32(Size);
+			w.WriteEnum<CV_SEPCODEFLAGS>(Flags);
+			w.WriteUInt32(Offset);
+			w.WriteUInt32(ParentOffset);
+			w.WriteUInt16(Section);
+			w.WriteUInt16(ParentSection);
+
+			w.WriteSymbolHeader();
 		}
 	}
 }

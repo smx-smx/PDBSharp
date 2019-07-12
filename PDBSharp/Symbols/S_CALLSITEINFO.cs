@@ -17,18 +17,35 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
-	[SymbolReader(SymbolType.S_CALLSITEINFO)]
-	public class S_CALLSITEINFO : SymbolDataReader
+	public class CallSiteInfo
+	{
+		public UInt32 Offset { get; set; }
+		public UInt16 SectionIndex { get; set; }
+		public LeafBase Type { get; set; }
+	}
+
+	public class S_CALLSITEINFO : ISymbol
 	{
 		public readonly UInt32 Offset;
 		public readonly UInt16 SectionIndex;
-		public readonly ILeaf Type;
+		public readonly ILeafContainer Type;
 
-		public S_CALLSITEINFO(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			Offset = ReadUInt32();
-			SectionIndex = ReadUInt16();
-			ReadUInt16();
-			Type = ReadIndexedTypeLazy();
+		public S_CALLSITEINFO(PDBFile pdb, Stream stream) {
+			var r = new SymbolDataReader(pdb, stream);
+			Offset = r.ReadUInt32();
+			SectionIndex = r.ReadUInt16();
+			r.ReadUInt16(); //padding
+			Type = r.ReadIndexedTypeLazy();
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_CALLSITEINFO);
+			w.WriteUInt32(Offset);
+			w.WriteUInt16(SectionIndex);
+			w.WriteUInt16(0x00); //padding
+			w.WriteIndexedType(Type);
+
+			w.WriteSymbolHeader();
 		}
 	}
 }

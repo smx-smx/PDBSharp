@@ -7,7 +7,6 @@
  */
 #endregion
 using C5;
-using MoreLinq;
 using Smx.PDBSharp.Leaves;
 using System;
 using System.Collections.Generic;
@@ -34,11 +33,10 @@ namespace Smx.PDBSharp
 			uint NumTiPairs = (uint)(hash.TypeOffsets.Size / Marshal.SizeOf<TPISlice>());
 
 			PerformAt(hash.TypeOffsets.Offset, () => {
-				Enumerable.Range(1, (int)NumTiPairs)
-					.ForEach(_ => {
-						TIOffset tiOff = ReadStruct<TIOffset>();
-						TypeIndexToOffset.Add(tiOff.TypeIndex, tiOff.Offset);
-					});
+				for (int i = 1; i < NumTiPairs; i++) {
+					TIOffset tiOff = ReadStruct<TIOffset>();
+					TypeIndexToOffset.Add(tiOff.TypeIndex, tiOff.Offset);
+				}
 			});
 
 			uint NumHashValues = (uint)(hash.HashValues.Size / sizeof(UInt32));

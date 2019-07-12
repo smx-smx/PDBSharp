@@ -13,21 +13,33 @@ using System.Text;
 
 namespace Smx.PDBSharp.Leaves
 {
-	[LeafReader(LeafType.LF_ARRAY)]
-	public class LF_ARRAY : TypeDataReader
+	public class LF_ARRAY : ILeaf
 	{
-		public readonly ILeaf ElementType;
-		public readonly ILeaf IndexingType;
+		public readonly ILeafContainer ElementType;
+		public readonly ILeafContainer IndexingType;
+
+		public readonly ILeafContainer Size;
 
 		public readonly string Name;
 
-		public LF_ARRAY(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			ElementType = ReadIndexedTypeLazy();
-			IndexingType = ReadIndexedTypeLazy();
+		public LF_ARRAY(PDBFile pdb, Stream stream) {
+			TypeDataReader r = new TypeDataReader(pdb, stream);
 
-			var varyingData = ReadVaryingType(out uint dataSize);
+			ElementType = r.ReadIndexedTypeLazy();
+			IndexingType = r.ReadIndexedTypeLazy();
 
-			Name = ReadCString();
+			Size = r.ReadVaryingType(out uint dataSize);
+
+			Name = r.ReadCString();
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			TypeDataWriter w = new TypeDataWriter(pdb, stream, Leaves.LeafType.LF_ARRAY);
+			w.WriteIndexedType(ElementType);
+			w.WriteIndexedType(IndexingType);
+			w.WriteVaryingType(Size);
+			w.WriteCString(Name);
+			w.WriteLeafHeader();
 		}
 	}
 }

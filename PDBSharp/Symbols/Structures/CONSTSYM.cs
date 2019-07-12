@@ -12,17 +12,42 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols.Structures
 {
-	public class ConstSym : SymbolDataReader
+	public class ConstSym
 	{
-		public readonly ILeaf Type;
-		public readonly ILeaf Value;
+		public LeafBase Type { get; set; }
+		public LeafBase Value { get; set; }
+		public string Name { get; set; }
+	}
+
+	public abstract class ConstSymBase
+	{
+		public readonly ILeafContainer Type;
+		public readonly ILeafContainer Value;
 		public readonly string Name;
 
-		public ConstSym(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			Type = ReadIndexedTypeLazy();
+		public ConstSymBase(PDBFile pdb, Stream stream) {
+			var r = new SymbolDataReader(pdb, stream);
 
-			Value = ReadVaryingType(out uint dataSize);
-			Name = ReadSymbolString();
+			Type = r.ReadIndexedTypeLazy();
+
+			Value = r.ReadVaryingType(out uint dataSize);
+			Name = r.ReadSymbolString();
+		}
+
+		public ConstSymBase(ConstSym data) {
+			Type = data.Type;
+			Value = data.Value;
+			Name = data.Name;
+		}
+
+		public void Write(PDBFile pdb, Stream stream, SymbolType symbolType) {
+			var w = new SymbolDataWriter(pdb, stream, symbolType);
+
+			w.WriteIndexedType(Type);
+			w.WriteVaryingType(Value);
+			w.WriteSymbolString(Name);
+
+			w.WriteSymbolHeader();
 		}
 	}
 }

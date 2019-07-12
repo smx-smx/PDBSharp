@@ -17,8 +17,21 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
-	[SymbolReader(SymbolType.S_THUNK32)]
-	public class S_THUNK32 : SymbolDataReader
+	public class ThunkSym32
+	{
+		public UInt32 Parent { get; set; }
+		public UInt32 End { get; set; }
+		public UInt32 Next { get; set; }
+		public UInt32 Offset { get; set; }
+		public UInt16 Segment { get; set; }
+		public UInt16 ThunkLength { get; set; }
+		public ThunkType ThunkType { get; set; }
+		public string Name { get; set; }
+
+		public IThunk Thunk { get; set; }
+	}
+
+	public class S_THUNK32 : ISymbol
 	{
 		public readonly UInt32 Parent;
 		public readonly UInt32 End;
@@ -31,21 +44,45 @@ namespace Smx.PDBSharp.Symbols
 
 		public readonly IThunk Thunk;
 
-		public S_THUNK32(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			Parent = ReadUInt32();
-			End = ReadUInt32();
-			Next = ReadUInt32();
-			Offset = ReadUInt32();
-			Segment = ReadUInt16();
-			ThunkLength = ReadUInt16();
-			ThunkType = (ThunkType)ReadByte();
-			if(!Enum.IsDefined(typeof(ThunkType), (byte)ThunkType)) {
-				throw new InvalidDataException($"Invalid Thunk Type {ThunkType}");
-			}
+		public S_THUNK32(PDBFile pdb, Stream stream) {
+			var r = new SymbolDataReader(pdb, stream);
 
-			Name = ReadSymbolString();
+			Parent = r.ReadUInt32();
+			End = r.ReadUInt32();
+			Next = r.ReadUInt32();
+			Offset = r.ReadUInt32();
+			Segment = r.ReadUInt16();
+			ThunkLength = r.ReadUInt16();
+			ThunkType = r.ReadEnum<ThunkType>();
+			Name = r.ReadSymbolString();
+			Thunk = r.ReadThunk(ThunkType);
+		}
 
-			Thunk = ReadThunk(ThunkType);
+		public S_THUNK32(ThunkSym32 data) {
+			Parent = data.Parent;
+			End = data.End;
+			Next = data.Next;
+			Offset = data.Offset;
+			Segment = data.Segment;
+			ThunkLength = data.ThunkLength;
+			ThunkType = data.ThunkType;
+			Name = data.Name;
+			Thunk = data.Thunk;
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_THUNK32);
+			w.WriteUInt32(Parent);
+			w.WriteUInt32(End);
+			w.WriteUInt32(Next);
+			w.WriteUInt32(Offset);
+			w.WriteUInt16(Segment);
+			w.WriteUInt16(ThunkLength);
+			w.WriteEnum<ThunkType>(ThunkType);
+			w.WriteSymbolString(Name);
+			Thunk.Write(w);
+
+			w.WriteSymbolHeader();
 		}
 	}
 }

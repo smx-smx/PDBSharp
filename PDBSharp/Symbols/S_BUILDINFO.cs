@@ -16,13 +16,24 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
-	[SymbolReader(SymbolType.S_BUILDINFO)]
-	public class S_BUILDINFO : SymbolDataReader
+	public class S_BUILDINFO : ISymbol
 	{
-		public readonly UInt32 Id;
+		public readonly ILeafContainer ItemID;
 
-		public S_BUILDINFO(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			Id = ReadUInt32();
+		public S_BUILDINFO(PDBFile pdb, Stream stream) {
+			var r = new SymbolDataReader(pdb, stream);
+			ItemID = r.ReadIndexedTypeLazy();
+		}
+
+		public S_BUILDINFO(LeafBase itemId) {
+			ItemID = itemId;
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_BUILDINFO);
+			w.WriteIndexedType(ItemID);
+
+			w.WriteSymbolHeader();
 		}
 	}
 }

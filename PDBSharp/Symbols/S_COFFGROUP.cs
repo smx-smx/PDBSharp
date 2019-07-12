@@ -16,8 +16,16 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
-	[SymbolReader(SymbolType.S_COFFGROUP)]
-	public class S_COFFGROUP : SymbolDataReader
+	public class CoffGroupSym
+	{
+		public UInt32 Size { get; set; }
+		public UInt32 Characteristics { get; set; }
+		public UInt32 SymbolOffset { get; set; }
+		public UInt16 SymbolSegment { get; set; }
+		public string Name { get; set; }
+	}
+
+	public class S_COFFGROUP : ISymbol
 	{
 		public readonly UInt32 Size;
 		public readonly UInt32 Characteristics;
@@ -25,12 +33,32 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt16 SymbolSegment;
 		public readonly string Name;
 
-		public S_COFFGROUP(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			Size = ReadUInt32();
-			Characteristics = ReadUInt32();
-			SymbolOffset = ReadUInt32();
-			SymbolSegment = ReadUInt16();
-			Name = ReadSymbolString();
+		public S_COFFGROUP(PDBFile pdb, Stream stream) {
+			var r = new SymbolDataReader(pdb, stream);
+			Size = r.ReadUInt32();
+			Characteristics = r.ReadUInt32();
+			SymbolOffset = r.ReadUInt32();
+			SymbolSegment = r.ReadUInt16();
+			Name = r.ReadSymbolString();
+		}
+
+		public S_COFFGROUP(CoffGroupSym data) {
+			Size = data.Size;
+			Characteristics = data.Characteristics;
+			SymbolOffset = data.SymbolOffset;
+			SymbolSegment = data.SymbolSegment;
+			Name = data.Name;
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_COFFGROUP);
+			w.WriteUInt32(Size);
+			w.WriteUInt32(Characteristics);
+			w.WriteUInt32(SymbolOffset);
+			w.WriteUInt16(SymbolSegment);
+			w.WriteSymbolString(Name);
+
+			w.WriteSymbolHeader();
 		}
 	}
 }

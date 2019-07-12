@@ -17,17 +17,39 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
-	[SymbolReader(SymbolType.S_LOCAL)]
-	public class S_LOCAL : SymbolDataReader
+	public class LocalSym
 	{
-		public readonly ILeaf Type;
+		public LeafBase Type { get; set; }
+		public CV_LVARFLAGS Flags { get; set; }
+		public string Name { get; set; }
+	}
+
+	public class S_LOCAL : ISymbol
+	{
+		public readonly ILeafContainer Type;
 		public readonly CV_LVARFLAGS Flags;
 		public readonly string Name;
 
-		public S_LOCAL(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			Type = ReadIndexedTypeLazy();
-			Flags = ReadFlagsEnum<CV_LVARFLAGS>();
-			Name = ReadSymbolString();
+		public S_LOCAL(PDBFile pdb, Stream stream) {
+			var r = new SymbolDataReader(pdb, stream);
+			Type = r.ReadIndexedTypeLazy();
+			Flags = r.ReadFlagsEnum<CV_LVARFLAGS>();
+			Name = r.ReadSymbolString();
+		}
+
+		public S_LOCAL(LocalSym data) {
+			Type = data.Type;
+			Flags = data.Flags;
+			Name = data.Name;
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_LOCAL);
+			w.WriteIndexedType(Type);
+			w.WriteEnum<CV_LVARFLAGS>(Flags);
+			w.WriteSymbolString(Name);
+
+			w.WriteSymbolHeader();
 		}
 	}
 }

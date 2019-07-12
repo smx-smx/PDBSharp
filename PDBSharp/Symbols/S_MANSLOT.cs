@@ -17,20 +17,45 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
+	public class AttrSlotSym
+	{
+		public UInt32 SlotIndex { get; set; }
+		public LeafBase Type { get; set; }
+		public CV_LVAR_ATTR Attributes { get; set; }
+		public string Name { get; set; }
+	}
 
-	[SymbolReader(SymbolType.S_MANSLOT)]
-	public class S_MANSLOT : SymbolDataReader
+	public class S_MANSLOT : ISymbol
 	{
 		public readonly UInt32 SlotIndex;
-		public readonly ILeaf Type;
+		public readonly ILeafContainer Type;
 		public readonly CV_LVAR_ATTR Attributes;
 		public readonly string Name;
 
-		public S_MANSLOT(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			SlotIndex = ReadUInt32();
-			Type = ReadIndexedTypeLazy();
+		public S_MANSLOT(PDBFile pdb, Stream stream) {
+			var r = new SymbolDataReader(pdb, stream);
+
+			SlotIndex = r.ReadUInt32();
+			Type = r.ReadIndexedTypeLazy();
 			Attributes = new CV_LVAR_ATTR(stream);
-			Name = ReadSymbolString();
+			Name = r.ReadSymbolString();
+		}
+
+		public S_MANSLOT(AttrSlotSym data) {
+			SlotIndex = data.SlotIndex;
+			Type = data.Type;
+			Attributes = data.Attributes;
+			Name = data.Name;
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_MANSLOT);
+			w.WriteUInt32(SlotIndex);
+			w.WriteIndexedType(Type);
+			Attributes.Write(w);
+			w.WriteSymbolString(Name);
+
+			w.WriteSymbolHeader();
 		}
 	}
 }

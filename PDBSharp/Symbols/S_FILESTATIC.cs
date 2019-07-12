@@ -17,19 +17,44 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
-	[SymbolReader(SymbolType.S_FILESTATIC)]
-	public class S_FILESTATIC : SymbolDataReader
+	public class FileStaticSym
 	{
-		public readonly ILeaf Type;
+		public LeafBase Type { get; set; }
+		public UInt32 ModuleFilenameOffset { get; set; }
+		public CV_LVARFLAGS Flags { get; set; }
+		public string Name { get; set; }
+	}
+
+	public class S_FILESTATIC : ISymbol
+	{
+		public readonly ILeafContainer Type;
 		public readonly UInt32 ModuleFilenameOffset;
 		public readonly CV_LVARFLAGS Flags;
 		public readonly string Name;
 
-		public S_FILESTATIC(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			Type = ReadIndexedTypeLazy();
-			ModuleFilenameOffset = ReadUInt32();
-			Flags = ReadFlagsEnum<CV_LVARFLAGS>();
-			Name = ReadSymbolString();
+		public S_FILESTATIC(PDBFile pdb, Stream stream) {
+			var r = new SymbolDataReader(pdb, stream);
+			Type = r.ReadIndexedTypeLazy();
+			ModuleFilenameOffset = r.ReadUInt32();
+			Flags = r.ReadFlagsEnum<CV_LVARFLAGS>();
+			Name = r.ReadSymbolString();
+		}
+
+		public S_FILESTATIC(FileStaticSym data) {
+			Type = data.Type;
+			ModuleFilenameOffset = data.ModuleFilenameOffset;
+			Flags = data.Flags;
+			Name = data.Name;
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_FILESTATIC);
+			w.WriteIndexedType(Type);
+			w.WriteUInt32(ModuleFilenameOffset);
+			w.WriteEnum<CV_LVARFLAGS>(Flags);
+			w.WriteSymbolString(Name);
+
+			w.WriteSymbolHeader();
 		}
 	}
 }

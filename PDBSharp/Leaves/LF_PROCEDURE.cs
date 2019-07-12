@@ -13,20 +13,31 @@ using System.Text;
 
 namespace Smx.PDBSharp.Leaves
 {
-	[LeafReader(LeafType.LF_PROCEDURE)]
-	public class LF_PROCEDURE : TypeDataReader
+	public class LF_PROCEDURE : ILeaf
 	{
-		public readonly ILeaf ReturnValueType;
+		public readonly ILeafContainer ReturnValueType;
 		public readonly CallingConvention CallingConvention;
 		public readonly UInt16 NumberOfParameters;
-		public readonly ILeaf ArgumentListType;
+		public readonly ILeafContainer ArgumentListType;
 
-		public LF_PROCEDURE(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			ReturnValueType = ReadIndexedTypeLazy();
-			CallingConvention = ReadEnum<CallingConvention>();
-			ReadByte(); //reserved
-			NumberOfParameters = ReadUInt16();
-			ArgumentListType = ReadIndexedTypeLazy();
+		public LF_PROCEDURE(PDBFile pdb, Stream stream) {
+			TypeDataReader r = new TypeDataReader(pdb, stream);
+
+			ReturnValueType = r.ReadIndexedTypeLazy();
+			CallingConvention = r.ReadEnum<CallingConvention>();
+			r.ReadByte(); //reserved
+			NumberOfParameters = r.ReadUInt16();
+			ArgumentListType = r.ReadIndexedTypeLazy();
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_PROCEDURE);
+			w.WriteIndexedType(ReturnValueType);
+			w.WriteEnum<CallingConvention>(CallingConvention);
+			w.WriteByte(0x00);
+			w.WriteUInt16(NumberOfParameters);
+			w.WriteIndexedType(ArgumentListType);
+			w.WriteLeafHeader();
 		}
 	}
 }

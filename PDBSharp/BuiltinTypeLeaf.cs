@@ -17,7 +17,7 @@ namespace Smx.PDBSharp
 	/// <summary>
 	/// A virtual ILeaf representing a builtin type
 	/// </summary>
-	public class BuiltinTypeLeaf : ILeafData
+	public class BuiltinTypeLeaf : ILeaf
 	{
 		public readonly SpecialType SpecialType;
 		public readonly SpecialTypeMode TypeMode;
@@ -42,6 +42,10 @@ namespace Smx.PDBSharp
 			string typeName = Enum.GetName(typeof(SpecialType), SpecialType);
 			string typeMode = Enum.GetName(typeof(SpecialTypeMode), TypeMode);
 			return $"{typeName} [{typeMode}]";
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			throw new NotImplementedException();
 		}
 	}
 }

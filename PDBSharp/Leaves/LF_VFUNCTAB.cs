@@ -13,14 +13,22 @@ using System.Text;
 
 namespace Smx.PDBSharp.Leaves
 {
-	[LeafReader(LeafType.LF_VFUNCTAB)]
-	public class LF_VFUNCTAB : TypeDataReader
+	public class LF_VFUNCTAB : ILeaf
 	{
-		public readonly ILeaf PointerType;
+		public readonly ILeafContainer PointerType;
 
-		public LF_VFUNCTAB(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			ReadUInt16(); //padding
-			PointerType = ReadIndexedTypeLazy();
+		public LF_VFUNCTAB(PDBFile pdb, Stream stream) {
+			TypeDataReader r = new TypeDataReader(pdb, stream);
+
+			r.ReadUInt16(); //padding
+			PointerType = r.ReadIndexedTypeLazy();
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_VFUNCTAB);
+			w.WriteUInt16(0x00);
+			w.WriteIndexedType(PointerType);
+			w.WriteLeafHeader();
 		}
 	}
 }

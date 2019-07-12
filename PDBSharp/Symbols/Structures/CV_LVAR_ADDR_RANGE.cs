@@ -26,5 +26,11 @@ namespace Smx.PDBSharp.Symbols.Structures
 			IndexSectionStart = ReadUInt16();
 			Length = ReadUInt16();
 		}
+
+		public void Write(SymbolDataWriter w) {
+			w.WriteUInt32(OffsetStart);
+			w.WriteUInt16(IndexSectionStart);
+			w.WriteUInt16(Length);
+		}
 	}
 }

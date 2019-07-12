@@ -14,30 +14,36 @@ using Smx.PDBSharp.Leaves;
 
 namespace Smx.PDBSharp
 {
-	public class LazyLeafProvider : ILeaf
+	public class LazyLeafProvider : ILeafContainer
 	{
-		private ILeaf ReadLeaf() {
-			return pdb.TPI.GetTypeByIndex(TypeIndex);
+		private ILeafContainer ReadLeaf() {
+			return pdb.TPI.GetTypeByIndex(typeIndex);
 		}
 
-		private readonly Lazy<ILeaf> lazy;
-		public ILeaf Leaf => lazy.Value;
+		public void Write(PDBFile pdb, Stream stream) {
+			Leaf.Data.Write(pdb, stream);
+		}
 
+		private readonly Lazy<ILeafContainer> lazy;
+		public ILeafContainer Leaf => lazy.Value;
+
+		public uint TypeIndex => Leaf.TypeIndex;
+
+		public LeafType Type => Leaf.Type;
+
+		public ILeaf Data => Leaf.Data;
 
 		private readonly PDBFile pdb;
-		private readonly uint TypeIndex;
+		private readonly uint typeIndex;
 
 		public LazyLeafProvider(PDBFile pdb, uint typeIndex) {
 			this.pdb = pdb;
-			TypeIndex = typeIndex;
-			lazy = new Lazy<ILeaf>(ReadLeaf);
+			this.typeIndex = typeIndex;
+			lazy = new Lazy<ILeafContainer>(ReadLeaf);
 		}
 
-		public LazyLeafProvider(Lazy<ILeaf> lazyProvider) {
+		public LazyLeafProvider(Lazy<ILeafContainer> lazyProvider) {
 			lazy = lazyProvider;
 		}
-
-		public LeafType Type => Leaf.Type;
-		public ILeafData Data => Leaf.Data;
 	}
 }

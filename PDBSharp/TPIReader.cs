@@ -7,7 +7,6 @@
  */
 #endregion
 using C5;
-using MoreLinq;
 using Smx.PDBSharp.Leaves;
 using Smx.PDBSharp.Symbols;
 using Smx.PDBSharp.Symbols.Structures;
@@ -118,11 +117,11 @@ namespace Smx.PDBSharp
 			return TypeIndex <= ((uint)SpecialTypeMode.NearPointer128 | 0xFF);
 		}
 
-		public ILeaf GetTypeByIndex(UInt32 TypeIndex) {
+		public ILeafContainer GetTypeByIndex(UInt32 TypeIndex) {
 			if (!HasTi(TypeIndex)) {
 				if (IsBuiltinTi(TypeIndex)) {
-					ILeafData builtin = new BuiltinTypeLeaf(TypeIndex);
-					return new DirectLeafProvider(LeafType.SPECIAL_BUILTIN, builtin);
+					ILeaf builtin = new BuiltinTypeLeaf(TypeIndex);
+					return new DirectLeafProvider(TypeIndex, LeafType.SPECIAL_BUILTIN, builtin);
 				}
 				return null;
 			}
@@ -183,7 +182,7 @@ namespace Smx.PDBSharp
 #endif
 		}
 
-		private ILeaf ReadType() {
+		private ILeafContainer ReadType() {
 			UInt16 length = ReadUInt16();
 			if (length == 0) {
 				return null;
@@ -204,7 +203,7 @@ namespace Smx.PDBSharp
 			return rdr.ReadTypeLazy();
 		}
 
-		public IEnumerable<ILeaf> ReadTypes() {
+		public IEnumerable<ILeafContainer> ReadTypes() {
 			long savedPos = Stream.Position;
 			long processed = 0;
 			while (processed < Header.GpRecSize) {

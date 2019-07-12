@@ -15,13 +15,19 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Leaves
 {
-	[LeafReader(LeafType.LF_QUADWORD)]
-	public class LF_QUADWORD : TypeDataReader
+	public class LF_QUADWORD : ILeaf
 	{
 		public readonly long Value;
 
-		public LF_QUADWORD(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			Value = ReadInt64();
+		public LF_QUADWORD(PDBFile pdb, Stream stream) {
+			TypeDataReader r = new TypeDataReader(pdb, stream);
+			Value = r.ReadInt64();
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_QUADWORD);
+			w.WriteInt64(Value);
+			w.WriteLeafHeader();
 		}
 	}
 }

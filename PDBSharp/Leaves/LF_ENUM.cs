@@ -14,24 +14,35 @@ using System.Text;
 namespace Smx.PDBSharp.Leaves
 {
 
-	[LeafReader(LeafType.LF_ENUM)]
-	public class LF_ENUM : TypeDataReader
+	public class LF_ENUM : ILeaf
 	{
 		public readonly UInt16 NumElements;
 		public readonly TypeProperties Properties;
 
-		public readonly ILeaf UnderlyingType;
-		public readonly ILeaf FieldType;
+		public readonly ILeafContainer UnderlyingType;
+		public readonly ILeafContainer FieldType;
 
 		public readonly string FieldName;
 
-		public LF_ENUM(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			NumElements = ReadUInt16();
-			Properties = ReadFlagsEnum<TypeProperties>();
-			UnderlyingType = ReadIndexedTypeLazy();
-			FieldType = ReadIndexedTypeLazy();
-			FieldName = ReadCString();
+		public LF_ENUM(PDBFile pdb, Stream stream) {
+			TypeDataReader r = new TypeDataReader(pdb, stream);
 
+			NumElements = r.ReadUInt16();
+			Properties = r.ReadFlagsEnum<TypeProperties>();
+			UnderlyingType = r.ReadIndexedTypeLazy();
+			FieldType = r.ReadIndexedTypeLazy();
+			FieldName = r.ReadCString();
+
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_ENUM);
+			w.WriteUInt16(NumElements);
+			w.WriteEnum<TypeProperties>(Properties);
+			w.WriteIndexedType(UnderlyingType);
+			w.WriteIndexedType(FieldType);
+			w.WriteCString(FieldName);
+			w.WriteLeafHeader();
 		}
 	}
 }

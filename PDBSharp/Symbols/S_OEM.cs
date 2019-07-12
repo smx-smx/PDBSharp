@@ -17,17 +17,40 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
-	[SymbolReader(SymbolType.S_OEM)]
-	public class S_OEM : SymbolDataReader
+	public class OemSym
+	{
+		public Guid Id { get; set; }
+		public LeafBase Type { get; set; }
+		public byte[] UserData { get; set; }
+	}
+
+	public class S_OEM : ISymbol
 	{
 		public readonly Guid Id;
-		public readonly ILeaf Type;
+		public readonly ILeafContainer Type;
 		public readonly byte[] UserData;
 
-		public S_OEM(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			Id = new Guid(ReadBytes(16));
-			Type = ReadIndexedTypeLazy();
-			UserData = ReadRemaining();
+		public S_OEM(PDBFile pdb, Stream stream) {
+			var r = new SymbolDataReader(pdb, stream);
+
+			Id = new Guid(r.ReadBytes(16));
+			Type = r.ReadIndexedTypeLazy();
+			UserData = r.ReadRemaining();
+		}
+
+		public S_OEM(OemSym data) {
+			Id = data.Id;
+			Type = data.Type;
+			UserData = data.UserData;
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_OEM);
+			w.WriteBytes(Id.ToByteArray());
+			w.WriteIndexedType(Type);
+			w.WriteBytes(UserData);
+
+			w.WriteSymbolHeader();
 		}
 	}
 }

@@ -49,7 +49,7 @@ namespace Smx.PDBSharp
 		private IEnumerable<UInt32> GetListPages_Stream(int streamNumber) {
 			var streamSize = StreamSizes[streamNumber];
 			
-			// skip the list of streams
+			// skip stream sizes
 			uint dataOffset = sizeof(UInt32) * (NumStreams + 1);
 
 			// skip the page list for the streams before us

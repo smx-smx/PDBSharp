@@ -13,18 +13,27 @@ using System.Text;
 
 namespace Smx.PDBSharp.Leaves
 {
-	[LeafReader(LeafType.LF_METHOD)]
-	public class LF_METHOD : TypeDataReader
+	public class LF_METHOD : ILeaf
 	{
 		public readonly UInt16 NumberOfOccurrences;
-		public readonly ILeaf MethodListRecord;
+		public readonly ILeafContainer MethodListRecord;
 
 		public readonly string Name;
 
-		public LF_METHOD(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			NumberOfOccurrences = ReadUInt16();
-			MethodListRecord = ReadIndexedTypeLazy();
-			Name = ReadCString();
+		public LF_METHOD(PDBFile pdb, Stream stream) {
+			TypeDataReader r = new TypeDataReader(pdb, stream);
+
+			NumberOfOccurrences = r.ReadUInt16();
+			MethodListRecord = r.ReadIndexedTypeLazy();
+			Name = r.ReadCString();
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_METHOD);
+			w.WriteUInt16(NumberOfOccurrences);
+			w.WriteIndexedType(MethodListRecord);
+			w.WriteCString(Name);
+			w.WriteLeafHeader();
 		}
 	}
 }

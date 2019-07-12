@@ -6,22 +6,24 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using Smx.PDBSharp.Symbols.Structures;
+using Smx.PDBSharp.Symbols.Structures;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace Smx.PDBSharp.Thunks
+namespace Smx.PDBSharp.Symbols
 {
-	public class ThunkReaderBase : ReaderBase
+	public class S_GDATA32 : DataSym32Base, ISymbol
 	{
-		public readonly SymbolHeader Header;
+		public S_GDATA32(PDBFile pdb, Stream stream) : base(pdb, stream) {
+		}
 
-		public ThunkReaderBase(SymbolHeader header, Stream stream) : base(stream) {
-			this.Header = header;
+		public S_GDATA32(DataSym32 data) : base(data) {
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			base.Write(pdb, stream, SymbolType.S_GDATA32);
 		}
 	}
 }

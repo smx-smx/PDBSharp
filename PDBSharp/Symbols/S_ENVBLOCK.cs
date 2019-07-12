@@ -16,23 +16,40 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
-	[SymbolReader(SymbolType.S_ENVBLOCK)]
-	public class S_ENVBLOCK : SymbolDataReader
+	public class S_ENVBLOCK : ISymbol
 	{
 		public readonly string[] Data;
+		public readonly byte Flags;
 
-		public S_ENVBLOCK(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			byte flags = ReadByte(); //fEC -> reserved (1 bit)
+		public S_ENVBLOCK(PDBFile pdb, Stream stream) {
+			var r = new SymbolDataReader(pdb, stream);
+
+			Flags = r.ReadByte(); //fEC -> reserved (1 bit)
 
 			List<string> strLst = new List<string>(); ;
-			while (Stream.Position < Stream.Length) {
-				string str = ReadSymbolString();
+			while (r.HasMoreData) {
+				string str = r.ReadSymbolString();
 				if (str.Length == 0)
 					break;
 				strLst.Add(str);
 			}
 
 			Data = strLst.ToArray();
+		}
+
+		public S_ENVBLOCK(string[] data) {
+			Flags = 0x00; //Reserved according to PDB docs, first bit is fEC tho
+			Data = data;
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_ENVBLOCK);
+			w.WriteByte(Flags);
+			foreach(string str in Data) {
+				w.WriteSymbolString(str);
+			}
+
+			w.WriteSymbolHeader();
 		}
 	}
 }

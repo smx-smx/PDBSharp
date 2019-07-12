@@ -16,15 +16,35 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
-	[SymbolReader(SymbolType.S_OBJNAME)]
-	public class S_OBJNAME : SymbolDataReader
+	public class ObjNameSym
+	{
+		public UInt32 Signature { get; set; }
+		public string Name { get; set; }
+	}
+
+	public class S_OBJNAME : ISymbol
 	{
 		public readonly UInt32 Signature;
 		public readonly string Name;
 
-		public S_OBJNAME(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			Signature = ReadUInt32();
-			Name = ReadSymbolString();
+		public S_OBJNAME(PDBFile pdb, Stream stream) {
+			var r = new SymbolDataReader(pdb, stream);
+
+			Signature = r.ReadUInt32();
+			Name = r.ReadSymbolString();
+		}
+
+		public S_OBJNAME(ObjNameSym data) {
+			Signature = data.Signature;
+			Name = data.Name;
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_OBJNAME);
+			w.WriteUInt32(Signature);
+			w.WriteSymbolString(Name);
+
+			w.WriteSymbolHeader();
 		}
 	}
 }

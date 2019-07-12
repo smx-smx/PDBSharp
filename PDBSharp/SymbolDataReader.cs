@@ -20,9 +20,8 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp
 {
-	public class SymbolDataReader: TypeDataReader, ISymbol {
+	public class SymbolDataReader: TypeDataReader {
 		protected readonly SymbolHeader Header;
-		SymbolHeader ISymbol.Header => Header;
 
 		public SymbolDataReader(PDBFile pdb, SymbolHeader header, Stream stream) : base(pdb, stream) {
 			Header = header;
@@ -33,6 +32,8 @@ namespace Smx.PDBSharp
 			Header = ReadHeader();
 			CheckHeader();
 		}
+
+		public bool HasMoreData => Stream.Position < Stream.Length;
 
 		private void CheckHeader() {
 			if (!Enum.IsDefined(typeof(SymbolType), Header.Type)) {
@@ -45,14 +46,10 @@ namespace Smx.PDBSharp
 		}
 
 		public string ReadSymbolString() {
-			try {
-				if (Header.Type < SymbolType.S_ST_MAX) {
-					return ReadString();
-				} else {
-					return ReadCString();
-				}
-			} catch (EndOfStreamException) {
-				return null;
+			if (Header.Type < SymbolType.S_ST_MAX) {
+				return ReadString();
+			} else {
+				return ReadCString();
 			}
 		}
 

@@ -16,18 +16,34 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
-	[SymbolReader(SymbolType.S_CALLEES)]
-	public class S_CALLEES : SymbolDataReader
+	public class S_CALLEES : ISymbol
 	{
 		public readonly UInt32 NumberOfFunctions;
-		public readonly UInt32[] Functions;
+		public readonly ILeafContainer[] Functions;
 
-		public S_CALLEES(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			NumberOfFunctions = ReadUInt32();
+		public S_CALLEES(PDBFile pdb, Stream stream) {
+			var r = new SymbolDataReader(pdb, stream);
+
+			NumberOfFunctions = r.ReadUInt32();
 			Functions = Enumerable
 				.Range(1, (int)NumberOfFunctions)
-				.Select(_ => ReadUInt32())
+				.Select(_ => r.ReadIndexedTypeLazy())
 				.ToArray();
+		}
+
+		public S_CALLEES(IEnumerable<LeafBase> functionsList) {
+			Functions = functionsList.ToArray();
+			NumberOfFunctions = (uint)Functions.Length;
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_CALLEES);
+			w.WriteUInt32(NumberOfFunctions);
+			foreach(LeafBase fn in Functions) {
+				w.WriteIndexedType(fn);
+			}
+
+			w.WriteSymbolHeader();
 		}
 	}
 }

@@ -13,29 +13,43 @@ using System.Text;
 
 namespace Smx.PDBSharp.Leaves
 {
-	[LeafReader(LeafType.LF_CLASS)]
-	public class LF_CLASS : TypeDataReader
+	public class LF_CLASS : ILeaf
 	{
 		public readonly UInt16 NumberOfElements;
-		public TypeProperties FieldProperties;
-		public UInt32 FieldIndex;
-		public ILeaf DerivedType;
-		public ILeaf VShapeTableType;
+		public readonly TypeProperties FieldProperties;
+		public readonly UInt32 FieldIndex;
+		public readonly ILeafContainer DerivedType;
+		public readonly ILeafContainer VShapeTableType;
 
 		//public UInt16 StructSize;
 
+		public readonly ILeafContainer StructSize;
+
 		public readonly string Name;
 
-		public LF_CLASS(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			NumberOfElements = ReadUInt16();
-			FieldProperties = ReadFlagsEnum<TypeProperties>();
-			FieldIndex = ReadUInt32();
-			DerivedType = ReadIndexedTypeLazy();
-			VShapeTableType = ReadIndexedTypeLazy();
+		public LF_CLASS(PDBFile pdb, Stream stream) {
+			TypeDataReader r = new TypeDataReader(pdb, stream);
 
-			var StructSize = ReadVaryingType(out uint dataSize);
+			NumberOfElements = r.ReadUInt16();
+			FieldProperties = r.ReadFlagsEnum<TypeProperties>();
+			FieldIndex = r.ReadUInt32();
+			DerivedType = r.ReadIndexedTypeLazy();
+			VShapeTableType = r.ReadIndexedTypeLazy();
+
+			StructSize = r.ReadVaryingType(out uint dataSize);
 	
-			Name = ReadCString();
+			Name = r.ReadCString();
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_CLASS);
+			w.WriteUInt16(NumberOfElements);
+			w.WriteEnum<TypeProperties>(FieldProperties);
+			w.WriteUInt32(FieldIndex);
+			w.WriteIndexedType(VShapeTableType);
+			w.WriteVaryingType(StructSize);
+			w.WriteCString(Name);
+			w.WriteLeafHeader();
 		}
 	}
 }

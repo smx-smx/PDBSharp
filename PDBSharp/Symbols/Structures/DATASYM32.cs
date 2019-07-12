@@ -11,18 +11,44 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols.Structures
 {
-	public class DataSym32 : SymbolDataReader
+	public class DataSym32
 	{
-		public readonly UInt32 TypeIndex;
+		public LeafBase Type { get; set; }
+		public UInt32 Offset { get; set; }
+		public UInt16 Segment { get; set; }
+		public string Name { get; set; }
+	}
+	public abstract class DataSym32Base
+	{
+		public readonly ILeafContainer Type;
 		public readonly UInt32 Offset;
 		public readonly UInt16 Segment;
 		public readonly string Name;
 
-		public DataSym32(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			TypeIndex = ReadUInt32();
-			Offset = ReadUInt32();
-			Segment = ReadUInt16();
-			Name = ReadSymbolString();
+		public DataSym32Base(PDBFile pdb, Stream stream) {
+			var r = new SymbolDataReader(pdb, stream);
+
+			Type = r.ReadIndexedTypeLazy();
+			Offset = r.ReadUInt32();
+			Segment = r.ReadUInt16();
+			Name = r.ReadSymbolString();
+		}
+
+		public DataSym32Base(DataSym32 data) {
+			Type = data.Type;
+			Offset = data.Offset;
+			Segment = data.Segment;
+			Name = data.Name;
+		}
+
+		public void Write(PDBFile pdb, Stream stream, SymbolType symbolType) {
+			var w = new SymbolDataWriter(pdb, stream, symbolType);
+			w.WriteIndexedType(Type);
+			w.WriteUInt32(Offset);
+			w.WriteUInt16(Segment);
+			w.WriteSymbolString(Name);
+
+			w.WriteSymbolHeader();
 		}
 	}
 }

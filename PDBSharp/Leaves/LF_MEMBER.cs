@@ -13,21 +13,33 @@ using System.Text;
 
 namespace Smx.PDBSharp.Leaves
 {
-	[LeafReader(LeafType.LF_MEMBER)]
-	public class LF_MEMBER : TypeDataReader
+	public class LF_MEMBER : ILeaf
 	{
 		public readonly FieldAttributes Attributes;
-		public readonly ILeaf FieldType;
+		public readonly ILeafContainer FieldType;
+
+		public readonly ILeafContainer Offset;
 
 		public readonly string Name;
 
-		public LF_MEMBER(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			Attributes = new FieldAttributes(ReadUInt16());
-			FieldType = ReadIndexedTypeLazy();
+		public LF_MEMBER(PDBFile pdb, Stream stream) {
+			TypeDataReader r = new TypeDataReader(pdb, stream);
 
-			var varLength = ReadVaryingType(out uint dataSize);
+			Attributes = new FieldAttributes(r.ReadUInt16());
+			FieldType = r.ReadIndexedTypeLazy();
 
-			Name = ReadCString();
+			Offset = r.ReadVaryingType(out uint dataSize);
+
+			Name = r.ReadCString();
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_MEMBER);
+			w.WriteUInt16((ushort)Attributes);
+			w.WriteIndexedType(FieldType);
+			w.WriteVaryingType(Offset);
+			w.WriteCString(Name);
+			w.WriteLeafHeader();
 		}
 	}
 }

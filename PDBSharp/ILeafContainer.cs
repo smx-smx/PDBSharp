@@ -6,19 +6,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using System;
+using Smx.PDBSharp.Leaves;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp
 {
-	public interface ILeafData {
-	}
-
-	public interface ILeaf<T> : ILeafData
+	public interface ILeafContainer
 	{
-		T Value { get; }
+		uint TypeIndex { get; }
+		LeafType Type { get; }
+		ILeaf Data { get; }
 	}
 }

@@ -17,13 +17,16 @@ using System.Text;
 
 namespace Smx.PDBSharp.Thunks
 {
-	[ThunkReader(ThunkType.VCALL)]
 	public class VCALL : SymbolDataReader, IThunk
 	{
 		public readonly UInt16 VTableOffset;
 
 		public VCALL(PDBFile pdb, SymbolHeader header, Stream stream) : base(pdb, header, stream) {
 			VTableOffset = ReadUInt16();
+		}
+
+		public void Write(SymbolDataWriter w) {
+			w.WriteUInt16(VTableOffset);
 		}
 	}
 }

@@ -13,28 +13,42 @@ using System.Text;
 
 namespace Smx.PDBSharp.Leaves
 {
-	[LeafReader(LeafType.LF_METHODLIST)]
-	public class LF_METHODLIST : TypeDataReader
+	public class LF_METHODLIST : ILeaf
 	{
 		public readonly FieldAttributes Attributes;
-		public readonly ILeaf ProcedureTypeRecord;
+		public readonly ILeafContainer ProcedureTypeRecord;
 
 		public readonly UInt32 VBaseOffset;
 
-		public LF_METHODLIST(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			Attributes = new FieldAttributes(ReadUInt16());
-			ProcedureTypeRecord = ReadIndexedTypeLazy();
+		public LF_METHODLIST(PDBFile pdb, Stream stream) {
+			TypeDataReader r = new TypeDataReader(pdb, stream);
+
+			Attributes = new FieldAttributes(r.ReadUInt16());
+			ProcedureTypeRecord = r.ReadIndexedTypeLazy();
 
 			switch (Attributes.MethodProperties) {
 				case MethodProperties.Intro:
 				case MethodProperties.PureIntro:
-					VBaseOffset = ReadUInt32();
+					VBaseOffset = r.ReadUInt32();
 					break;
 				default:
 					VBaseOffset = 0;
 					break;
 			}
 
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_METHODLIST);
+			w.WriteUInt16((ushort)Attributes);
+			w.WriteIndexedType(ProcedureTypeRecord);
+			switch (Attributes.MethodProperties) {
+				case MethodProperties.Intro:
+				case MethodProperties.PureIntro:
+					w.WriteUInt32(VBaseOffset);
+					break;
+			}
+			w.WriteLeafHeader();
 		}
 	}
 }

@@ -6,19 +6,20 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Text;
-using System.Threading.Tasks;
+using Smx.PDBSharp.Leaves;
 
-namespace Smx.PDBSharp.Thunks
+namespace Smx.PDBSharp
 {
-	public class ThunkReaderAttribute : Attribute
+	public abstract class LeafBase : ILeaf, ILeafContainer
 	{
-		public readonly ThunkType Type;
-		public ThunkReaderAttribute(ThunkType type) {
-			this.Type = type;
-		}
+		public abstract uint TypeIndex { get; }
+		public abstract LeafType Type { get; }
+		public abstract ILeaf Data { get; }
+
+		public abstract void Write(PDBFile pdb, Stream stream);
 	}
 }

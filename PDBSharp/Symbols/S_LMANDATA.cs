@@ -7,14 +7,23 @@
  */
 #endregion
 using Smx.PDBSharp.Symbols.Structures;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace Smx.PDBSharp.Symbols
 {
-	[SymbolReader(SymbolType.S_LMANDATA)]
-	public class S_LMANDATA : DataSym32
+	public class S_LMANDATA : DataSym32Base, ISymbol
 	{
 		public S_LMANDATA(PDBFile pdb, Stream stream) : base(pdb, stream) {
+		}
+
+		public S_LMANDATA(DataSym32 data) : base(data) {
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			base.Write(pdb, stream, SymbolType.S_LMANDATA);
 		}
 	}
 }

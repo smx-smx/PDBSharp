@@ -35,5 +35,10 @@ namespace Smx.PDBSharp.Symbols.Structures
 				.Select(_ => new CV_LVAR_ADDR_GAP(stream))
 				.ToArray();
 		}
+
+		public void Write(SymbolDataWriter w) {
+			w.WriteUInt16(GapStartOffset);
+			w.WriteUInt16(Length);
+		}
 	}
 }

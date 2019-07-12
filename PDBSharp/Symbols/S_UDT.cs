@@ -6,19 +6,24 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using System;
+using Smx.PDBSharp.Symbols.Structures;
+using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Symbols
 {
-	public class LeafReaderAttribute : Attribute
+	public class S_UDT : UdtSym, ISymbol
 	{
-		public readonly LeafType Type;
-		public LeafReaderAttribute(LeafType type) {
-			this.Type = type;
+		public S_UDT(PDBFile pdb, Stream stream) : base(pdb, stream) {
+		}
+
+		public S_UDT(UdtSymData data) : base(data) {
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			base.Write(pdb, stream, SymbolType.S_UDT);
 		}
 	}
 }

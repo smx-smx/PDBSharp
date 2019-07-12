@@ -9,12 +9,13 @@
 ﻿using Smx.PDBSharp.Symbols.Structures;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace Smx.PDBSharp.Symbols
 {
 	public interface ISymbol
 	{
-		SymbolHeader Header { get; }
+		void Write(PDBFile pdb, Stream stream);
 	}
 }

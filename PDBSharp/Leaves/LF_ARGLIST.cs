@@ -14,18 +14,31 @@ using System.Text;
 
 namespace Smx.PDBSharp.Leaves
 {
-	[LeafReader(LeafType.LF_ARGLIST)]
-	public class LF_ARGLIST : TypeDataReader
+	public class LF_ARGLIST : ILeaf
 	{
 		public UInt16 NumberOfArguments;
-		public ILeaf[] ArgumentTypes;
+		public ILeafContainer[] ArgumentTypes;
 
-		public LF_ARGLIST(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			NumberOfArguments = ReadUInt16();
-			ReadUInt16(); //padding
+		public LF_ARGLIST(PDBFile pdb, Stream stream) {
+			TypeDataReader r = new TypeDataReader(pdb, stream);
+
+			NumberOfArguments = r.ReadUInt16();
+			r.ReadUInt16(); //padding
 			ArgumentTypes = Enumerable.Range(1, NumberOfArguments)
-											.Select(_ => ReadIndexedTypeLazy())
+											.Select(_ => r.ReadIndexedTypeLazy())
 											.ToArray();
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_ARGLIST);
+			w.WriteUInt16(NumberOfArguments);
+			w.WriteUInt16(0x00);
+			
+			foreach(ILeafContainer leaf in ArgumentTypes) {
+				w.WriteIndexedType(leaf);
+			}
+
+			w.WriteLeafHeader();
 		}
 	}
 }

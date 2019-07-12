@@ -23,5 +23,11 @@ namespace Smx.PDBSharp.Symbols.Structures
 			Segment = ReadUInt16();
 			Flags = ReadFlagsEnum<CV_LVARFLAGS>();
 		}
+
+		public void Write(SymbolDataWriter w) {
+			w.WriteUInt32(Offset);
+			w.WriteUInt16(Segment);
+			w.WriteEnum<CV_LVARFLAGS>(Flags);
+		}
 	}
 }

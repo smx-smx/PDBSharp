@@ -12,14 +12,34 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols.Structures
 {
-	public class UdtSym : SymbolDataReader
+	public class UdtSymData
 	{
-		public readonly ILeaf Type;
+		public LeafBase Type { get; set; }
+		public string Name { get; set; }
+	}
+
+	public class UdtSym
+	{
+		public readonly ILeafContainer Type;
 		public readonly string Name;
 
-		public UdtSym(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			Type = ReadIndexedTypeLazy();
-			Name = ReadSymbolString();
+		public UdtSym(PDBFile pdb, Stream stream) {
+			var r = new SymbolDataReader(pdb, stream);
+			Type = r.ReadIndexedTypeLazy();
+			Name = r.ReadSymbolString();
+		}
+
+		public UdtSym(UdtSymData data) {
+			Type = data.Type;
+			Name = data.Name;
+		}
+
+		public void Write(PDBFile pdb, Stream stream, SymbolType symbolType) {
+			var w = new SymbolDataWriter(pdb, stream, symbolType);
+			w.WriteIndexedType(Type);
+			w.WriteSymbolString(Name);
+
+			w.WriteSymbolHeader();
 		}
 	}
 }

@@ -6,7 +6,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-using MoreLinq;
 using Smx.PDBSharp.Leaves;
 using Smx.PDBSharp.Symbols;
 using Smx.PDBSharp.Symbols.Structures;
@@ -14,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Reflection;
 
@@ -28,10 +28,15 @@ namespace Smx.PDBSharp.Dumper
 		public static bool OptVerbose = false;
 		public static string PdbFilePath = null;
 
+		public static bool OptDisableReflection = false;
+
 		private static void ParseArguments(string[] args) {
 			for (int i = 0; i < args.Length; i++) {
 				string arg = args[i];
 				switch (arg) {
+					case "-debug":
+						OptDisableReflection = true;
+						break;
 					case "-dump":
 						OptDumpStreams = true;
 						break;
@@ -62,8 +67,10 @@ namespace Smx.PDBSharp.Dumper
 				Environment.Exit(1);
 			}
 
-			var file = new FileStream(PdbFilePath, FileMode.Open, FileAccess.Read);
-			PDBFile pdb = new PDBFile(file);
+			//var file = new FileStream(PdbFilePath, FileMode.Open, FileAccess.Read);
+			MemoryMappedFile mmap = MemoryMappedFile.CreateFromFile(PdbFilePath, FileMode.Open);
+			Stream mmapStream = mmap.CreateViewStream();
+			PDBFile pdb = new PDBFile(mmapStream);
 
 			if (OptDumpLeaves) {
 				pdb.OnTpiInit += Pdb_OnTpiInit;
@@ -82,8 +89,10 @@ namespace Smx.PDBSharp.Dumper
 				}
 			}
 
-			pdb.Types.ForEach(type => {
-				ObjectDumper.Dump(type);
+			foreach(var type in pdb.Types) {
+				if (!OptDisableReflection) {
+					ObjectDumper.Dump(type);
+				}
 
 				/*switch (type.Data) {
 					case LF_FIELDLIST flst:
@@ -94,20 +103,28 @@ namespace Smx.PDBSharp.Dumper
 						});
 						break;
 				}*/
-			});
+			}
 
-			pdb.Modules.ForEach(container => {
+			foreach(var container in pdb.Modules) { 
 				Console.WriteLine($"[MODULE => {container.Info.ModuleName}]");
 				Console.WriteLine($"[OBJECT => {container.Info.ObjectFileName}]");
+				if (container.Module != null) {
+					Console.WriteLine($"[TYPE   => {container.Module.GetType().Name}");
+				}
 				Console.WriteLine();
 
 				IModule mod = container.Module;
-				mod.Symbols.ForEach(sym => {
-					if (OptVerbose) {
-						ObjectDumper.Dump(sym);
+				if (mod != null) {
+					foreach (var sym in mod.Symbols) {
+						if (OptVerbose && !OptDisableReflection) {
+							ObjectDumper.Dump(sym);
+						}
 					}
-				});
-			});
+				}
+			}
+
+			mmapStream.Close();
+			mmap.Dispose();
 
 			Console.WriteLine("Press Enter to continue...");
 			Console.ReadLine();
@@ -125,6 +142,7 @@ namespace Smx.PDBSharp.Dumper
 		}
 
 		private static void Module_OnSymbolData(byte[] data) {
+			Console.WriteLine("=> SYM");
 			data.HexDump();
 		}
 
@@ -133,6 +151,7 @@ namespace Smx.PDBSharp.Dumper
 		}
 
 		private static void TPI_OnLeafData(byte[] data) {
+			Console.WriteLine("=> LEAF");
 			data.HexDump();
 		}
 
@@ -140,5 +159,6 @@ namespace Smx.PDBSharp.Dumper
 			Console.WriteLine($"===== {modInfo.ModuleName}");
 			data.HexDump();
 		}
+
 	}
 }

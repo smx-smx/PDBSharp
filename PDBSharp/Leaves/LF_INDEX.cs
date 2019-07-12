@@ -13,13 +13,19 @@ using System.Text;
 
 namespace Smx.PDBSharp.Leaves
 {
-	[LeafReader(LeafType.LF_INDEX)]
-	class LF_INDEX : TypeDataReader
+	class LF_INDEX : ILeaf
 	{
-		public readonly ILeaf Referenced;
+		public readonly ILeafContainer Referenced;
 
-		public LF_INDEX(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			Referenced = ReadIndexedTypeLazy();
+		public LF_INDEX(PDBFile pdb, Stream stream)  {
+			TypeDataReader r = new TypeDataReader(pdb, stream);
+			Referenced = r.ReadIndexedTypeLazy();
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_INDEX);
+			w.WriteIndexedType(Referenced);
+			w.WriteLeafHeader();
 		}
 	}
 }

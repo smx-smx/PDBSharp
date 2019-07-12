@@ -15,17 +15,39 @@ using Smx.PDBSharp.Symbols.Structures;
 
 namespace Smx.PDBSharp.Symbols
 {
-	[SymbolReader(SymbolType.S_BPREL32)]
-	public class S_BPREL32 : SymbolDataReader
+	public class BpRelSym32
+	{
+		public UInt32 Offset { get; set; }
+		public LeafBase Type { get; set; }
+		public string Name { get; set; }
+	}
+
+	public class S_BPREL32 : ISymbol
 	{
 		public readonly UInt32 Offset;
-		public readonly ILeaf Type;
+		public readonly ILeafContainer Type;
 		public readonly string Name;
 	
-		public S_BPREL32(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			Offset = ReadUInt32();
-			Type = ReadIndexedTypeLazy();
-			Name = ReadSymbolString();
+		public S_BPREL32(PDBFile pdb, Stream stream) {
+			SymbolDataReader r = new SymbolDataReader(pdb, stream);
+			Offset = r.ReadUInt32();
+			Type = r.ReadIndexedTypeLazy();
+			Name = r.ReadSymbolString();
+		}
+
+		public S_BPREL32(BpRelSym32 data) {
+			Offset = data.Offset;
+			Type = data.Type;
+			Name = data.Name;
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			SymbolDataWriter w = new SymbolDataWriter(pdb, stream, SymbolType.S_BPREL32);
+			w.WriteUInt32(Offset);
+			w.WriteIndexedType(Type);
+			w.WriteSymbolString(Name);
+
+			w.WriteSymbolHeader();
 		}
 	}
 }

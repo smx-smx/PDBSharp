@@ -18,7 +18,6 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Thunks
 {
-	[ThunkReader(ThunkType.ADJUSTOR)]
 	public class ADJUSTOR : SymbolDataReader, IThunk
 	{
 		public readonly UInt16 Delta;
@@ -27,6 +26,11 @@ namespace Smx.PDBSharp.Thunks
 		public ADJUSTOR(PDBFile pdb, SymbolHeader symHeader, Stream stream) : base(pdb, symHeader, stream) {
 			Delta = ReadUInt16();
 			Name = ReadSymbolString();
+		}
+
+		public void Write(SymbolDataWriter w) {
+			w.WriteUInt16(Delta);
+			w.WriteSymbolString(Name);
 		}
 	}
 }

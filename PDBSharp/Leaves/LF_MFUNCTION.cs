@@ -14,28 +14,42 @@ using System.Text;
 namespace Smx.PDBSharp.Leaves
 {
 
-	[LeafReader(LeafType.LF_MFUNCTION)]
-	public class LF_MFUNCTION : TypeDataReader
+	public class LF_MFUNCTION : ILeaf
 	{
-		public readonly ILeaf ReturnValueType;
-		public readonly ILeaf ContainingClassType;
-		public readonly ILeaf ThisPointerType;
+		public readonly ILeafContainer ReturnValueType;
+		public readonly ILeafContainer ContainingClassType;
+		public readonly ILeafContainer ThisPointerType;
 		public readonly CallingConvention CallingConvention;
 		public readonly UInt16 NumberOfParameters;
-		public readonly ILeaf ArgumentListType;
+		public readonly ILeafContainer ArgumentListType;
 		public readonly UInt32 ThisAdjustor;
 
 		public readonly FunctionAttributes Attributes;
 
-		public LF_MFUNCTION(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			ReturnValueType = ReadIndexedTypeLazy();
-			ContainingClassType = ReadIndexedTypeLazy();
-			ThisPointerType = ReadIndexedTypeLazy();
-			CallingConvention = ReadEnum<CallingConvention>();
-			Attributes = ReadFlagsEnum<FunctionAttributes>();
-			NumberOfParameters = ReadUInt16();
-			ArgumentListType = ReadIndexedTypeLazy();
-			ThisAdjustor = ReadUInt32();
+		public LF_MFUNCTION(PDBFile pdb, Stream stream) {
+			TypeDataReader r = new TypeDataReader(pdb, stream);
+
+			ReturnValueType = r.ReadIndexedTypeLazy();
+			ContainingClassType = r.ReadIndexedTypeLazy();
+			ThisPointerType = r.ReadIndexedTypeLazy();
+			CallingConvention = r.ReadEnum<CallingConvention>();
+			Attributes = r.ReadFlagsEnum<FunctionAttributes>();
+			NumberOfParameters = r.ReadUInt16();
+			ArgumentListType = r.ReadIndexedTypeLazy();
+			ThisAdjustor = r.ReadUInt32();
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_MFUNCTION);
+			w.WriteIndexedType(ReturnValueType);
+			w.WriteIndexedType(ContainingClassType);
+			w.WriteIndexedType(ThisPointerType);
+			w.WriteEnum<CallingConvention>(CallingConvention);
+			w.WriteEnum<FunctionAttributes>(Attributes);
+			w.WriteUInt16(NumberOfParameters);
+			w.WriteIndexedType(ArgumentListType);
+			w.WriteUInt32(ThisAdjustor);
+			w.WriteLeafHeader();
 		}
 	}
 }

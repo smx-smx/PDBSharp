@@ -7,14 +7,23 @@
  */
 #endregion
 using Smx.PDBSharp.Symbols.Structures;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace Smx.PDBSharp.Symbols
 {
-	[SymbolReader(SymbolType.S_CONSTANT)]
-	public class S_CONSTANT : ConstSym
+	public class S_CONSTANT : ConstSymBase, ISymbol
 	{
 		public S_CONSTANT(PDBFile pdb, Stream stream) : base(pdb, stream) {
+		}
+
+		public S_CONSTANT(ConstSym data) : base(data) {
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			base.Write(pdb, stream, SymbolType.S_CONSTANT);
 		}
 	}
 }

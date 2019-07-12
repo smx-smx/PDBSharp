@@ -11,7 +11,7 @@ using System;
 namespace Smx.PDBSharp.Symbols.Structures
 {
 	[Flags]
-	internal enum FrameProcSymFlagsEnum : UInt32
+	public enum FrameProcSymFlagsEnum : UInt32
 	{
 		HasAlloca = 1 << 0,
 		HasSetJmp = 1 << 1,
@@ -37,6 +37,8 @@ namespace Smx.PDBSharp.Symbols.Structures
 
 	public class FrameProcSymFlags
 	{
+		public static explicit operator FrameProcSymFlagsEnum(FrameProcSymFlags flags) => flags.flags;
+
 		private FrameProcSymFlagsEnum flags;
 		public FrameProcSymFlags(UInt32 flags) {
 			this.flags = (FrameProcSymFlagsEnum)flags;

@@ -16,11 +16,15 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
-	[SymbolReader(SymbolType.S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE)]
-	public class S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE : SymbolDataReader
+	public class S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE : ISymbol
 	{
-		public S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE(PDBFile pdb, Stream stream) : base(pdb, stream) {
+		public S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE(PDBFile pdb, Stream stream) {
 
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			SymbolDataWriter w = new SymbolDataWriter(pdb, stream, SymbolType.S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE);
+			w.WriteSymbolHeader();
 		}
 	}
 }

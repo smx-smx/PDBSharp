@@ -15,14 +15,23 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Leaves
 {
-	[LeafReader(LeafType.LF_VARSTRING)]
-	public class LF_VARSTRING : TypeDataReader
+	public class LF_VARSTRING : ILeaf
 	{
 		public readonly string Value;
-		public LF_VARSTRING(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			UInt16 length = ReadUInt16();
-			byte[] data = ReadBytes((int)length);
+
+		public LF_VARSTRING(PDBFile pdb, Stream stream) {
+			TypeDataReader r = new TypeDataReader(pdb, stream);
+
+			UInt16 length = r.ReadUInt16();
+			byte[] data = r.ReadBytes((int)length);
 			Value = Encoding.ASCII.GetString(data);
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_VARSTRING);
+			w.WriteUInt16((ushort)Value.Length);
+			w.WriteBytes(Encoding.ASCII.GetBytes(Value));
+			w.WriteLeafHeader();
 		}
 	}
 }

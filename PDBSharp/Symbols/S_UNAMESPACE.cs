@@ -16,13 +16,24 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
-	[SymbolReader(SymbolType.S_UNAMESPACE)]
-	public class S_UNAMESPACE : SymbolDataReader
+	public class S_UNAMESPACE : ISymbol
 	{
 		public readonly string NamespaceName;
 
-		public S_UNAMESPACE(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			NamespaceName = ReadSymbolString();
+		public S_UNAMESPACE(PDBFile pdb, Stream stream) {
+			var r = new SymbolDataReader(pdb, stream);
+			NamespaceName = r.ReadSymbolString();
+		}
+
+		public S_UNAMESPACE(string namespaceName) {
+			this.NamespaceName = namespaceName;
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_UNAMESPACE);
+			w.WriteSymbolString(NamespaceName);
+
+			w.WriteSymbolHeader();
 		}
 	}
 }

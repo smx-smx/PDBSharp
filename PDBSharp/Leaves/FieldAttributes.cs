@@ -17,6 +17,8 @@ namespace Smx.PDBSharp.Leaves
 			this.fldAttr = fldAttr;
 		}
 
+		public static explicit operator UInt16(FieldAttributes attr) => attr.fldAttr;
+
 		public byte AccessProtection => (byte)(fldAttr & 3);
 		public MethodProperties MethodProperties => (MethodProperties)((fldAttr >> 2) & 7);
 		public bool IsPseudo => ((fldAttr >> 5) & 1) == 1;

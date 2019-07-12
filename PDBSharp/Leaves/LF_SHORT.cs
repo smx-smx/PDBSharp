@@ -15,13 +15,20 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Leaves
 {
-	[LeafReader(LeafType.LF_SHORT)]
-	public class LF_SHORT : TypeDataReader
+	public class LF_SHORT : ILeaf
 	{
 		public readonly short Value;
 
-		public LF_SHORT(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			Value = ReadInt16();
+		public LF_SHORT(PDBFile pdb, Stream stream) {
+			TypeDataReader r = new TypeDataReader(pdb, stream);
+
+			Value = r.ReadInt16();
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_SHORT);
+			w.WriteInt16(Value);
+			w.WriteLeafHeader();
 		}
 	}
 }

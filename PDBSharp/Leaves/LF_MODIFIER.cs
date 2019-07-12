@@ -16,15 +16,23 @@ using System.Text;
 namespace Smx.PDBSharp.Leaves
 {
 
-	[LeafReader(LeafType.LF_MODIFIER)]
-	public class LF_MODIFIER : TypeDataReader
+	public class LF_MODIFIER : ILeaf
 	{
 		public readonly CVModifier Flags;
 		public readonly uint ModifiedType;
 
-		public LF_MODIFIER(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			ModifiedType = ReadUInt32();
-			Flags = ReadFlagsEnum<CVModifier>();
+		public LF_MODIFIER(PDBFile pdb, Stream stream) {
+			TypeDataReader r = new TypeDataReader(pdb, stream);
+
+			ModifiedType = r.ReadUInt32();
+			Flags = r.ReadFlagsEnum<CVModifier>();
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_MODIFIER);
+			w.WriteUInt32(ModifiedType);
+			w.WriteEnum<CVModifier>(Flags);
+			w.WriteLeafHeader();
 		}
 	}
 }

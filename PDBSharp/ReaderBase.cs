@@ -20,20 +20,12 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp
 {
-	public struct ReaderCBArg
-	{
-		public Stream Stream;
-		public BinaryReader Reader;
-	}
-
-	public abstract class ReaderBase
+	public abstract class ReaderBase : StreamCommon
 	{
 
-		protected readonly Stream Stream;
 		private readonly BinaryReader Reader;
 
-		public ReaderBase(Stream stream) {
-			this.Stream = stream;
+		public ReaderBase(Stream stream) : base(stream) {
 			this.Reader = new BinaryReader(Stream);
 		}
 
@@ -85,21 +77,6 @@ namespace Smx.PDBSharp
 			return (T)value;
 		}
 
-		public void PerformAt(long offset, Action action) {
-			long curPos = Stream.Position;
-			Stream.Position = offset;
-			action.Invoke();
-			Stream.Position = curPos;
-		}
-
-		public T PerformAt<T>(long offset, Func<T> action) {
-			long curPos = Stream.Position;
-			Stream.Position = offset;
-			T result = action.Invoke();
-			Stream.Position = curPos;
-			return result;
-		}
-
 		public string ReadCString() {
 			StringBuilder sb = new StringBuilder();
 			while (true) {
@@ -114,13 +91,6 @@ namespace Smx.PDBSharp
 
 		public T ReadStruct<T>() where T : struct {
 			return new StructureReader<T>(new BinaryReader(Stream)).Read();
-		}
-
-		public int AlignStream(uint alignment) {
-			long position = (Stream.Position + alignment - 1) & ~(alignment - 1);
-			long skipped = position - Stream.Position;
-			Stream.Position = position;
-			return (int)skipped;
 		}
 
 		public byte[] ReadRemaining() {

@@ -37,6 +37,8 @@ namespace Smx.PDBSharp
 		private byte[] streamTableList;
 		private byte[] streamTable;
 
+		public DSHeader Header => hdr;
+
 		public MSFReader(Stream msf, PDBType type) : base(msf) {
 			this.type = type;
 			this.hdr = ReadStruct<DSHeader>();
@@ -62,7 +64,9 @@ namespace Smx.PDBSharp
 		}
 
 		private IEnumerable<byte[]> GetPages_StreamTableList() {
+			// number of pages to represent the list of streams
 			var numStreamTablePages = GetNumPages(hdr.DirectorySize);
+			// number of pages to represent the list of pages
 			var numListPages = GetNumPages(numStreamTablePages);
 
 			long offset = Marshal.SizeOf<DSHeader>();
@@ -83,7 +87,10 @@ namespace Smx.PDBSharp
 			if(streamTableList != null)
 				return streamTableList;
 
-			streamTableList = GetPages_StreamTableList().SelectMany(x => x).ToArray();
+			streamTableList = GetPages_StreamTableList()
+				.SelectMany(x => x)
+				.ToArray();
+
 			return streamTableList;
 		}
 
@@ -101,7 +108,7 @@ namespace Smx.PDBSharp
 
 		public byte[] ReadPage(uint pageNumber) {
 			return PerformAt<byte[]>(pageNumber * hdr.PageSize, () => {
-				Trace.WriteLine($"Reading Page {pageNumber} @ {pageNumber * hdr.PageSize:X8}");
+				//Trace.WriteLine($"Reading Page {pageNumber} @ {pageNumber * hdr.PageSize:X8}");
 				return ReadBytes((int)hdr.PageSize);
 			});
 		}

@@ -14,8 +14,7 @@ using System.Text;
 
 namespace Smx.PDBSharp.Leaves
 {
-	[LeafReader(LeafType.LF_VTSHAPE)]
-	public class LF_VTSHAPE : TypeDataReader
+	public class LF_VTSHAPE : ILeaf
 	{
 		/// <summary>
 		/// number of entries in vfunctable
@@ -24,20 +23,19 @@ namespace Smx.PDBSharp.Leaves
 
 		public readonly VTableShapeDescriptor[] Descriptors;
 
-		public LF_VTSHAPE(PDBFile pdb, Stream stream) : base(pdb, stream) {
-			NumberOfEntries = ReadUInt16();
+		public LF_VTSHAPE(PDBFile pdb, Stream stream) {
+			TypeDataReader r = new TypeDataReader(pdb, stream);
 
-			//round up 4 bits (desctiptor size)
+			NumberOfEntries = r.ReadUInt16();
+
+			//round up 4 bits (descriptor size)
 			int numberOfBytes = (int)Math.Ceiling((double)(4 * NumberOfEntries) / sizeof(byte));
-			byte[] descriptorsData = ReadBytes(numberOfBytes);
+			byte[] descriptorsData = r.ReadBytes(numberOfBytes);
 
 			Descriptors = new VTableShapeDescriptor[NumberOfEntries];
 
 			for(int i=0; i<NumberOfEntries; i++) {
-				int offset = 4 * i;
-				int descIndex = offset / 8;
-
-				byte data = descriptorsData[descIndex];
+				byte data = descriptorsData[i/2];
 				switch(i % 2) {
 					case 0:
 						data &= 0xF;
@@ -49,6 +47,29 @@ namespace Smx.PDBSharp.Leaves
 
 				Descriptors[i] = (VTableShapeDescriptor)data;
 			}
+		}
+
+		public void Write(PDBFile pdb, Stream stream) {
+			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_VTSHAPE);
+			w.WriteUInt16(NumberOfEntries);
+
+			byte data = 0x00;
+
+			for (int i=0; i<NumberOfEntries; i++) {
+				byte descr = (byte)Descriptors[i];
+
+				switch(i % 2) {
+					case 0:
+						data = (byte)(descr & 0xF);
+						break;
+					case 1:
+						data = (byte)(((descr << 4) & 0xF) | data);
+						w.WriteByte(data);
+						break;
+				}
+			}
+
+			w.WriteLeafHeader();
 		}
 	}
 }
