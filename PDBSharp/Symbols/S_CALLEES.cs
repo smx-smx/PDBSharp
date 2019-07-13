@@ -21,8 +21,8 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt32 NumberOfFunctions;
 		public readonly ILeafContainer[] Functions;
 
-		public S_CALLEES(PDBFile pdb, Stream stream) {
-			var r = new SymbolDataReader(pdb, stream);
+		public S_CALLEES(Context ctx, Stream stream) {
+			var r = new SymbolDataReader(ctx, stream);
 
 			NumberOfFunctions = r.ReadUInt32();
 			Functions = Enumerable

@@ -25,8 +25,8 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public readonly ILeafContainer Value;
 		public readonly string Name;
 
-		public ConstSymBase(PDBFile pdb, Stream stream) {
-			var r = new SymbolDataReader(pdb, stream);
+		public ConstSymBase(Context ctx, Stream stream) {
+			var r = new SymbolDataReader(ctx, stream);
 
 			Type = r.ReadIndexedTypeLazy();
 

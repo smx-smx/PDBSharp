@@ -33,9 +33,11 @@ namespace Smx.PDBSharp.Symbols
 
 	public class S_THUNK32 : ISymbol
 	{
-		public readonly UInt32 Parent;
+		private readonly UInt32 ParentOffset;
+		public readonly Symbol Parent;
 		public readonly UInt32 End;
-		public readonly UInt32 Next;
+		private readonly UInt32 NextOffset;
+		public readonly Symbol Next;
 		public readonly UInt32 Offset;
 		public readonly UInt16 Segment;
 		public readonly UInt16 ThunkLength;
@@ -44,12 +46,17 @@ namespace Smx.PDBSharp.Symbols
 
 		public readonly IThunk Thunk;
 
-		public S_THUNK32(PDBFile pdb, Stream stream) {
-			var r = new SymbolDataReader(pdb, stream);
+		public S_THUNK32(Context ctx, Stream stream) {
+			var r = new SymbolDataReader(ctx, stream);
 
-			Parent = r.ReadUInt32();
+			ParentOffset = r.ReadUInt32();
+			Parent = r.ReadSymbol(ParentOffset);
+
 			End = r.ReadUInt32();
-			Next = r.ReadUInt32();
+
+			NextOffset = r.ReadUInt32();
+			Next = r.ReadSymbol(NextOffset);
+
 			Offset = r.ReadUInt32();
 			Segment = r.ReadUInt16();
 			ThunkLength = r.ReadUInt16();
@@ -59,9 +66,9 @@ namespace Smx.PDBSharp.Symbols
 		}
 
 		public S_THUNK32(ThunkSym32 data) {
-			Parent = data.Parent;
+			ParentOffset = data.Parent;
 			End = data.End;
-			Next = data.Next;
+			NextOffset = data.Next;
 			Offset = data.Offset;
 			Segment = data.Segment;
 			ThunkLength = data.ThunkLength;
@@ -72,9 +79,9 @@ namespace Smx.PDBSharp.Symbols
 
 		public void Write(PDBFile pdb, Stream stream) {
 			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_THUNK32);
-			w.WriteUInt32(Parent);
+			w.WriteUInt32(ParentOffset);
 			w.WriteUInt32(End);
-			w.WriteUInt32(Next);
+			w.WriteUInt32(NextOffset);
 			w.WriteUInt32(Offset);
 			w.WriteUInt16(Segment);
 			w.WriteUInt16(ThunkLength);

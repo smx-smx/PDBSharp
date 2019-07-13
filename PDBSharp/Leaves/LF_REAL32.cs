@@ -18,7 +18,7 @@ namespace Smx.PDBSharp.Leaves
 	public class LF_REAL32 : ILeaf
 	{
 		public readonly float Value;
-		public LF_REAL32(PDBFile pdb, Stream stream) {
+		public LF_REAL32(Context pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 			Value = r.ReadSingle();
 		}

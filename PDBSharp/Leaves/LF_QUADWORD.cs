@@ -19,7 +19,7 @@ namespace Smx.PDBSharp.Leaves
 	{
 		public readonly long Value;
 
-		public LF_QUADWORD(PDBFile pdb, Stream stream) {
+		public LF_QUADWORD(Context pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 			Value = r.ReadInt64();
 		}

@@ -41,8 +41,8 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt32 Characteristics;
 		public readonly string Name;
 
-		public S_SECTION(PDBFile pdb, Stream stream) {
-			var r = new SymbolDataReader(pdb, stream);
+		public S_SECTION(Context ctx, Stream stream) {
+			var r = new SymbolDataReader(ctx, stream);
 
 			SectionNumber = r.ReadUInt16();
 			Alignment = r.ReadByte();

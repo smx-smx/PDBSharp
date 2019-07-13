@@ -17,25 +17,23 @@ namespace Smx.PDBSharp
 	public delegate void OnModuleReaderInitDelegate(IModule module);
 	public class LazyModuleProvider : IModuleContainer
 	{
-		public ModuleInfo Info => this.modInfo;
+		public ModuleInfo Info => modInfo;
 
 		public IModule Module => lazyModule.Value;
 
-		private readonly PDBFile pdb;
-		private readonly StreamTableReader stRdr;
-		private readonly ModuleInfo modInfo;
-
+		private readonly Context ctx;
 		private readonly Lazy<IModule> lazyModule;
 
 		public event OnModuleReaderInitDelegate OnModuleReaderInit;
 		public event OnModuleDataDelegate OnModuleData;
 
+		private readonly ModuleInfo modInfo;
 
 		private IModule ReadModule() {
 			if(modInfo.StreamNumber < 0) {
 				return null;
 			}
-			byte[] modData = stRdr.GetStream(modInfo.StreamNumber);
+			byte[] modData = ctx.StreamTableReader.GetStream(modInfo.StreamNumber);
 			OnModuleData?.Invoke(modInfo, modData);
 
 			MemoryStream modStream = new MemoryStream(modData);
@@ -44,18 +42,17 @@ namespace Smx.PDBSharp
 
 			IModule modReader;
 			if (Enum.IsDefined(typeof(CodeViewSignature), signature)) {
-				modReader = new CodeViewModuleReader(pdb, modInfo, modStream);
+				modReader = new CodeViewModuleReader(ctx, modInfo, modStream);
 			} else {
-				modReader =new SourceFileModuleReader(pdb, modStream);
+				modReader = new SourceFileModuleReader(ctx.Pdb, modStream);
 			}
 
 			OnModuleReaderInit?.Invoke(modReader);
 			return modReader;
 		}
 
-		public LazyModuleProvider(PDBFile pdb, StreamTableReader stRdr, ModuleInfo mod) {
-			this.pdb = pdb;
-			this.stRdr = stRdr;
+		public LazyModuleProvider(Context ctx, ModuleInfo mod) {
+			this.ctx = ctx;
 			this.modInfo = mod;
 			this.lazyModule = new Lazy<IModule>(ReadModule);
 		}

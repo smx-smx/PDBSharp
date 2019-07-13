@@ -32,8 +32,8 @@ namespace Smx.PDBSharp.Symbols
 		public readonly CV_LVARFLAGS Flags;
 		public readonly string Name;
 
-		public S_FILESTATIC(PDBFile pdb, Stream stream) {
-			var r = new SymbolDataReader(pdb, stream);
+		public S_FILESTATIC(Context ctx, Stream stream) {
+			var r = new SymbolDataReader(ctx, stream);
 			Type = r.ReadIndexedTypeLazy();
 			ModuleFilenameOffset = r.ReadUInt32();
 			Flags = r.ReadFlagsEnum<CV_LVARFLAGS>();

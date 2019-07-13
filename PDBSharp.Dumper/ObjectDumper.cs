@@ -178,12 +178,15 @@ namespace Smx.PDBSharp.Dumper
 
 				switch (obj) {
 					case LazyLeafProvider llp:
-						if (llp.Leaf == null || !Program.OptVerbose) {
+						if (llp.Leaf == null) {
 							shouldGetValue = false;
 							if (llp.Leaf != null) {
 								value = "<...>";
 							}
 						}
+						break;
+					case MemoryStream _:
+						shouldGetValue = false;
 						break;
 				}
 			

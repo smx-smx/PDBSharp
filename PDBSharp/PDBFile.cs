@@ -39,16 +39,13 @@ namespace Smx.PDBSharp
 
 		private readonly Stream stream;
 
-		private readonly MSFReader rdr;
-		public readonly StreamTableReader StreamTable;
-
-		private IEnumerable<IModule> modules;
-		private IEnumerable<LeafBase> types;
+		public TPIReader Tpi => ctx.TpiReader;
+		public DBIReader Dbi => ctx.DbiReader;
 
 		public IEnumerable<byte[]> Streams {
 			get {
-				for(int i=0; i<StreamTable.NumStreams; i++) {
-					yield return StreamTable.GetStream(i);
+				for(int i=0; i<ctx.StreamTableReader.NumStreams; i++) {
+					yield return ctx.StreamTableReader.GetStream(i);
 				}
 			}
 		}
@@ -59,8 +56,7 @@ namespace Smx.PDBSharp
 
 		public IEnumerable<ILeafContainer> Types => lazyLeaves.Value;
 
-		public DBIReader DBI { get; private set; }
-		public TPIReader TPI { get; private set; }
+		private Context ctx;
 
 		public readonly PDBType FileType;
 
@@ -82,46 +78,48 @@ namespace Smx.PDBSharp
 
 		}
 
-		public PDBFile(Stream stream) {
+		public PDBFile(Context ctx, Stream stream) {
+			this.ctx = ctx;
 			this.stream = stream;
-
 			this.FileType = DetectPdbType();
+
+			ctx.Pdb = this;
 
 			//$TODO
 			if (this.FileType == PDBType.Small) {
 				throw new NotImplementedException($"Small/Old/JG PDBs not supported/tested yet");
 			}
 
-			this.rdr = new MSFReader(this.stream, FileType);
+			ctx.MsfReader = new MSFReader(this.stream, FileType);
 
-			byte[] streamTable = rdr.StreamTable();
-			StreamTable = new StreamTableReader(rdr, new MemoryStream(streamTable));
+			byte[] streamTable = ctx.MsfReader.StreamTable();
+			ctx.StreamTableReader = new StreamTableReader(ctx.MsfReader, new MemoryStream(streamTable));
 
 			lazyLeaves = new Lazy<IEnumerable<ILeafContainer>>(ReadTypes);
 		}
 
 		public IEnumerable<IModuleContainer> ReadModules() {
-			if (DBI == null) {
-				byte[] dbi = StreamTable.GetStream((int)DefaultStreams.DBI);
+			if (ctx.DbiReader == null) {
+				byte[] dbi = ctx.StreamTableReader.GetStream((int)DefaultStreams.DBI);
 				if (dbi.Length == 0) {
 					return Enumerable.Empty<IModuleContainer>();
 				}
-				DBI = new DBIReader(this, StreamTable, new MemoryStream(dbi));
-				OnDbiInit?.Invoke(DBI);
+				ctx.DbiReader = new DBIReader(ctx, new MemoryStream(dbi));
+				OnDbiInit?.Invoke(ctx.DbiReader);
 			}
-			return DBI.Modules;
+			return ctx.DbiReader.Modules;
 		}
 
 		public IEnumerable<ILeafContainer> ReadTypes() {
-			if (TPI == null) {
-				byte[] tpi = StreamTable.GetStream((int)DefaultStreams.TPI);
+			if (ctx.TpiReader == null) {
+				byte[] tpi = ctx.StreamTableReader.GetStream((int)DefaultStreams.TPI);
 				if(tpi.Length == 0) {
 					return Enumerable.Empty<ILeafContainer>();
 				}
-				TPI = new TPIReader(this, StreamTable, new MemoryStream(tpi));
-				OnTpiInit?.Invoke(TPI);
+				ctx.TpiReader = new TPIReader(ctx, new MemoryStream(tpi));
+				OnTpiInit?.Invoke(ctx.TpiReader);
 			}
-			return TPI.ReadTypes();
+			return ctx.TpiReader.ReadTypes();
 		}
 	}
 }

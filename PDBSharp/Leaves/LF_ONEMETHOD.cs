@@ -21,7 +21,7 @@ namespace Smx.PDBSharp.Leaves
 
 		public readonly string Name;
 
-		public LF_ONEMETHOD(PDBFile pdb, Stream stream) {
+		public LF_ONEMETHOD(Context pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			Attributes = new FieldAttributes(r.ReadUInt16());

@@ -40,9 +40,6 @@ namespace Smx.PDBSharp
 		public SourceFileModuleReader(PDBFile pdb, Stream stream) : base(stream) {
 			this.pdb = pdb;
 
-			Debugger.Launch();
-			Debugger.Break();
-
 			// including .c file
 			NumberOfFiles = ReadUInt16();
 

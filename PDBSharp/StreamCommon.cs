@@ -17,6 +17,8 @@ namespace Smx.PDBSharp
 	{
 		protected readonly Stream Stream;
 
+		public Stream BaseStream => Stream;
+
 		public StreamCommon(Stream stream) {
 			this.Stream = stream;
 		}

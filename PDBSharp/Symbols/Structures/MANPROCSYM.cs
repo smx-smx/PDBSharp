@@ -42,7 +42,8 @@ namespace Smx.PDBSharp.Symbols.Structures
 		/// <summary>
 		/// Parent Symbol
 		/// </summary>
-		public readonly UInt32 Parent;
+		public readonly Symbol Parent;
+		private readonly UInt32 ParentOffset;
 		/// <summary>
 		/// End of block
 		/// </summary>
@@ -50,7 +51,8 @@ namespace Smx.PDBSharp.Symbols.Structures
 		/// <summary>
 		/// Next Symbol
 		/// </summary>
-		public readonly UInt32 Next;
+		public readonly Symbol Next;
+		private readonly UInt32 NextOffset;
 		public readonly UInt32 ProcLength;
 		public readonly UInt32 DebugStartOffset;
 		public readonly UInt32 DebugEndOffset;
@@ -61,12 +63,14 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public readonly UInt16 ReturnRegister;
 		public readonly string Name;
 
-		public ManProcSymBase(PDBFile pdb, Stream stream) {
-			var r = new SymbolDataReader(pdb, stream);
+		public ManProcSymBase(Context ctx, Stream stream) {
+			var r = new SymbolDataReader(ctx, stream);
 
-			Parent = r.ReadUInt32();
+			ParentOffset = r.ReadUInt32();
+			Parent = r.ReadSymbol(ParentOffset);
 			End = r.ReadUInt32();
-			Next = r.ReadUInt32();
+			NextOffset = r.ReadUInt32();
+			Next = r.ReadSymbol(NextOffset);
 			ProcLength = r.ReadUInt32();
 			DebugStartOffset = r.ReadUInt32();
 			DebugEndOffset = r.ReadUInt32();
@@ -79,9 +83,9 @@ namespace Smx.PDBSharp.Symbols.Structures
 		}
 
 		public ManProcSymBase(ManProcSym data) {
-			Parent = data.Parent;
+			ParentOffset = data.Parent;
 			End = data.End;
-			Next = data.Next;
+			NextOffset = data.Next;
 			ProcLength = data.ProcLength;
 			DebugStartOffset = data.DebugStartOffset;
 			DebugEndOffset = data.DebugEndOffset;
@@ -95,9 +99,9 @@ namespace Smx.PDBSharp.Symbols.Structures
 
 		public void Write(PDBFile pdb, Stream stream, SymbolType symbolType) {
 			var w = new SymbolDataWriter(pdb, stream, symbolType);
-			w.WriteUInt32(Parent);
+			w.WriteUInt32(ParentOffset);
 			w.WriteUInt32(End);
-			w.WriteUInt32(Next);
+			w.WriteUInt32(NextOffset);
 			w.WriteUInt32(ProcLength);
 			w.WriteUInt32(DebugStartOffset);
 			w.WriteUInt32(DebugEndOffset);

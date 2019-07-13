@@ -20,8 +20,8 @@ namespace Smx.PDBSharp.Symbols
 	{
 		public readonly ILeafContainer ItemID;
 
-		public S_BUILDINFO(PDBFile pdb, Stream stream) {
-			var r = new SymbolDataReader(pdb, stream);
+		public S_BUILDINFO(Context ctx, Stream stream) {
+			var r = new SymbolDataReader(ctx, stream);
 			ItemID = r.ReadIndexedTypeLazy();
 		}
 
@@ -34,6 +34,10 @@ namespace Smx.PDBSharp.Symbols
 			w.WriteIndexedType(ItemID);
 
 			w.WriteSymbolHeader();
+		}
+
+		public override string ToString() {
+			return $"S_BUILDINFO[ItemID='{ItemID}']";
 		}
 	}
 }

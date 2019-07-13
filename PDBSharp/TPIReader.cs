@@ -78,15 +78,14 @@ namespace Smx.PDBSharp
 	{
 		public readonly TPIHeader Header;
 
-		public event OnLeafDataDelegate OnLeafData;
+		private readonly Context ctx;
 
-		private readonly StreamTableReader stRdr;
-		private readonly HashDataReader TPIHash;
+		public event OnLeafDataDelegate OnLeafData;
 
 
 		private (uint, uint) GetClosestTIOFF(UInt32 typeIndex) {
-			bool hasPrec = TPIHash.TypeIndexToOffset.TryPredecessor(typeIndex, out var prec);
-			bool hasSucc = TPIHash.TypeIndexToOffset.TrySuccessor(typeIndex, out var succ);
+			bool hasPrec = ctx.TpiHashReader.TypeIndexToOffset.TryPredecessor(typeIndex, out var prec);
+			bool hasSucc = ctx.TpiHashReader.TypeIndexToOffset.TrySuccessor(typeIndex, out var succ);
 
 			if (hasPrec && hasSucc) {
 				//[prev] <this> [next]
@@ -127,8 +126,8 @@ namespace Smx.PDBSharp
 			}
 
 			UInt32 typeOffset;
-			if (TPIHash.TypeIndexToOffset.Contains(TypeIndex)) {
-				typeOffset = Header.HeaderSize + TPIHash.TypeIndexToOffset[TypeIndex];
+			if (ctx.TpiHashReader.TypeIndexToOffset.Contains(TypeIndex)) {
+				typeOffset = Header.HeaderSize + ctx.TpiHashReader.TypeIndexToOffset[TypeIndex];
 				return PerformAt(typeOffset, () => ReadType());
 			} else {
 				(var closestTi, var closestOff) = GetClosestTIOFF(TypeIndex);
@@ -136,18 +135,18 @@ namespace Smx.PDBSharp
 				uint curOffset = closestOff;
 				for(uint ti=closestTi; ti<=TypeIndex; ti++) {
 					uint offset;
-					if (TPIHash.TypeIndexToOffset.Contains(ti)) {
+					if (ctx.TpiHashReader.TypeIndexToOffset.Contains(ti)) {
 						// use existing TIOff
-						offset = TPIHash.TypeIndexToOffset[ti];
+						offset = ctx.TpiHashReader.TypeIndexToOffset[ti];
 						curOffset += GetTypeSize(offset);
 					} else {
-						TPIHash.TypeIndexToOffset[ti] = curOffset;
+						ctx.TpiHashReader.TypeIndexToOffset[ti] = curOffset;
 						curOffset += GetTypeSize(curOffset);
 					}
 				}
 
 				//safety
-				if (!TPIHash.TypeIndexToOffset.Contains(TypeIndex)) {
+				if (!ctx.TpiHashReader.TypeIndexToOffset.Contains(TypeIndex)) {
 					throw new InvalidDataException($"Type Index {TypeIndex} not found");
 				}
 
@@ -155,11 +154,8 @@ namespace Smx.PDBSharp
 			}
 		}
 
-		private readonly PDBFile pdb;
-
-		public TPIReader(PDBFile pdb, StreamTableReader stRdr, Stream stream) : base(stream) {
-			this.pdb = pdb;
-			this.stRdr = stRdr;
+		public TPIReader(Context ctx, Stream stream) : base(stream) {
+			this.ctx = ctx;
 
 			Header = ReadStruct<TPIHeader>();
 			if(Header.HeaderSize != Marshal.SizeOf<TPIHeader>()) {
@@ -171,7 +167,7 @@ namespace Smx.PDBSharp
 			}
 
 			if(((int)Header.Hash.StreamNumber) != -1){
-				TPIHash = new HashDataReader(this, new MemoryStream(stRdr.GetStream(Header.Hash.StreamNumber)));
+				ctx.TpiHashReader = new HashDataReader(this, new MemoryStream(ctx.StreamTableReader.GetStream(Header.Hash.StreamNumber)));
 			}
 
 
@@ -199,7 +195,7 @@ namespace Smx.PDBSharp
 			OnLeafData?.Invoke(leafDataBuf);
 
 			stream.Position = 0;
-			TypeDataReader rdr = new TypeDataReader(pdb, stream);
+			TypeDataReader rdr = new TypeDataReader(ctx, stream);
 			return rdr.ReadTypeLazy();
 		}
 

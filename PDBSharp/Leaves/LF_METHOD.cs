@@ -20,7 +20,7 @@ namespace Smx.PDBSharp.Leaves
 
 		public readonly string Name;
 
-		public LF_METHOD(PDBFile pdb, Stream stream) {
+		public LF_METHOD(Context pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			NumberOfOccurrences = r.ReadUInt16();

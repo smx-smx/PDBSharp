@@ -23,7 +23,7 @@ namespace Smx.PDBSharp.Thunks
 		public readonly UInt16 Delta;
 		public readonly string Name;
 
-		public ADJUSTOR(PDBFile pdb, SymbolHeader symHeader, Stream stream) : base(pdb, symHeader, stream) {
+		public ADJUSTOR(Context ctx, SymbolHeader symHeader, Stream stream) : base(ctx, symHeader, stream) {
 			Delta = ReadUInt16();
 			Name = ReadSymbolString();
 		}

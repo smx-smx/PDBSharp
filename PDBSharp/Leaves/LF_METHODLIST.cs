@@ -20,7 +20,7 @@ namespace Smx.PDBSharp.Leaves
 
 		public readonly UInt32 VBaseOffset;
 
-		public LF_METHODLIST(PDBFile pdb, Stream stream) {
+		public LF_METHODLIST(Context pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			Attributes = new FieldAttributes(r.ReadUInt16());
@@ -49,6 +49,10 @@ namespace Smx.PDBSharp.Leaves
 					break;
 			}
 			w.WriteLeafHeader();
+		}
+
+		public override string ToString() {
+			return $"LF_METHODLIST[Attributes='{Attributes}', ProcedureTypeRecord='{ProcedureTypeRecord}', VBaseOffset='{VBaseOffset}']";
 		}
 	}
 }

@@ -19,7 +19,6 @@ namespace Smx.PDBSharp
 		}
 
 		public void WriteSymbols(IEnumerable<Symbol> symbols) {
-			
 		}
 	}
 }

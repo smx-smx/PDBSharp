@@ -30,8 +30,8 @@ namespace Smx.PDBSharp.Symbols
 		public readonly ILeafContainer Type;
 		public readonly byte[] UserData;
 
-		public S_OEM(PDBFile pdb, Stream stream) {
-			var r = new SymbolDataReader(pdb, stream);
+		public S_OEM(Context ctx, Stream stream) {
+			var r = new SymbolDataReader(ctx, stream);
 
 			Id = new Guid(r.ReadBytes(16));
 			Type = r.ReadIndexedTypeLazy();

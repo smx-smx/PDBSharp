@@ -20,8 +20,8 @@ namespace Smx.PDBSharp.Symbols
 		public readonly byte Machine;
 		public readonly string VersionString;
 
-		public S_COMPILE(PDBFile pdb, Stream stream) {
-			var r = new SymbolDataReader(pdb, stream);
+		public S_COMPILE(Context ctx, Stream stream) {
+			var r = new SymbolDataReader(ctx, stream);
 			Machine = r.ReadByte();
 			uint flags = (uint)(r.ReadByte() | (r.ReadByte() << 8) | (r.ReadByte() << 16));
 			Flags = new CompileSymFlags(flags);
@@ -30,6 +30,10 @@ namespace Smx.PDBSharp.Symbols
 
 		public void Write(PDBFile pdb, Stream stream) {
 			throw new NotImplementedException();
+		}
+
+		public override string ToString() {
+			return $"S_COMPILE[Flags='{Flags}', Machine='{Machine}', VersionString='{VersionString}']";
 		}
 	}
 }

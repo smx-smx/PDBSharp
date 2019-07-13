@@ -28,8 +28,8 @@ namespace Smx.PDBSharp.Symbols
 		public readonly ILeafContainer Type;
 		public readonly string Name;
 	
-		public S_BPREL32(PDBFile pdb, Stream stream) {
-			SymbolDataReader r = new SymbolDataReader(pdb, stream);
+		public S_BPREL32(Context ctx, Stream stream) {
+			SymbolDataReader r = new SymbolDataReader(ctx, stream);
 			Offset = r.ReadUInt32();
 			Type = r.ReadIndexedTypeLazy();
 			Name = r.ReadSymbolString();

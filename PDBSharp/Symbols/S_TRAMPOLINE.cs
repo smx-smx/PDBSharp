@@ -71,8 +71,8 @@ namespace Smx.PDBSharp.Symbols
 		/// </summary>
 		public readonly UInt16 TargetSection;
 
-		public S_TRAMPOLINE(PDBFile pdb, Stream stream) {
-			var r = new SymbolDataReader(pdb, stream);
+		public S_TRAMPOLINE(Context ctx, Stream stream) {
+			var r = new SymbolDataReader(ctx, stream);
 
 			TrampolineType = r.ReadEnum<TrampolineType>();
 			ThunkSize = r.ReadUInt16();

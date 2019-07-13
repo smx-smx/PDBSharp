@@ -29,11 +29,11 @@ namespace Smx.PDBSharp.Symbols
 		public CV_LVAR_ADDR_RANGE Range;
 		public CV_LVAR_ADDR_GAP[] Gaps;
 
-		public S_DEFRANGE_FRAMEPOINTER_REL(PDBFile pdb, Stream stream) {
-			var r = new SymbolDataReader(pdb, stream);
+		public S_DEFRANGE_FRAMEPOINTER_REL(Context ctx, Stream stream) {
+			var r = new SymbolDataReader(ctx, stream);
 			FramePointerOffset = r.ReadUInt32();
 			Range = new CV_LVAR_ADDR_RANGE(stream);
-			Gaps = CV_LVAR_ADDR_GAP.ReadGaps(stream);
+			Gaps = CV_LVAR_ADDR_GAP.ReadGaps(r);
 		}
 
 		public S_DEFRANGE_FRAMEPOINTER_REL(DefrangeFramePointerRel data) {

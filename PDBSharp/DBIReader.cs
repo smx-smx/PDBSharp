@@ -66,9 +66,8 @@ namespace Smx.PDBSharp
 	public class DBIReader : ReaderBase
 	{
 		private DBIHeader hdr;
-		private readonly StreamTableReader stRdr;
 
-		private readonly PDBFile pdb;
+		private readonly Context ctx;
 
 		private readonly Lazy<IEnumerable<IModuleContainer>> lazyModuleContainers;
 
@@ -77,17 +76,15 @@ namespace Smx.PDBSharp
 		public event OnModuleDataDelegate OnModuleData;
 		public event OnModuleReaderInitDelegate OnModuleReaderInit;
 
-		public DBIReader(PDBFile pdb, StreamTableReader stRdr, Stream stream) : base(stream) {
-			this.pdb = pdb;
-
-			this.stRdr = stRdr;
+		public DBIReader(Context ctx, Stream stream) : base(stream) {
+			this.ctx = ctx;
 			hdr = ReadStruct<DBIHeader>();
 
 			if(hdr.Signature != unchecked((uint)-1) || !Enum.IsDefined(typeof(DBIVersion), (uint)hdr.Version)) {
 				throw new InvalidDataException();
 			}
 
-			uint nStreams = stRdr.NumStreams;
+			uint nStreams = ctx.StreamTableReader.NumStreams;
 			if (
 				hdr.GsSymbolsStreamNumber >= nStreams ||
 				hdr.PsSymbolsStreamNumber >= nStreams ||
@@ -101,12 +98,11 @@ namespace Smx.PDBSharp
 
 
 		private IEnumerable<IModuleContainer> ReadModules() {
-			byte[] moduleList = ReadBytes((int)hdr.ModuleListSize);
-			var modListRdr = new ModuleListReader(new MemoryStream(moduleList));
+			ctx.ModuleListReader = new ModuleListReader(Stream, hdr.ModuleListSize);
 
-			IEnumerable<ModuleInfo> moduleInfoList = modListRdr.Modules;
+			IEnumerable<ModuleInfo> moduleInfoList = ctx.ModuleListReader.Modules;
 			foreach (ModuleInfo mod in moduleInfoList) {
-				LazyModuleProvider provider = new LazyModuleProvider(pdb, stRdr, mod);
+				LazyModuleProvider provider = new LazyModuleProvider(ctx, mod);
 				
 				if (OnModuleReaderInit != null) {
 					provider.OnModuleReaderInit += OnModuleReaderInit;

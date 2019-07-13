@@ -16,7 +16,7 @@ namespace Smx.PDBSharp.Symbols
 {
 	public class S_LMANPROC : ManProcSymBase, ISymbol
 	{
-		public S_LMANPROC(PDBFile pdb, Stream stream) : base(pdb, stream) {
+		public S_LMANPROC(Context ctx, Stream stream) : base(ctx, stream) {
 		}
 
 		public S_LMANPROC(ManProcSym data) : base(data) {

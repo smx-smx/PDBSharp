@@ -22,7 +22,7 @@ namespace Smx.PDBSharp.Leaves
 
 		public readonly string Name;
 
-		public LF_MEMBER(PDBFile pdb, Stream stream) {
+		public LF_MEMBER(Context pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			Attributes = new FieldAttributes(r.ReadUInt16());
@@ -40,6 +40,10 @@ namespace Smx.PDBSharp.Leaves
 			w.WriteVaryingType(Offset);
 			w.WriteCString(Name);
 			w.WriteLeafHeader();
+		}
+
+		public override string ToString() {
+			return $"LF_MEMBER[Attributes='{Attributes}', FieldType='{FieldType}', Offset='{Offset}', Name='{Name}']";
 		}
 	}
 }

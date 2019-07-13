@@ -45,8 +45,8 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt16 BackendQFEVersion;
 		public readonly string VersionString;
 
-		public S_COMPILE3(PDBFile pdb, Stream stream) {
-			var r = new SymbolDataReader(pdb, stream);
+		public S_COMPILE3(Context ctx, Stream stream) {
+			var r = new SymbolDataReader(ctx, stream);
 			Flags = new CompileSym3Flags(r.ReadUInt32());
 			Machine = r.ReadUInt16();
 			FrontendVersionMajor = r.ReadUInt16();
@@ -88,6 +88,22 @@ namespace Smx.PDBSharp.Symbols
 			w.WriteSymbolString(VersionString);
 
 			w.WriteSymbolHeader();
+		}
+
+		public override string ToString() {
+			return $"S_COMPILE3[" +
+				$"Flags='{Flags}', " +
+				$"Machine='{Machine}', " +
+				$"FrontendVersionMajor='{FrontendVersionMajor}', " +
+				$"FrontendVersionMinor='{FrontendVersionMinor}', " +
+				$"FrontendVersionBuild='{FrontendVersionBuild}', " +
+				$"FrontendQFEVersion='{FrontendQFEVersion}', " +
+				$"BackendVersionMajor='{BackendVersionMajor}', " +
+				$"BackendVersionMinor='{BackendVersionMinor}', " +
+				$"BackendVersionBuild='{BackendVersionBuild}', " +
+				$"BackendQFEVersion='{BackendQFEVersion}', " +
+				$"VersionString='{VersionString}'" +
+			"]";
 		}
 	}
 }

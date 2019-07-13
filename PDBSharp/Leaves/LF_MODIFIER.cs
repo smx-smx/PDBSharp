@@ -19,20 +19,24 @@ namespace Smx.PDBSharp.Leaves
 	public class LF_MODIFIER : ILeaf
 	{
 		public readonly CVModifier Flags;
-		public readonly uint ModifiedType;
+		public readonly ILeafContainer ModifiedType;
 
-		public LF_MODIFIER(PDBFile pdb, Stream stream) {
+		public LF_MODIFIER(Context pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
-			ModifiedType = r.ReadUInt32();
+			ModifiedType = r.ReadIndexedTypeLazy();
 			Flags = r.ReadFlagsEnum<CVModifier>();
 		}
 
 		public void Write(PDBFile pdb, Stream stream) {
 			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_MODIFIER);
-			w.WriteUInt32(ModifiedType);
+			w.WriteIndexedType(ModifiedType);
 			w.WriteEnum<CVModifier>(Flags);
 			w.WriteLeafHeader();
+		}
+
+		public override string ToString() {
+			return $"LF_MODIFIER[ModifiedType='{ModifiedType}', Flags='{Flags}']";
 		}
 	}
 }

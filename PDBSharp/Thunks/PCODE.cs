@@ -16,7 +16,7 @@ namespace Smx.PDBSharp.Thunks
 {
 	public class PCODE : SymbolDataReader, IThunk
 	{
-		public PCODE(PDBFile pdb, SymbolHeader header, Stream stream) : base(pdb, header, stream) {
+		public PCODE(Context ctx, SymbolHeader header, Stream stream) : base(ctx, header, stream) {
 		}
 
 		public void Write(SymbolDataWriter w) {

@@ -26,7 +26,7 @@ namespace Smx.PDBSharp.Leaves
 
 		public readonly FunctionAttributes Attributes;
 
-		public LF_MFUNCTION(PDBFile pdb, Stream stream) {
+		public LF_MFUNCTION(Context pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			ReturnValueType = r.ReadIndexedTypeLazy();
@@ -50,6 +50,17 @@ namespace Smx.PDBSharp.Leaves
 			w.WriteIndexedType(ArgumentListType);
 			w.WriteUInt32(ThisAdjustor);
 			w.WriteLeafHeader();
+		}
+
+		public override string ToString() {
+			return $"LF_MFUNCTION[ReturnValueType='{ReturnValueType}', " +
+				$"ContainingClassType='{ContainingClassType}', " +
+				$"ThisPointerType='{ThisPointerType}', " +
+				$"CallingConvention='{CallingConvention}', " +
+				$"Attributes='{Attributes}', " +
+				$"NumberOfParameters='{NumberOfParameters}', " +
+				$"ArgumentListType='{ArgumentListType}', " +
+				$"ThisAdjustor='{ThisAdjustor}']";
 		}
 	}
 }

@@ -17,7 +17,7 @@ namespace Smx.PDBSharp.Leaves
 	{
 		public readonly ILeafContainer PointerType;
 
-		public LF_VFUNCTAB(PDBFile pdb, Stream stream) {
+		public LF_VFUNCTAB(Context pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			r.ReadUInt16(); //padding

@@ -22,7 +22,7 @@ namespace Smx.PDBSharp.Leaves
 
 		public readonly string Name;
 
-		public LF_ARRAY(PDBFile pdb, Stream stream) {
+		public LF_ARRAY(Context pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			ElementType = r.ReadIndexedTypeLazy();

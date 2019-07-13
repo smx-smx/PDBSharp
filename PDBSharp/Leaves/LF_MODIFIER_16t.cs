@@ -18,7 +18,7 @@ namespace Smx.PDBSharp.Leaves
 		public readonly CVModifier Attributes;
 		public readonly ILeafContainer ModifiedType;
 
-		public LF_MODIFIER_16t(PDBFile pdb, Stream stream) {
+		public LF_MODIFIER_16t(Context pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			Attributes = r.ReadFlagsEnum<CVModifier>();

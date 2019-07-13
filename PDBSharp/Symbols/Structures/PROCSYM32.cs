@@ -34,9 +34,9 @@ namespace Smx.PDBSharp.Symbols.Structures
 
 	public abstract class ProcSym32Base
 	{
-		public readonly UInt32 Parent;
+		private readonly UInt32 ParentOffset;
 		public readonly UInt32 End;
-		public readonly UInt32 Next;
+		private readonly UInt32 NextOffset;
 		public readonly UInt32 Length;
 		public readonly UInt32 DebugStartOffset;
 		public readonly UInt32 DebugEndOffset;
@@ -46,12 +46,19 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public readonly CV_PROCFLAGS Flags;
 		public readonly string Name;
 
-		public ProcSym32Base(PDBFile pdb, Stream stream) {
-			var r = new SymbolDataReader(pdb, stream);
+		public readonly Symbol ParentSymbol;
+		public readonly Symbol NextSymbol;
 
-			Parent = r.ReadUInt32();
+		public ProcSym32Base(Context ctx, Stream stream) {
+			var r = new SymbolDataReader(ctx, stream);
+
+			ParentOffset = r.ReadUInt32();
+			ParentSymbol = r.ReadSymbol(ParentOffset);
+
 			End = r.ReadUInt32();
-			Next = r.ReadUInt32();
+			NextOffset = r.ReadUInt32();
+			NextSymbol = r.ReadSymbol(NextOffset);
+
 			Length = r.ReadUInt32();
 			DebugStartOffset = r.ReadUInt32();
 			DebugEndOffset = r.ReadUInt32();
@@ -63,9 +70,9 @@ namespace Smx.PDBSharp.Symbols.Structures
 		}
 
 		public ProcSym32Base(ProcSym32 data) {
-			Parent = data.Parent;
+			ParentOffset = data.Parent;
 			End = data.End;
-			Next = data.Next;
+			NextOffset = data.Next;
 			Length = data.Length;
 			DebugStartOffset = data.DebugStartOffset;
 			DebugEndOffset = data.DebugEndOffset;
@@ -78,9 +85,9 @@ namespace Smx.PDBSharp.Symbols.Structures
 
 		public void Write(PDBFile pdb, Stream stream, SymbolType symbolType) {
 			var w = new SymbolDataWriter(pdb, stream, symbolType);
-			w.WriteUInt32(Parent);
+			w.WriteUInt32(ParentOffset);
 			w.WriteUInt32(End);
-			w.WriteUInt32(Next);
+			w.WriteUInt32(NextOffset);
 			w.WriteUInt32(Length);
 			w.WriteUInt32(DebugStartOffset);
 			w.WriteUInt32(DebugEndOffset);

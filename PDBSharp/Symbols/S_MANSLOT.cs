@@ -32,8 +32,8 @@ namespace Smx.PDBSharp.Symbols
 		public readonly CV_LVAR_ATTR Attributes;
 		public readonly string Name;
 
-		public S_MANSLOT(PDBFile pdb, Stream stream) {
-			var r = new SymbolDataReader(pdb, stream);
+		public S_MANSLOT(Context ctx, Stream stream) {
+			var r = new SymbolDataReader(ctx, stream);
 
 			SlotIndex = r.ReadUInt32();
 			Type = r.ReadIndexedTypeLazy();

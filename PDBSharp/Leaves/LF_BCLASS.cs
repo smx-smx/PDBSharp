@@ -20,7 +20,7 @@ namespace Smx.PDBSharp.Leaves
 
 		public readonly ILeafContainer Offset;
 
-		public LF_BCLASS(PDBFile pdb, Stream stream) {
+		public LF_BCLASS(Context pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			Attributes = new FieldAttributes(r.ReadUInt16());

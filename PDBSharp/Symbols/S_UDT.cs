@@ -16,7 +16,7 @@ namespace Smx.PDBSharp.Symbols
 {
 	public class S_UDT : UdtSym, ISymbol
 	{
-		public S_UDT(PDBFile pdb, Stream stream) : base(pdb, stream) {
+		public S_UDT(Context ctx, Stream stream) : base(ctx, stream) {
 		}
 
 		public S_UDT(UdtSymData data) : base(data) {

@@ -16,7 +16,7 @@ namespace Smx.PDBSharp.Symbols
 {
 	public class S_CONSTANT : ConstSymBase, ISymbol
 	{
-		public S_CONSTANT(PDBFile pdb, Stream stream) : base(pdb, stream) {
+		public S_CONSTANT(Context ctx, Stream stream) : base(ctx, stream) {
 		}
 
 		public S_CONSTANT(ConstSym data) : base(data) {

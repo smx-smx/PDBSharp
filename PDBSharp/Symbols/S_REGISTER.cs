@@ -27,8 +27,8 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt16 Register;
 		public readonly string Name;
 
-		public S_REGISTER(PDBFile pdb, Stream stream) {
-			var r = new SymbolDataReader(pdb, stream);
+		public S_REGISTER(Context ctx, Stream stream) {
+			var r = new SymbolDataReader(ctx, stream);
 
 			Type = r.ReadIndexedTypeLazy();
 			Register = r.ReadUInt16();

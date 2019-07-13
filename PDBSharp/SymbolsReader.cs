@@ -24,152 +24,139 @@ namespace Smx.PDBSharp
 
 	public class SymbolsReader : ReaderBase
 	{
-		private readonly PDBFile pdb;
+		private readonly Context ctx;
 
 		public event OnSymbolDataDelegate OnSymbolData;
 
-		public SymbolsReader(PDBFile pdb, Stream stream) : base(stream) {
-			this.pdb = pdb;
+		public SymbolsReader(Context ctx, Stream stream) : base(stream) {
+			this.ctx = ctx;
 		}
 
-		private ISymbol ReadSymbol(SymbolType symbolType, Stream Stream) {
-			switch (symbolType) {
+		public Symbol ReadSymbol() {
+			long startOffset = Stream.Position;
+
+			SymbolHeader hdr = ReadStruct<SymbolHeader>();
+			Stream.Position = startOffset;
+
+			long endOffset = Stream.Position + sizeof(UInt16) + hdr.Length;
+
+			ISymbol sym;
+			switch (hdr.Type) {
 				case SymbolType.S_BLOCK32:
-					return new S_BLOCK32(pdb, Stream);
+					sym = new S_BLOCK32(ctx, Stream); break;
 				case SymbolType.S_BPREL32:
-					return new S_BPREL32(pdb, Stream);
+					sym = new S_BPREL32(ctx, Stream); break;
 				case SymbolType.S_BUILDINFO:
-					return new S_BUILDINFO(pdb, Stream);
+					sym = new S_BUILDINFO(ctx, Stream); break;
 				case SymbolType.S_CALLEES:
-					return new S_CALLEES(pdb, Stream);
+					sym = new S_CALLEES(ctx, Stream); break;
 				case SymbolType.S_CALLSITEINFO:
-					return new S_CALLSITEINFO(pdb, Stream);
+					sym = new S_CALLSITEINFO(ctx, Stream); break;
 				case SymbolType.S_COFFGROUP:
-					return new S_COFFGROUP(pdb, Stream);
+					sym = new S_COFFGROUP(ctx, Stream); break;
 				case SymbolType.S_COMPILE:
-					return new S_COMPILE(pdb, Stream);
+					sym = new S_COMPILE(ctx, Stream); break;
 				case SymbolType.S_COMPILE2:
-					return new S_COMPILE2(pdb, Stream);
+					sym = new S_COMPILE2(ctx, Stream); break;
 				case SymbolType.S_COMPILE3:
-					return new S_COMPILE3(pdb, Stream);
+					sym = new S_COMPILE3(ctx, Stream); break;
 				case SymbolType.S_DEFRANGE_FRAMEPOINTER_REL:
-					return new S_DEFRANGE_FRAMEPOINTER_REL(pdb, Stream);
+					sym = new S_DEFRANGE_FRAMEPOINTER_REL(ctx, Stream); break;
 				case SymbolType.S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE:
-					return new S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE(pdb, Stream);
+					sym = new S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE(ctx, Stream); break;
 				case SymbolType.S_DEFRANGE_REGISTER:
-					return new S_DEFRANGE_REGISTER(pdb, Stream);
+					sym = new S_DEFRANGE_REGISTER(ctx, Stream); break;
 				case SymbolType.S_DEFRANGE_REGISTER_REL:
-					return new S_DEFRANGE_REGISTER_REL(pdb, Stream);
+					sym = new S_DEFRANGE_REGISTER_REL(ctx, Stream); break;
 				case SymbolType.S_DEFRANGE_SUBFIELD_REGISTER:
-					return new S_DEFRANGE_SUBFIELD_REGISTER(pdb, Stream);
-				case SymbolType.S_END:
-					// S_END has no data because it's used as marker
-					return null;
+					sym = new S_DEFRANGE_SUBFIELD_REGISTER(ctx, Stream); break;
 				case SymbolType.S_ENVBLOCK:
-					return new S_ENVBLOCK(pdb, Stream);
+					sym = new S_ENVBLOCK(ctx, Stream); break;
 				case SymbolType.S_EXPORT:
-					return new S_EXPORT(pdb, Stream);
+					sym = new S_EXPORT(ctx, Stream); break;
 				case SymbolType.S_FILESTATIC:
-					return new S_FILESTATIC(pdb, Stream);
+					sym = new S_FILESTATIC(ctx, Stream); break;
 				case SymbolType.S_FRAMECOOKIE:
-					return new S_FRAMECOOKIE(pdb, Stream);
+					sym = new S_FRAMECOOKIE(ctx, Stream); break;
 				case SymbolType.S_FRAMEPROC:
-					return new S_FRAMEPROC(pdb, Stream);
+					sym = new S_FRAMEPROC(ctx, Stream); break;
 				case SymbolType.S_GDATA32:
-					return new S_GDATA32(pdb, Stream);
+					sym = new S_GDATA32(ctx, Stream); break;
 				case SymbolType.S_INLINESITE:
-					return new S_INLINESITE(pdb, Stream);
+					sym = new S_INLINESITE(ctx, Stream); break;
 				case SymbolType.S_LDATA32:
-					return new S_LDATA32(pdb, Stream);
+					sym = new S_LDATA32(ctx, Stream); break;
 				case SymbolType.S_LMANDATA:
-					return new S_LMANDATA(pdb, Stream);
+					sym = new S_LMANDATA(ctx, Stream); break;
 				case SymbolType.S_GMANPROC:
-					return new S_GMANPROC(pdb, Stream);
+					sym = new S_GMANPROC(ctx, Stream); break;
 				case SymbolType.S_LMANPROC:
-					return new S_LMANPROC(pdb, Stream);
+					sym = new S_LMANPROC(ctx, Stream); break;
 				case SymbolType.S_GPROC32:
-					return new S_GPROC32(pdb, Stream);
+					sym = new S_GPROC32(ctx, Stream); break;
 				case SymbolType.S_LPROC32:
-					return new S_LPROC32(pdb, Stream);
+					sym = new S_LPROC32(ctx, Stream); break;
 				case SymbolType.S_HEAPALLOCSITE:
-					return new S_HEAPALLOCSITE(pdb, Stream);
+					sym = new S_HEAPALLOCSITE(ctx, Stream); break;
 				case SymbolType.S_LABEL32:
-					return new S_LABEL32(pdb, Stream);
+					sym = new S_LABEL32(ctx, Stream); break;
 				case SymbolType.S_LOCAL:
-					return new S_LOCAL(pdb, Stream);
+					sym = new S_LOCAL(ctx, Stream); break;
 				case SymbolType.S_CONSTANT:
-					return new S_CONSTANT(pdb, Stream);
+					sym = new S_CONSTANT(ctx, Stream); break;
 				case SymbolType.S_MANCONSTANT:
-					return new S_MANCONSTANT(pdb, Stream);
+					sym = new S_MANCONSTANT(ctx, Stream); break;
 				case SymbolType.S_MANSLOT:
-					return new S_MANSLOT(pdb, Stream);
+					sym = new S_MANSLOT(ctx, Stream); break;
 				case SymbolType.S_OBJNAME:
-					return new S_OBJNAME(pdb, Stream);
+					sym = new S_OBJNAME(ctx, Stream); break;
 				case SymbolType.S_OEM:
-					return new S_OEM(pdb, Stream);
+					sym = new S_OEM(ctx, Stream); break;
 				case SymbolType.S_REGISTER:
-					return new S_REGISTER(pdb, Stream);
+					sym = new S_REGISTER(ctx, Stream); break;
 				case SymbolType.S_REGREL32:
-					return new S_REGREL32(pdb, Stream);
+					sym = new S_REGREL32(ctx, Stream); break;
 				case SymbolType.S_SECTION:
-					return new S_SECTION(pdb, Stream);
+					sym = new S_SECTION(ctx, Stream); break;
 				case SymbolType.S_SEPCODE:
-					return new S_SEPCODE(pdb, Stream);
-				case SymbolType.S_SKIP:
-				case SymbolType.S_INLINESITE_END:
-					return null;
+					sym = new S_SEPCODE(ctx, Stream); break;
 				case SymbolType.S_THUNK32:
-					return new S_THUNK32(pdb, Stream);
+					sym = new S_THUNK32(ctx, Stream); break;
 				case SymbolType.S_TRAMPOLINE:
-					return new S_TRAMPOLINE(pdb, Stream);
+					sym = new S_TRAMPOLINE(ctx, Stream); break;
 				case SymbolType.S_COBOLUDT:
-					return new S_COBOLUDT(pdb, Stream);
+					sym = new S_COBOLUDT(ctx, Stream); break;
 				case SymbolType.S_UDT:
-					return new S_UDT(pdb, Stream);
+					sym = new S_UDT(ctx, Stream); break;
 				case SymbolType.S_UNAMESPACE:
-					return new S_UNAMESPACE(pdb, Stream);
+					sym = new S_UNAMESPACE(ctx, Stream); break;
 				case SymbolType.S_WITH32:
 				case SymbolType.S_WITH32_ST:
-					return new S_WITH32(pdb, Stream);
+					sym = new S_WITH32(ctx, Stream); break;
+				case SymbolType.S_END:
+				case SymbolType.S_SKIP:
+				case SymbolType.S_INLINESITE_END:
+					sym = null;
+					break;
 				default:
-					throw new NotImplementedException($"Symbol type {symbolType} not implemented yet");
+					string typeName = Enum.GetName(typeof(SymbolType), hdr.Type);
+					throw new NotImplementedException($"Symbol type {typeName} (0x{hdr.Type:X}) not implemented yet");
 			}
+
+			Stream.Position = endOffset;
+
+			if (sym == null)
+				return null;
+
+			return new Symbol(hdr.Type, sym);
 		}
 
 		public IEnumerable<Symbol> ReadSymbols() {
-			var remaining = Stream.Length;
-
-			while (remaining > 0) {
-				// number of bytes that follow, including symbolType
-				UInt16 length = ReadUInt16();
-
-				SymbolType symbolType = ReadEnum<SymbolType>();
-
-				// including symbol length
-				int dataSize = length + sizeof(UInt16);
-				Stream symDataStream = new MemoryStream(new byte[dataSize]);
-
-				byte[] data = ReadBytes((int)length - sizeof(UInt16));
-				OnSymbolData?.Invoke(data);
-
-				BinaryWriter wr = new BinaryWriter(symDataStream);
-				wr.Write(length);
-				wr.Write((UInt16)symbolType);
-				wr.Write(data);
-				symDataStream.Position = 0;
-
-				ISymbol sym = ReadSymbol(symbolType, symDataStream);
+			while (Stream.Position < Stream.Length) {
+				Symbol sym = ReadSymbol();
 				if (sym != null) {
-					yield return new Symbol(symbolType, sym);
+					yield return sym;
 				}
-
-#if false
-				if (symDataStream.Position != symDataStream.Length) {
-					Trace.WriteLine($"WARNING: {symbolType} didn't consume {symDataStream.Length - symDataStream.Position} bytes");
-				}
-#endif
-
-				remaining -= dataSize;
 			}
 		}
 	}

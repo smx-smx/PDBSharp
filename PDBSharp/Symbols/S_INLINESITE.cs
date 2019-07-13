@@ -15,14 +15,16 @@ namespace Smx.PDBSharp.Symbols
 {
 	public class S_INLINESITE : ISymbol
 	{
-		public readonly UInt32 InlinerParent;
+		private readonly UInt32 InlinerParentOffset;
+		public readonly Symbol Inliner;
 		public readonly UInt32 End;
 		public readonly ILeafContainer Inlinee;
 		public readonly byte[] BinaryAnnotations;
 
-		public S_INLINESITE(PDBFile pdb, Stream stream) {
-			var r = new SymbolDataReader(pdb, stream);
-			InlinerParent = r.ReadUInt32();
+		public S_INLINESITE(Context ctx, Stream stream) {
+			var r = new SymbolDataReader(ctx, stream);
+			InlinerParentOffset = r.ReadUInt32();
+			Inliner = r.ReadSymbol(InlinerParentOffset);
 			End = r.ReadUInt32();
 			Inlinee = r.ReadIndexedTypeLazy();
 			BinaryAnnotations = r.ReadRemaining();

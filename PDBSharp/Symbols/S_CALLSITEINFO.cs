@@ -30,8 +30,8 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt16 SectionIndex;
 		public readonly ILeafContainer Type;
 
-		public S_CALLSITEINFO(PDBFile pdb, Stream stream) {
-			var r = new SymbolDataReader(pdb, stream);
+		public S_CALLSITEINFO(Context ctx, Stream stream) {
+			var r = new SymbolDataReader(ctx, stream);
 			Offset = r.ReadUInt32();
 			SectionIndex = r.ReadUInt16();
 			r.ReadUInt16(); //padding

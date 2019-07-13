@@ -43,8 +43,8 @@ namespace Smx.PDBSharp.Symbols
 		public readonly string VersionString;
 		public readonly string[] OptionalData;
 
-		public S_COMPILE2(PDBFile pdb, Stream stream){
-			var r = new SymbolDataReader(pdb, stream);
+		public S_COMPILE2(Context ctx, Stream stream){
+			var r = new SymbolDataReader(ctx, stream);
 			Flags = new CompileSym2Flags(r.ReadUInt32());
 			Machine = r.ReadUInt16();
 			FrontendVersionMajor = r.ReadUInt16();
@@ -95,6 +95,20 @@ namespace Smx.PDBSharp.Symbols
 			}
 
 			w.WriteSymbolHeader();
+		}
+
+		public override string ToString() {
+			return $"S_COMPILE2[" +
+				$"Flags='{Flags}', " +
+				$"Machine='{Machine}', " +
+				$"FrontendVersionMajor='{FrontendVersionMajor}', " +
+				$"FrontendVersionMinor='{FrontendVersionMinor}', " +
+				$"FrontendVersionBuild='{FrontendVersionBuild}', " +
+				$"BackendVersionMajor='{BackendVersionMajor}', " +
+				$"BackendVersionMinor='{BackendVersionMinor}', " +
+				$"BackendVersionBuild='{BackendVersionBuild}'" +
+				$"VersionString='{VersionString}'" +
+			"]";
 		}
 	}
 }

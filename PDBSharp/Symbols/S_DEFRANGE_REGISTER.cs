@@ -32,12 +32,12 @@ namespace Smx.PDBSharp.Symbols
 		public readonly CV_LVAR_ADDR_RANGE Range;
 		public readonly CV_LVAR_ADDR_GAP[] Gaps;
 
-		public S_DEFRANGE_REGISTER(PDBFile pdb, Stream stream) {
-			var r = new SymbolDataReader(pdb, stream);
+		public S_DEFRANGE_REGISTER(Context ctx, Stream stream) {
+			var r = new SymbolDataReader(ctx, stream);
 			Register = r.ReadUInt16();
 			Attributes = r.ReadFlagsEnum<RangeAttributes>();
 			Range = new CV_LVAR_ADDR_RANGE(stream);
-			Gaps = CV_LVAR_ADDR_GAP.ReadGaps(stream);
+			Gaps = CV_LVAR_ADDR_GAP.ReadGaps(r);
 		}
 
 		public S_DEFRANGE_REGISTER(DefrangeSymRegister data) {

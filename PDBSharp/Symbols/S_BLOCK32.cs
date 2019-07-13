@@ -29,16 +29,19 @@ namespace Smx.PDBSharp.Symbols
 
 	public class S_BLOCK32 : ISymbol
 	{
-		public readonly UInt32 Parent;
+		private readonly UInt32 ParentOffset;
+		public readonly Symbol Parent;
 		public readonly UInt32 End;
 		public readonly UInt32 Length;
 		public readonly UInt32 Offset;
 		public readonly UInt16 Segment;
 		public readonly string Name;
 
-		public S_BLOCK32(PDBFile pdb, Stream stream) {
-			SymbolDataReader r = new SymbolDataReader(pdb, stream);
-			Parent = r.ReadUInt32();
+		public S_BLOCK32(Context ctx, Stream stream) {
+			SymbolDataReader r = new SymbolDataReader(ctx, stream);
+			ParentOffset = r.ReadUInt32();
+			Parent = r.ReadSymbol(ParentOffset);
+
 			End = r.ReadUInt32();
 			Length = r.ReadUInt32();
 			Offset = r.ReadUInt32();
@@ -47,7 +50,7 @@ namespace Smx.PDBSharp.Symbols
 		}
 
 		public S_BLOCK32(BlockSym32 data){
-			Parent = data.Parent;
+			ParentOffset = data.Parent;
 			End = data.End;
 			Length = data.Length;
 			Offset = data.Offset;
@@ -57,7 +60,7 @@ namespace Smx.PDBSharp.Symbols
 
 		public void Write(PDBFile pdb, Stream stream) {
 			SymbolDataWriter w = new SymbolDataWriter(pdb, stream, SymbolType.S_BLOCK32);
-			w.WriteUInt32(Parent);
+			w.WriteUInt32(ParentOffset);
 			w.WriteUInt32(End);
 			w.WriteUInt32(Length);
 			w.WriteUInt32(Offset);

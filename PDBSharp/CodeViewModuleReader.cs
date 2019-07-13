@@ -26,8 +26,8 @@ namespace Smx.PDBSharp
 
 	public class CodeViewModuleReader : ReaderBase, IModule
 	{
-		private readonly PDBFile pdb;
-		private readonly ModuleInfo modInfo;
+		private readonly Context ctx;
+		private readonly ModuleInfo mod;
 
 		private readonly Lazy<IEnumerable<Symbol>> lazySymbols;
 
@@ -35,9 +35,9 @@ namespace Smx.PDBSharp
 
 		public IEnumerable<Symbol> Symbols => lazySymbols.Value;
 
-		public CodeViewModuleReader(PDBFile pdb, ModuleInfo modInfo, Stream stream) : base(stream) {
-			this.pdb = pdb;
-			this.modInfo = modInfo;
+		public CodeViewModuleReader(Context ctx, ModuleInfo mod, Stream stream) : base(stream) {
+			this.ctx = ctx;
+			this.mod = mod;
 
 			CodeViewSignature signature = ReadEnum<CodeViewSignature>();
 			if(signature != CodeViewSignature.C13){
@@ -48,13 +48,15 @@ namespace Smx.PDBSharp
 		}
 
 		private IEnumerable<Symbol> ReadSymbols() {
-			int symbolsSize = (int)modInfo.SymbolsSize - sizeof(CodeViewSignature); //exclude signature
+			int symbolsSize = (int)mod.SymbolsSize - sizeof(CodeViewSignature); //exclude signature
 			byte[] symbolsData = ReadBytes(symbolsSize);
 
-			var rdr = new SymbolsReader(pdb, new MemoryStream(symbolsData));
+			ctx.CurrentModule = this;
+			var rdr = new SymbolsReader(ctx, new MemoryStream(symbolsData));
 			if(OnSymbolData != null) {
 				rdr.OnSymbolData += OnSymbolData;
 			}
+
 			return rdr.ReadSymbols();
 		}
 	}

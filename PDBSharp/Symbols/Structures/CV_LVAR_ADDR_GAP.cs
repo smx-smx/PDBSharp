@@ -15,24 +15,24 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols.Structures
 {
-	public class CV_LVAR_ADDR_GAP : ReaderBase
+	public class CV_LVAR_ADDR_GAP
 	{
 		public const int SIZE = 4;
 
 		public readonly UInt16 GapStartOffset;
 		public readonly UInt16 Length;
 
-		public CV_LVAR_ADDR_GAP(Stream stream) : base(stream) {
-			GapStartOffset = ReadUInt16();
-			Length = ReadUInt16();
+		public CV_LVAR_ADDR_GAP(SymbolDataReader r) {
+			GapStartOffset = r.ReadUInt16();
+			Length = r.ReadUInt16();
 		}
 
-		public static CV_LVAR_ADDR_GAP[] ReadGaps(Stream stream) {
+		public static CV_LVAR_ADDR_GAP[] ReadGaps(SymbolDataReader r) {
 			// interpret remaining data as gaps
-			int numGaps = (int)(stream.Length - stream.Position) / CV_LVAR_ADDR_GAP.SIZE;
+			int numGaps = r.Remaining / CV_LVAR_ADDR_GAP.SIZE;
 			return Enumerable
 				.Range(1, numGaps)
-				.Select(_ => new CV_LVAR_ADDR_GAP(stream))
+				.Select(_ => new CV_LVAR_ADDR_GAP(r))
 				.ToArray();
 		}
 

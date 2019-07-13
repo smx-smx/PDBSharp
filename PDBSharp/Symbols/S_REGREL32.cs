@@ -32,8 +32,8 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt16 RegisterIndex;
 		public readonly string Name;
 
-		public S_REGREL32(PDBFile pdb, Stream stream) {
-			var r = new SymbolDataReader(pdb, stream);
+		public S_REGREL32(Context ctx, Stream stream) {
+			var r = new SymbolDataReader(ctx, stream);
 
 			Offset = r.ReadUInt32();
 			Type = r.ReadIndexedTypeLazy();

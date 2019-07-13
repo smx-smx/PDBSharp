@@ -34,19 +34,19 @@ namespace Smx.PDBSharp
 			{ LeafType.LF_REAL128, 16 }
 		});
 
-		protected readonly PDBFile PDB;
-		public TypeDataReader(PDBFile pdb, Stream stream) : base(stream) {
-			this.PDB = pdb;
+		protected readonly Context ctx;
+		public TypeDataReader(Context ctx, Stream stream) : base(stream) {
+			this.ctx = ctx;
 		}
 
 		public ILeafContainer ReadIndexedTypeLazy() {
 			UInt32 TI = ReadUInt32();
-			return new LazyLeafProvider(PDB, TI);
+			return new LazyLeafProvider(ctx, TI);
 		}
 
 		public ILeafContainer ReadIndexedType16Lazy() {
 			UInt16 TI = ReadUInt16();
-			return new LazyLeafProvider(PDB, TI);
+			return new LazyLeafProvider(ctx, TI);
 		}
 
 		/// <summary>
@@ -72,7 +72,7 @@ namespace Smx.PDBSharp
 			dataSize = PrimitiveDataSizes[leafType];
 
 			Stream.Seek(-2, SeekOrigin.Current);
-			ILeafContainer leaf = new TypeDataReader(this.PDB, Stream).ReadTypeLazy(hasSize: false);
+			ILeafContainer leaf = new TypeDataReader(ctx, Stream).ReadTypeLazy(hasSize: false);
 			return leaf;
 
 		}
@@ -93,80 +93,80 @@ namespace Smx.PDBSharp
 		private ILeaf ReadLeaf(LeafType leafType) {
 			switch (leafType) {
 				case LeafType.LF_ARGLIST:
-					return new LF_ARGLIST(PDB, Stream);
+					return new LF_ARGLIST(ctx, Stream);
 				case LeafType.LF_ARRAY:
-					return new LF_ARRAY(PDB, Stream);
+					return new LF_ARRAY(ctx, Stream);
 				case LeafType.LF_BCLASS:
-					return new LF_BCLASS(PDB, Stream);
+					return new LF_BCLASS(ctx, Stream);
 				case LeafType.LF_BITFIELD:
-					return new LF_BITFIELD(PDB, Stream);
+					return new LF_BITFIELD(ctx, Stream);
 				case LeafType.LF_CHAR:
-					return new LF_CHAR(PDB, Stream);
+					return new LF_CHAR(ctx, Stream);
 				case LeafType.LF_CLASS:
 				case LeafType.LF_STRUCTURE:
-					return new LF_CLASS(PDB, Stream);
+					return new LF_CLASS(ctx, Stream);
 				case LeafType.LF_ENUM:
-					return new LF_ENUM(PDB, Stream);
+					return new LF_ENUM(ctx, Stream);
 				case LeafType.LF_ENUMERATE:
 				case LeafType.LF_ENUMERATE_ST:
-					return new LF_ENUMERATE(PDB, Stream);
+					return new LF_ENUMERATE(ctx, Stream);
 				case LeafType.LF_FIELDLIST:
-					return new LF_FIELDLIST(PDB, Stream);
+					return new LF_FIELDLIST(ctx, Stream);
 				case LeafType.LF_INDEX:
-					return new LF_INDEX(PDB, Stream);
+					return new LF_INDEX(ctx, Stream);
 				case LeafType.LF_LONG:
-					return new LF_LONG(PDB, Stream);
+					return new LF_LONG(ctx, Stream);
 				case LeafType.LF_MEMBER:
-					return new LF_MEMBER(PDB, Stream);
+					return new LF_MEMBER(ctx, Stream);
 				case LeafType.LF_METHOD:
-					return new LF_METHOD(PDB, Stream);
+					return new LF_METHOD(ctx, Stream);
 				case LeafType.LF_METHODLIST:
-					return new LF_METHODLIST(PDB, Stream);
+					return new LF_METHODLIST(ctx, Stream);
 				case LeafType.LF_MODIFIER:
-					return new LF_MODIFIER(PDB, Stream);
+					return new LF_MODIFIER(ctx, Stream);
 				case LeafType.LF_MFUNCTION:
-					return new LF_MFUNCTION(PDB, Stream);
+					return new LF_MFUNCTION(ctx, Stream);
 				case LeafType.LF_NESTTYPE:
-					return new LF_NESTTYPE(PDB, Stream);
+					return new LF_NESTTYPE(ctx, Stream);
 				case LeafType.LF_ONEMETHOD:
-					return new LF_ONEMETHOD(PDB, Stream);
+					return new LF_ONEMETHOD(ctx, Stream);
 				case LeafType.LF_POINTER:
-					return new LF_POINTER(PDB, Stream);
+					return new LF_POINTER(ctx, Stream);
 				case LeafType.LF_PROCEDURE:
-					return new LF_PROCEDURE(PDB, Stream);
+					return new LF_PROCEDURE(ctx, Stream);
 				case LeafType.LF_QUADWORD:
-					return new LF_QUADWORD(PDB, Stream);
+					return new LF_QUADWORD(ctx, Stream);
 				case LeafType.LF_REAL32:
-					return new LF_REAL32(PDB, Stream);
+					return new LF_REAL32(ctx, Stream);
 				case LeafType.LF_REAL64:
-					return new LF_REAL64(PDB, Stream);
+					return new LF_REAL64(ctx, Stream);
 				case LeafType.LF_SHORT:
-					return new LF_SHORT(PDB, Stream);
+					return new LF_SHORT(ctx, Stream);
 				case LeafType.LF_STMEMBER:
-					return new LF_STMEMBER(PDB, Stream);
+					return new LF_STMEMBER(ctx, Stream);
 				case LeafType.LF_ULONG:
-					return new LF_ULONG(PDB, Stream);
+					return new LF_ULONG(ctx, Stream);
 				case LeafType.LF_UNION:
-					return new LF_UNION(PDB, Stream);
+					return new LF_UNION(ctx, Stream);
 				case LeafType.LF_UQUADWORD:
-					return new LF_UQUADWORD(PDB, Stream);
+					return new LF_UQUADWORD(ctx, Stream);
 				case LeafType.LF_USHORT:
-					return new LF_USHORT(PDB, Stream);
+					return new LF_USHORT(ctx, Stream);
 				case LeafType.LF_VARSTRING:
-					return new LF_VARSTRING(PDB, Stream);
+					return new LF_VARSTRING(ctx, Stream);
 				case LeafType.LF_VBCLASS:
 				case LeafType.LF_IVBCLASS:
-					return new LF_VBCLASS(PDB, Stream);
+					return new LF_VBCLASS(ctx, Stream);
 				case LeafType.LF_VFTABLE:
-					return new LF_VFTABLE(PDB, Stream);
+					return new LF_VFTABLE(ctx, Stream);
 				case LeafType.LF_VFTPATH_16t:
-					return new LF_VFTPATH_16t(PDB, Stream);
+					return new LF_VFTPATH_16t(ctx, Stream);
 				case LeafType.LF_VFUNCTAB:
-					return new LF_VFUNCTAB(PDB, Stream);
+					return new LF_VFUNCTAB(ctx, Stream);
 				case LeafType.LF_VTSHAPE:
-					return new LF_VTSHAPE(PDB, Stream);
+					return new LF_VTSHAPE(ctx, Stream);
 				case LeafType.SPECIAL_BUILTIN:
-					throw new InvalidDataException("SPECIAL_BUILTIN is a custom ILeaf marker, it can't be present in a valid PDB file");
+					throw new InvalidDataException("SPECIAL_BUILTIN is a custom ILeaf marker, it can't be present in a valid ctx file");
 				default:
 					throw new NotImplementedException($"Leaf {leafType} not supported yet");
 			}

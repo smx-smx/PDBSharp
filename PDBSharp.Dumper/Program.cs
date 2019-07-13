@@ -25,18 +25,12 @@ namespace Smx.PDBSharp.Dumper
 		public static bool OptDumpLeaves = false;
 		public static bool OptDumpSymbols = false;
 		public static bool OptDumpStreams = false;
-		public static bool OptVerbose = false;
 		public static string PdbFilePath = null;
-
-		public static bool OptDisableReflection = false;
 
 		private static void ParseArguments(string[] args) {
 			for (int i = 0; i < args.Length; i++) {
 				string arg = args[i];
 				switch (arg) {
-					case "-debug":
-						OptDisableReflection = true;
-						break;
 					case "-dump":
 						OptDumpStreams = true;
 						break;
@@ -48,9 +42,6 @@ namespace Smx.PDBSharp.Dumper
 						break;
 					case "-dump-syms":
 						OptDumpSymbols = true;
-						break;
-					case "-verbose":
-						OptVerbose = true;
 						break;
 					default:
 						PdbFilePath = arg;
@@ -67,45 +58,30 @@ namespace Smx.PDBSharp.Dumper
 				Environment.Exit(1);
 			}
 
-			//var file = new FileStream(PdbFilePath, FileMode.Open, FileAccess.Read);
-			MemoryMappedFile mmap = MemoryMappedFile.CreateFromFile(PdbFilePath, FileMode.Open);
-			Stream mmapStream = mmap.CreateViewStream();
-			PDBFile pdb = new PDBFile(mmapStream);
+			Context ctx = new Context(PdbFilePath);
 
 			if (OptDumpLeaves) {
-				pdb.OnTpiInit += Pdb_OnTpiInit;
+				ctx.Pdb.OnTpiInit += Pdb_OnTpiInit;
 			}
 			if (OptDumpModules || OptDumpSymbols) {
-				pdb.OnDbiInit += Pdb_OnDbiInit;
+				ctx.Pdb.OnDbiInit += Pdb_OnDbiInit;
 			}
 
 			if (OptDumpStreams) {
 				DirectoryInfo dumpDir = Directory.CreateDirectory(Path.GetFileNameWithoutExtension(PdbFilePath));
-				for(int i=1; i<pdb.StreamTable.NumStreams; i++) {
+				for(int i=1; i<ctx.StreamTableReader.NumStreams; i++) {
 					string dumpPath = Path.Combine(dumpDir.ToString(), $"stream{i}.bin");
 
-					byte[] stream = pdb.StreamTable.GetStream(i);
+					byte[] stream = ctx.StreamTableReader.GetStream(i);
 					File.WriteAllBytes(dumpPath, stream);
 				}
 			}
 
-			foreach(var type in pdb.Types) {
-				if (!OptDisableReflection) {
-					ObjectDumper.Dump(type);
-				}
-
-				/*switch (type.Data) {
-					case LF_FIELDLIST flst:
-						flst.Fields.ForEach(leaf => {
-							if (OptVerbose) {
-								ObjectDumper.Dump(leaf);
-							}
-						});
-						break;
-				}*/
+			foreach(var type in ctx.Pdb.Types) {
+				//Console.WriteLine(type);
 			}
 
-			foreach(var container in pdb.Modules) { 
+			foreach(var container in ctx.Pdb.Modules) { 
 				Console.WriteLine($"[MODULE => {container.Info.ModuleName}]");
 				Console.WriteLine($"[OBJECT => {container.Info.ObjectFileName}]");
 				if (container.Module != null) {
@@ -116,15 +92,12 @@ namespace Smx.PDBSharp.Dumper
 				IModule mod = container.Module;
 				if (mod != null) {
 					foreach (var sym in mod.Symbols) {
-						if (OptVerbose && !OptDisableReflection) {
-							ObjectDumper.Dump(sym);
-						}
+						//Console.WriteLine(sym);
 					}
 				}
 			}
 
-			mmapStream.Close();
-			mmap.Dispose();
+			ctx.Dispose();
 
 			Console.WriteLine("Press Enter to continue...");
 			Console.ReadLine();

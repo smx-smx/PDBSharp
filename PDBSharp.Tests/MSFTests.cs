@@ -21,6 +21,8 @@ namespace Tests
 		public void Setup() {
 		}
 
+#if false
+		[Ignore("Work in Progress")]
 		[Test]
 		public void TestSingleStream() {
 			string filePath = Path.GetTempFileName();
@@ -45,6 +47,7 @@ namespace Tests
 
 			File.Delete(filePath);
 		}
+#endif
 
 		[Test]
 		public void TestHeader() {

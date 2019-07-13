@@ -25,8 +25,8 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public readonly UInt16 Segment;
 		public readonly string Name;
 
-		public DataSym32Base(PDBFile pdb, Stream stream) {
-			var r = new SymbolDataReader(pdb, stream);
+		public DataSym32Base(Context ctx, Stream stream) {
+			var r = new SymbolDataReader(ctx, stream);
 
 			Type = r.ReadIndexedTypeLazy();
 			Offset = r.ReadUInt32();

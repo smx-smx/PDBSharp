@@ -36,8 +36,8 @@ namespace Smx.PDBSharp.Symbols
 		public readonly CV_LVAR_ADDR_GAP[] Gaps;
 
 
-		public S_DEFRANGE_REGISTER_REL(PDBFile pdb, Stream stream) {
-			var r = new SymbolDataReader(pdb, stream);
+		public S_DEFRANGE_REGISTER_REL(Context ctx, Stream stream) {
+			var r = new SymbolDataReader(ctx, stream);
 			BaseRegister = r.ReadUInt16();
 
 			UInt16 flags = r.ReadUInt16();
@@ -46,7 +46,7 @@ namespace Smx.PDBSharp.Symbols
 
 			BaseRegisterOffset = r.ReadUInt32();
 			Range = new CV_LVAR_ADDR_RANGE(stream);
-			Gaps = CV_LVAR_ADDR_GAP.ReadGaps(stream);
+			Gaps = CV_LVAR_ADDR_GAP.ReadGaps(r);
 		}
 
 		public S_DEFRANGE_REGISTER_REL(DefrangeSymRegisterRel data) {

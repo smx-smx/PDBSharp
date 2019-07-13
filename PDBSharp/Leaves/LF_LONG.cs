@@ -20,7 +20,7 @@ namespace Smx.PDBSharp.Leaves
 	{
 		public readonly int Value;
 
-		public LF_LONG(PDBFile pdb, Stream stream) {
+		public LF_LONG(Context pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 			Value = r.ReadInt32();
 		}
@@ -29,6 +29,10 @@ namespace Smx.PDBSharp.Leaves
 			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_LONG);
 			w.WriteInt32(Value);
 			w.WriteLeafHeader();
+		}
+
+		public override string ToString() {
+			return $"LF_LONG[{Value}]";
 		}
 	}
 }

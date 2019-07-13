@@ -19,7 +19,7 @@ namespace Smx.PDBSharp.Leaves
 	{
 		public readonly string Value;
 
-		public LF_VARSTRING(PDBFile pdb, Stream stream) {
+		public LF_VARSTRING(Context pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			UInt16 length = r.ReadUInt16();

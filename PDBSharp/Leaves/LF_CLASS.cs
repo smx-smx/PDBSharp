@@ -27,7 +27,7 @@ namespace Smx.PDBSharp.Leaves
 
 		public readonly string Name;
 
-		public LF_CLASS(PDBFile pdb, Stream stream) {
+		public LF_CLASS(Context pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			NumberOfElements = r.ReadUInt16();
@@ -50,6 +50,15 @@ namespace Smx.PDBSharp.Leaves
 			w.WriteVaryingType(StructSize);
 			w.WriteCString(Name);
 			w.WriteLeafHeader();
+		}
+
+		public override string ToString() {
+			return $"LF_CLASS[NumberOfElements='{NumberOfElements}', " +
+				$"FieldProperties='{FieldProperties}', " +
+				$"FieldIndex='{FieldIndex}', " +
+				$"VShapeTableType='{VShapeTableType}', " +
+				$"StructSize='{StructSize}', " +
+				$"Name='{Name}']";
 		}
 	}
 }

@@ -21,6 +21,7 @@ namespace Smx.PDBSharp
 
 	public interface SectionContribution
 	{
+		int Size { get; }
 	}
 
 	public class SectionContribution40 : ReaderBase, SectionContribution
@@ -35,6 +36,7 @@ namespace Smx.PDBSharp
 		public readonly UInt32 DataCrc;
 		public readonly UInt32 RelocCrc;
 
+		const int SIZE = 28;
 
 		public SectionContribution40(Stream stream) : base(stream) {
 			SectionIndex = ReadUInt16();
@@ -50,6 +52,8 @@ namespace Smx.PDBSharp
 			DataCrc = ReadUInt32();
 			RelocCrc = ReadUInt32();
 		}
+
+		int SectionContribution.Size => SIZE;
 	}
 
 	public class ModuleInfoFlags
@@ -82,7 +86,12 @@ namespace Smx.PDBSharp
 		public readonly string ModuleName;
 		public readonly string ObjectFileName;
 
+
+		public readonly int Size;
+
 		public ModuleInfo(Stream stream) : base(stream) {
+			long modiStartOffset = stream.Position;
+
 			OpenModuleHandle = ReadUInt32();
 			SectionContribution = new SectionContribution40(stream);
 
@@ -105,12 +114,33 @@ namespace Smx.PDBSharp
 
 			ModuleName = ReadCString();
 			ObjectFileName = ReadCString();
+
+			// Align stream position
+			int padding = AlignStream(sizeof(int));
+
+			Size = 38 +
+				SectionContribution.Size +
+				ModuleName.Length +
+				ObjectFileName.Length +
+				padding;
 		}
 	}
 
 	public class ModuleListReader : ReaderBase
 	{
-		public ModuleListReader(Stream stream) : base(stream) {
+		private readonly long listStartOffset;
+		private readonly long listEndOffset;
+
+		private readonly uint listSize;
+
+		private long lastPosition;
+
+		public ModuleListReader(Stream stream, uint moduleListSize) : base(stream) {
+			listStartOffset = stream.Position;
+			listSize = moduleListSize;
+			listEndOffset = listStartOffset + listSize;
+			lastPosition = listStartOffset;
+
 			lazyModules = new Lazy<IEnumerable<ModuleInfo>>(ReadModules);
 		}
 
@@ -119,15 +149,14 @@ namespace Smx.PDBSharp
 		public IEnumerable<ModuleInfo> Modules => lazyModules.Value;
 
 		private IEnumerable<ModuleInfo> ReadModules() {
-			var remaining = Stream.Length;
-			while (remaining > 0) {
-				long savedPos = Stream.Position;
+			while (lastPosition < listEndOffset) {
+				Stream.Position = lastPosition;
+
 				ModuleInfo mod = new ModuleInfo(Stream);
+				long moduleSize = mod.Size;
+				lastPosition += moduleSize;
 
-				long moduleSize = (Stream.Position - savedPos) + AlignStream(sizeof(int));
 				yield return mod;
-
-				remaining -= moduleSize;
 			}
 		}
 	}

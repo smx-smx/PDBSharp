@@ -44,7 +44,7 @@ namespace Smx.PDBSharp.Leaves
 		public readonly ILeafContainer UnderlyingType;
 		public readonly PointerAttributes Attributes;
 
-		public LF_POINTER(PDBFile pdb, Stream stream) {
+		public LF_POINTER(Context pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			UnderlyingType = r.ReadIndexedTypeLazy();
@@ -56,6 +56,10 @@ namespace Smx.PDBSharp.Leaves
 			w.WriteIndexedType(UnderlyingType);
 			w.WriteUInt32((uint)Attributes);
 			w.WriteLeafHeader();
+		}
+
+		public override string ToString() {
+			return $"LF_POINTER[UnderlyingType='{UnderlyingType}', Attributes='{Attributes}']";
 		}
 	}
 }

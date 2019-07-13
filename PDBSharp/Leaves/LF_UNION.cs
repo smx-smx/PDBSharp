@@ -23,7 +23,7 @@ namespace Smx.PDBSharp.Leaves
 
 		public readonly string Name;
 
-		public LF_UNION(PDBFile pdb, Stream stream) {
+		public LF_UNION(Context pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			NumberOfElements = r.ReadUInt16();

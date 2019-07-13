@@ -18,7 +18,7 @@ namespace Smx.PDBSharp.Thunks
 {
 	public class NOTYPE : SymbolDataReader, IThunk
 	{
-		public NOTYPE(PDBFile pdb, SymbolHeader symHeader, Stream stream) : base(pdb, symHeader, stream) {
+		public NOTYPE(Context pdb, SymbolHeader symHeader, Stream stream) : base(pdb, symHeader, stream) {
 		}
 
 		public void Write(SymbolDataWriter w) {

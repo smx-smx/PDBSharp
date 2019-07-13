@@ -93,7 +93,7 @@ namespace Smx.PDBSharp
 			return new StructureReader<T>(new BinaryReader(Stream)).Read();
 		}
 
-		public byte[] ReadRemaining() {
+		public virtual byte[] ReadRemaining() {
 			long remaining = Stream.Length - Stream.Position;
 			return Reader.ReadBytes((int)remaining);
 		}

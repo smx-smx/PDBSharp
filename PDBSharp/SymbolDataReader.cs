@@ -15,6 +15,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -23,22 +24,44 @@ namespace Smx.PDBSharp
 	public class SymbolDataReader: TypeDataReader {
 		protected readonly SymbolHeader Header;
 
-		public SymbolDataReader(PDBFile pdb, SymbolHeader header, Stream stream) : base(pdb, stream) {
+		protected readonly long startOffset;
+		protected readonly long endOffset;
+
+		public int Remaining => (int)(endOffset - Stream.Position);
+
+		public SymbolDataReader(Context ctx, SymbolHeader header, Stream stream) : base(ctx, stream) {
+			startOffset = stream.Position - Marshal.SizeOf<SymbolHeader>();
 			Header = header;
+			endOffset = startOffset + Header.Length;
 			CheckHeader();
 		}
 
-		public SymbolDataReader(PDBFile pdb, Stream stream) : base(pdb, stream) {
+		public SymbolDataReader(Context ctx, Stream stream) : base(ctx, stream) {
+			startOffset = stream.Position;
 			Header = ReadHeader();
+			endOffset = startOffset + sizeof(UInt16) + Header.Length;
 			CheckHeader();
 		}
 
-		public bool HasMoreData => Stream.Position < Stream.Length;
+		public bool HasMoreData => Stream.Position < (startOffset + Header.Length);
 
 		private void CheckHeader() {
 			if (!Enum.IsDefined(typeof(SymbolType), Header.Type)) {
 				throw new InvalidDataException($"Invalid Symbol Type {Header.Type}");
 			}
+		}
+
+		public Symbol ReadSymbol(uint offset) {
+			if (offset == 0)
+				return null;
+
+			IModule mod = ctx.CurrentModule;
+			if(!(mod is CodeViewModuleReader cv)) {
+				throw new InvalidOperationException();
+			}
+			return cv.PerformAt(offset, () => {
+				return new SymbolsReader(ctx, cv.BaseStream).ReadSymbol();
+			});
 		}
 
 		private SymbolHeader ReadHeader() {
@@ -60,16 +83,20 @@ namespace Smx.PDBSharp
 
 			switch (type) {
 				case ThunkType.ADJUSTOR:
-					return new ADJUSTOR(PDB, Header, Stream);
+					return new ADJUSTOR(ctx, Header, Stream);
 				case ThunkType.NOTYPE:
-					return new NOTYPE(PDB, Header, Stream);
+					return new NOTYPE(ctx, Header, Stream);
 				case ThunkType.PCODE:
-					return new PCODE(PDB, Header, Stream);
+					return new PCODE(ctx, Header, Stream);
 				case ThunkType.VCALL:
-					return new VCALL(PDB, Header, Stream);
+					return new VCALL(ctx, Header, Stream);
 				default:
 					throw new NotImplementedException($"Thunk '{type}' not implemented yet");
 			}
+		}
+
+		public override byte[] ReadRemaining() {
+			return ReadBytes((int)(endOffset - Stream.Position));
 		}
 	}
 }

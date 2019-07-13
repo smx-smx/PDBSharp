@@ -24,7 +24,7 @@ namespace Smx.PDBSharp.Leaves
 
 		public readonly string FieldName;
 
-		public LF_ENUM(PDBFile pdb, Stream stream) {
+		public LF_ENUM(Context pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			NumElements = r.ReadUInt16();
@@ -43,6 +43,14 @@ namespace Smx.PDBSharp.Leaves
 			w.WriteIndexedType(FieldType);
 			w.WriteCString(FieldName);
 			w.WriteLeafHeader();
+		}
+
+		public override string ToString() {
+			return $"LF_ENUM[NumElemens='{NumElements}'," +
+				$"Properties='{Properties}', " +
+				$"UnderlyingType='{UnderlyingType}', " +
+				$"FieldType='{FieldType}', " +
+				$"FieldName='{FieldName}]";
 		}
 	}
 }

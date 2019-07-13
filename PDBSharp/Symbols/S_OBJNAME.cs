@@ -27,8 +27,8 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt32 Signature;
 		public readonly string Name;
 
-		public S_OBJNAME(PDBFile pdb, Stream stream) {
-			var r = new SymbolDataReader(pdb, stream);
+		public S_OBJNAME(Context ctx, Stream stream) {
+			var r = new SymbolDataReader(ctx, stream);
 
 			Signature = r.ReadUInt32();
 			Name = r.ReadSymbolString();

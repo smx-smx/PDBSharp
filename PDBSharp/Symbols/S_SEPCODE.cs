@@ -29,7 +29,8 @@ namespace Smx.PDBSharp.Symbols
 
 	public class S_SEPCODE : ISymbol
 	{
-		public readonly UInt32 Parent;
+		private readonly UInt32 ParentSymOffset;
+		public readonly Symbol Parent;
 		public readonly UInt32 End;
 		public readonly UInt32 Size;
 		public readonly CV_SEPCODEFLAGS Flags;
@@ -38,10 +39,12 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt16 Section;
 		public readonly UInt16 ParentSection;
 
-		public S_SEPCODE(PDBFile pdb, Stream stream) {
-			var r = new SymbolDataReader(pdb, stream);
+		public S_SEPCODE(Context ctx, Stream stream) {
+			var r = new SymbolDataReader(ctx, stream);
 
-			Parent = r.ReadUInt32();
+			ParentSymOffset = r.ReadUInt32();
+			Parent = r.ReadSymbol(ParentSymOffset);
+
 			End = r.ReadUInt32();
 
 			Size = r.ReadUInt32();
@@ -55,7 +58,7 @@ namespace Smx.PDBSharp.Symbols
 		}
 
 		public S_SEPCODE(SepCodeSym data) {
-			Parent = data.Parent;
+			ParentSymOffset = data.Parent;
 			End = data.End;
 			Size = data.Size;
 			Flags = data.Flags;
@@ -67,7 +70,7 @@ namespace Smx.PDBSharp.Symbols
 
 		public void Write(PDBFile pdb, Stream stream) {
 			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_SEPCODE);
-			w.WriteUInt32(Parent);
+			w.WriteUInt32(ParentSymOffset);
 			w.WriteUInt32(End);
 			w.WriteUInt32(Size);
 			w.WriteEnum<CV_SEPCODEFLAGS>(Flags);

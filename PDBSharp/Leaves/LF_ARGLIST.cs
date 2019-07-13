@@ -19,7 +19,7 @@ namespace Smx.PDBSharp.Leaves
 		public UInt16 NumberOfArguments;
 		public ILeafContainer[] ArgumentTypes;
 
-		public LF_ARGLIST(PDBFile pdb, Stream stream) {
+		public LF_ARGLIST(Context pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			NumberOfArguments = r.ReadUInt16();
@@ -39,6 +39,11 @@ namespace Smx.PDBSharp.Leaves
 			}
 
 			w.WriteLeafHeader();
+		}
+
+		public override string ToString() {
+			return $"LF_ARGLIST[NumberOfArguments='{NumberOfArguments}', " + 
+				$"ArgumentTypes='{string.Join(", ", ArgumentTypes.Select(a => a.Data.ToString()))}']";
 		}
 	}
 }

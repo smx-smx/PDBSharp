@@ -29,8 +29,8 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt16 HeapAllocationInstructionSize;
 		public readonly ILeafContainer FunctionSignature;
 
-		public S_HEAPALLOCSITE(PDBFile pdb, Stream stream) {
-			var r = new SymbolDataReader(pdb, stream);
+		public S_HEAPALLOCSITE(Context ctx, Stream stream) {
+			var r = new SymbolDataReader(ctx, stream);
 
 			CallSiteOffset = r.ReadUInt32();
 
