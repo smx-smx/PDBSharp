@@ -33,7 +33,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt16 SymbolSegment;
 		public readonly string Name;
 
-		public S_COFFGROUP(Context ctx, Stream stream) {
+		public S_COFFGROUP(Context ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 			Size = r.ReadUInt32();
 			Characteristics = r.ReadUInt32();

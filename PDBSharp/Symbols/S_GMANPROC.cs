@@ -16,7 +16,7 @@ namespace Smx.PDBSharp.Symbols
 {
 	public class S_GMANPROC : ManProcSymBase, ISymbol
 	{
-		public S_GMANPROC(Context ctx, Stream stream) : base(ctx, stream) {
+		public S_GMANPROC(Context ctx, IModule mod, Stream stream) : base(ctx, mod, stream) {
 		}
 
 		public S_GMANPROC(ManProcSym data) : base(data) {

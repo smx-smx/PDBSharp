@@ -45,7 +45,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt16 BackendQFEVersion;
 		public readonly string VersionString;
 
-		public S_COMPILE3(Context ctx, Stream stream) {
+		public S_COMPILE3(Context ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 			Flags = new CompileSym3Flags(r.ReadUInt32());
 			Machine = r.ReadUInt16();

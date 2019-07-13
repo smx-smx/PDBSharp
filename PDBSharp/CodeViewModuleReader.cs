@@ -51,8 +51,7 @@ namespace Smx.PDBSharp
 			int symbolsSize = (int)mod.SymbolsSize - sizeof(CodeViewSignature); //exclude signature
 			byte[] symbolsData = ReadBytes(symbolsSize);
 
-			ctx.CurrentModule = this;
-			var rdr = new SymbolsReader(ctx, new MemoryStream(symbolsData));
+			var rdr = new SymbolsReader(ctx, this, new MemoryStream(symbolsData));
 			if(OnSymbolData != null) {
 				rdr.OnSymbolData += OnSymbolData;
 			}

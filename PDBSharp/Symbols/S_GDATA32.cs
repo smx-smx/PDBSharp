@@ -16,7 +16,7 @@ namespace Smx.PDBSharp.Symbols
 {
 	public class S_GDATA32 : DataSym32Base, ISymbol
 	{
-		public S_GDATA32(Context ctx, Stream stream) : base(ctx, stream) {
+		public S_GDATA32(Context ctx, IModule mod, Stream stream) : base(ctx, stream) {
 		}
 
 		public S_GDATA32(DataSym32 data) : base(data) {

@@ -51,16 +51,15 @@ namespace Smx.PDBSharp
 			}
 		}
 
-		public Symbol ReadSymbol(uint offset) {
+		public Symbol ReadSymbol(IModule mod, uint offset) {
 			if (offset == 0)
 				return null;
 
-			IModule mod = ctx.CurrentModule;
 			if(!(mod is CodeViewModuleReader cv)) {
 				throw new InvalidOperationException();
 			}
 			return cv.PerformAt(offset, () => {
-				return new SymbolsReader(ctx, cv.BaseStream).ReadSymbol();
+				return new SymbolsReader(ctx, mod, cv.BaseStream).ReadSymbol();
 			});
 		}
 

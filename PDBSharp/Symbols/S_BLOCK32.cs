@@ -37,10 +37,10 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt16 Segment;
 		public readonly string Name;
 
-		public S_BLOCK32(Context ctx, Stream stream) {
+		public S_BLOCK32(Context ctx, IModule mod, Stream stream) {
 			SymbolDataReader r = new SymbolDataReader(ctx, stream);
 			ParentOffset = r.ReadUInt32();
-			Parent = r.ReadSymbol(ParentOffset);
+			Parent = r.ReadSymbol(mod, ParentOffset);
 
 			End = r.ReadUInt32();
 			Length = r.ReadUInt32();

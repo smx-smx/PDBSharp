@@ -49,15 +49,15 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public readonly Symbol ParentSymbol;
 		public readonly Symbol NextSymbol;
 
-		public ProcSym32Base(Context ctx, Stream stream) {
+		public ProcSym32Base(Context ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			ParentOffset = r.ReadUInt32();
-			ParentSymbol = r.ReadSymbol(ParentOffset);
+			ParentSymbol = r.ReadSymbol(mod, ParentOffset);
 
 			End = r.ReadUInt32();
 			NextOffset = r.ReadUInt32();
-			NextSymbol = r.ReadSymbol(NextOffset);
+			NextSymbol = r.ReadSymbol(mod, NextOffset);
 
 			Length = r.ReadUInt32();
 			DebugStartOffset = r.ReadUInt32();

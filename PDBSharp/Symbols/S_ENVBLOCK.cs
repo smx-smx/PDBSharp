@@ -21,7 +21,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly string[] Data;
 		public readonly byte Flags;
 
-		public S_ENVBLOCK(Context ctx, Stream stream) {
+		public S_ENVBLOCK(Context ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			Flags = r.ReadByte(); //fEC -> reserved (1 bit)

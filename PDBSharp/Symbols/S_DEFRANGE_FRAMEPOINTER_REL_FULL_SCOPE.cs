@@ -18,7 +18,7 @@ namespace Smx.PDBSharp.Symbols
 {
 	public class S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE : ISymbol
 	{
-		public S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE(Context ctx, Stream stream) {
+		public S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE(Context ctx, IModule mod, Stream stream) {
 
 		}
 

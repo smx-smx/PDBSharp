@@ -21,10 +21,10 @@ namespace Smx.PDBSharp.Symbols
 		public readonly ILeafContainer Inlinee;
 		public readonly byte[] BinaryAnnotations;
 
-		public S_INLINESITE(Context ctx, Stream stream) {
+		public S_INLINESITE(Context ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 			InlinerParentOffset = r.ReadUInt32();
-			Inliner = r.ReadSymbol(InlinerParentOffset);
+			Inliner = r.ReadSymbol(mod, InlinerParentOffset);
 			End = r.ReadUInt32();
 			Inlinee = r.ReadIndexedTypeLazy();
 			BinaryAnnotations = r.ReadRemaining();

@@ -30,7 +30,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt16 SectionIndex;
 		public readonly ILeafContainer Type;
 
-		public S_CALLSITEINFO(Context ctx, Stream stream) {
+		public S_CALLSITEINFO(Context ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 			Offset = r.ReadUInt32();
 			SectionIndex = r.ReadUInt16();

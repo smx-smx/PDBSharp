@@ -23,10 +23,10 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt16 Segment;
 		public readonly string Expression;
 
-		public S_WITH32(Context ctx, Stream stream) {
+		public S_WITH32(Context ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 			ParentOffset = r.ReadUInt32();
-			Parent = r.ReadSymbol(ParentOffset);
+			Parent = r.ReadSymbol(mod, ParentOffset);
 			EndOffset = r.ReadUInt32();
 			Length = r.ReadUInt32();
 			SegmentOffset = r.ReadUInt32();

@@ -27,7 +27,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt16 Register;
 		public readonly string Name;
 
-		public S_REGISTER(Context ctx, Stream stream) {
+		public S_REGISTER(Context ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			Type = r.ReadIndexedTypeLazy();

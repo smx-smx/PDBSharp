@@ -46,16 +46,16 @@ namespace Smx.PDBSharp.Symbols
 
 		public readonly IThunk Thunk;
 
-		public S_THUNK32(Context ctx, Stream stream) {
+		public S_THUNK32(Context ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			ParentOffset = r.ReadUInt32();
-			Parent = r.ReadSymbol(ParentOffset);
+			Parent = r.ReadSymbol(mod, ParentOffset);
 
 			End = r.ReadUInt32();
 
 			NextOffset = r.ReadUInt32();
-			Next = r.ReadSymbol(NextOffset);
+			Next = r.ReadSymbol(mod, NextOffset);
 
 			Offset = r.ReadUInt32();
 			Segment = r.ReadUInt16();

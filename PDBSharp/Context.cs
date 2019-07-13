@@ -22,7 +22,6 @@ namespace Smx.PDBSharp
 		public DBIReader DbiReader { get; internal set; }
 		public TPIReader TpiReader { get; internal set; }
 		public HashDataReader TpiHashReader { get; internal set; }
-		public IModule CurrentModule { get; internal set; }
 
 		private readonly Stream stream;
 

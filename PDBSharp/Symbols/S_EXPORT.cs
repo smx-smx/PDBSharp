@@ -29,7 +29,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly ExportSymFlags Flags;
 		public readonly string Name;
 
-		public S_EXPORT(Context ctx, Stream stream) {
+		public S_EXPORT(Context ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 			Ordinal = r.ReadUInt16();
 			Flags = r.ReadFlagsEnum<ExportSymFlags>();

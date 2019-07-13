@@ -43,7 +43,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly string VersionString;
 		public readonly string[] OptionalData;
 
-		public S_COMPILE2(Context ctx, Stream stream){
+		public S_COMPILE2(Context ctx, IModule mod, Stream stream){
 			var r = new SymbolDataReader(ctx, stream);
 			Flags = new CompileSym2Flags(r.ReadUInt32());
 			Machine = r.ReadUInt16();

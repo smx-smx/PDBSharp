@@ -63,14 +63,14 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public readonly UInt16 ReturnRegister;
 		public readonly string Name;
 
-		public ManProcSymBase(Context ctx, Stream stream) {
+		public ManProcSymBase(Context ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			ParentOffset = r.ReadUInt32();
-			Parent = r.ReadSymbol(ParentOffset);
+			Parent = r.ReadSymbol(mod, ParentOffset);
 			End = r.ReadUInt32();
 			NextOffset = r.ReadUInt32();
-			Next = r.ReadSymbol(NextOffset);
+			Next = r.ReadSymbol(mod, NextOffset);
 			ProcLength = r.ReadUInt32();
 			DebugStartOffset = r.ReadUInt32();
 			DebugEndOffset = r.ReadUInt32();
