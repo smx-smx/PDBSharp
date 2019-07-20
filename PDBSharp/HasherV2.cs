@@ -20,11 +20,11 @@ namespace Smx.PDBSharp
 			return (uint)(number * 1664525L + 1013904223L);
 		}
 
-		public static UInt32 HashBufferV8(byte[] buffer, int modulo) {
+		public static UInt32 HashBufferV8(byte[] buffer, uint modulo) {
 			return (uint)(Crc32.Compute(buffer) % modulo);
 		}
 
-		public static UInt32 HashData(byte[] data, int modulo) {
+		public static UInt32 HashData(byte[] data, uint modulo) {
 			uint hash = 0xb170a1bf;
 
 			int remaining = data.Length;
@@ -44,7 +44,7 @@ namespace Smx.PDBSharp
 				}
 			}
 
-			return (uint)(HashUlong(hash) % modulo);
+			return HashUlong(hash) % modulo;
 		}
 	}
 }

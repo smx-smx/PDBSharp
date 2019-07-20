@@ -166,8 +166,12 @@ namespace Smx.PDBSharp
 				throw new InvalidDataException();
 			}
 
-			if(((int)Header.Hash.StreamNumber) != -1){
-				ctx.TpiHashReader = new HashDataReader(this, new MemoryStream(ctx.StreamTableReader.GetStream(Header.Hash.StreamNumber)));
+			if(Header.Hash.StreamNumber != -1){
+				ctx.TpiReader = this;
+
+				ctx.TpiHashReader = new HashDataReader(ctx, new MemoryStream(
+					ctx.StreamTableReader.GetStream(Header.Hash.StreamNumber))
+				);
 			}
 
 
@@ -186,6 +190,13 @@ namespace Smx.PDBSharp
 
 			int dataSize = length + sizeof(UInt16);
 			byte[] leafDataBuf = new byte[dataSize];
+
+			{
+				TPIHash tpiHash = ctx.TpiReader.Header.Hash;
+
+				UInt32 leafHash = HasherV2.HashBufferV8(leafDataBuf, 0xFFFFFFFF);
+				UInt32 hash = HasherV2.HashData(leafDataBuf, tpiHash.NumHashBuckets);
+			}
 
 			MemoryStream stream = new MemoryStream(leafDataBuf);
 			BinaryWriter wr = new BinaryWriter(stream);

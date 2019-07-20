@@ -7,6 +7,9 @@
     <AssemblyName>Smx.PDBSharp</AssemblyName>
     <RootNamespace>Smx.PDBSharp</RootNamespace>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="C5" Version="2.5.3" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />

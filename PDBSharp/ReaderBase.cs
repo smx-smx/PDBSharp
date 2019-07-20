@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp
 {
-	public abstract class ReaderBase : StreamCommon
+	public class ReaderBase : StreamCommon
 	{
 
 		private readonly BinaryReader Reader;

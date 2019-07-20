@@ -42,6 +42,7 @@ namespace Smx.PDBSharp
 
 			long endOffset = Stream.Position + sizeof(UInt16) + hdr.Length;
 
+
 			ISymbol sym;
 			switch (hdr.Type) {
 				case SymbolType.S_BLOCK32:

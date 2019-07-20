@@ -26,24 +26,44 @@ namespace Smx.PDBSharp
 	public class HashDataReader : ReaderBase
 	{
 		public readonly TreeDictionary<UInt32, UInt32> TypeIndexToOffset = new TreeDictionary<uint, uint>();
+		public Dictionary<UInt32, UInt32> HashValueToTypeIndex = new Dictionary<uint, uint>();
+		public Dictionary<uint, uint> NameIndexToTypeIndex { get; private set;  }
+
+
 		public readonly UInt32[] RecordHashValues;
 
-		public HashDataReader(TPIReader tpi, Stream stream) : base(stream) {
-			TPIHash hash = tpi.Header.Hash;
-			uint NumTiPairs = (uint)(hash.TypeOffsets.Size / Marshal.SizeOf<TPISlice>());
+		private readonly Context ctx;
+
+		public HashDataReader(Context ctx, Stream stream) : base(stream) {
+			this.ctx = ctx;
+
+			TPIHash hash = ctx.TpiReader.Header.Hash;
+
+			switch (hash.HashKeySize) {
+				case sizeof(UInt16):
+				case sizeof(UInt32):
+					break;
+				default:
+					throw new InvalidDataException();
+			}
 
 			PerformAt(hash.TypeOffsets.Offset, () => {
+				uint NumTiPairs = (uint)(hash.TypeOffsets.Size / Marshal.SizeOf<TIOffset>());
 				for (int i = 1; i < NumTiPairs; i++) {
 					TIOffset tiOff = ReadStruct<TIOffset>();
 					TypeIndexToOffset.Add(tiOff.TypeIndex, tiOff.Offset);
 				}
 			});
 
-			uint NumHashValues = (uint)(hash.HashValues.Size / sizeof(UInt32));
+			uint NumHashValues = hash.HashValues.Size / sizeof(UInt32);
 			RecordHashValues = PerformAt(hash.HashValues.Offset, () => {
 				return Enumerable.Range(1, (int)NumHashValues)
 					.Select(_ => ReadUInt32())
 					.ToArray();
+			});
+
+			PerformAt(hash.HashHeadList.Offset, () => {
+				NameIndexToTypeIndex = Deserializers.ReadMap<UInt32, UInt32>(this);
 			});
 		}
 	}

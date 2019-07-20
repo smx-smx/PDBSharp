@@ -58,6 +58,8 @@ namespace Smx.PDBSharp
 			if(!(mod is CodeViewModuleReader cv)) {
 				throw new InvalidOperationException();
 			}
+
+
 			return cv.PerformAt(offset, () => {
 				return new SymbolsReader(ctx, mod, cv.BaseStream).ReadSymbol();
 			});

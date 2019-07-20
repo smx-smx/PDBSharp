@@ -56,7 +56,7 @@ namespace Smx.PDBSharp
 
 		public IEnumerable<ILeafContainer> Types => lazyLeaves.Value;
 
-		private Context ctx;
+		private readonly Context ctx;
 
 		public readonly PDBType FileType;
 
@@ -92,8 +92,37 @@ namespace Smx.PDBSharp
 
 			ctx.MsfReader = new MSFReader(this.stream, FileType);
 
-			byte[] streamTable = ctx.MsfReader.StreamTable();
-			ctx.StreamTableReader = new StreamTableReader(ctx.MsfReader, new MemoryStream(streamTable));
+			// read stream table
+			{
+				byte[] streamTable = ctx.MsfReader.StreamTable();
+				ctx.StreamTableReader = new StreamTableReader(ctx, new MemoryStream(streamTable));
+			}
+
+			// read NameMap
+			{
+				byte[] nameMap = ctx.StreamTableReader.GetStream((int)DefaultStreams.PDB);
+				ctx.PdbStreamReader = new PdbStreamReader(ctx, new MemoryStream(nameMap));
+			}
+
+			// read UdtNameMap
+			{
+				byte[] names = ctx.StreamTableReader.GetStreamByName("/names");
+				ctx.UdtNameTableReader = new UdtNameTableReader(new MemoryStream(names));
+			}
+
+			// read TPI
+			{
+				byte[] tpi = ctx.StreamTableReader.GetStream((int)DefaultStreams.TPI);
+				ctx.TpiReader = new TPIReader(ctx, new MemoryStream(tpi));
+				OnTpiInit?.Invoke(ctx.TpiReader);
+			}
+
+			foreach (var pair in ctx.TpiHashReader.NameIndexToTypeIndex) {
+				string name = ctx.UdtNameTableReader.GetString(pair.Key);
+				ILeafContainer leaf = ctx.TpiReader.GetTypeByIndex(pair.Value);
+				Console.WriteLine($"=> {name} [NI={pair.Key}] [TI={pair.Value}]");
+				Console.WriteLine(leaf.Data.GetType().Name);
+			}
 
 			lazyLeaves = new Lazy<IEnumerable<ILeafContainer>>(ReadTypes);
 		}
@@ -111,14 +140,6 @@ namespace Smx.PDBSharp
 		}
 
 		public IEnumerable<ILeafContainer> ReadTypes() {
-			if (ctx.TpiReader == null) {
-				byte[] tpi = ctx.StreamTableReader.GetStream((int)DefaultStreams.TPI);
-				if(tpi.Length == 0) {
-					return Enumerable.Empty<ILeafContainer>();
-				}
-				ctx.TpiReader = new TPIReader(ctx, new MemoryStream(tpi));
-				OnTpiInit?.Invoke(ctx.TpiReader);
-			}
 			return ctx.TpiReader.ReadTypes();
 		}
 	}
