@@ -19,7 +19,7 @@ namespace Smx.PDBSharp.Symbols
 {
 	public class LocalSym
 	{
-		public LeafBase Type { get; set; }
+		public LeafContainerBase Type { get; set; }
 		public CV_LVARFLAGS Flags { get; set; }
 		public string Name { get; set; }
 	}

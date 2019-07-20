@@ -16,12 +16,27 @@ namespace Smx.PDBSharp
 {
 	public class HasherV2
 	{
+		private readonly Context ctx;
+		public HasherV2(Context ctx) {
+			this.ctx = ctx;
+		}
+
 		private static UInt32 HashUlong(uint number) {
 			return (uint)(number * 1664525L + 1013904223L);
 		}
 
 		public static UInt32 HashBufferV8(byte[] buffer, uint modulo) {
-			return (uint)(Crc32.Compute(buffer) % modulo);
+			return Crc32.Compute(buffer) % modulo;
+		}
+
+		public UInt32 HashTypeIndex(uint typeIndex) {
+			byte[] data = BitConverter.GetBytes(typeIndex);
+			return HashData(data, ctx.TpiReader.Header.Hash.NumHashBuckets);
+		}
+
+		public UInt32 HashString(string str) {
+			byte[] data = Encoding.ASCII.GetBytes(str);
+			return HashData(data, ctx.TpiReader.Header.Hash.NumHashBuckets);
 		}
 
 		public static UInt32 HashData(byte[] data, uint modulo) {

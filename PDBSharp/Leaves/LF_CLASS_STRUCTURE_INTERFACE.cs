@@ -13,7 +13,7 @@ using System.Text;
 
 namespace Smx.PDBSharp.Leaves
 {
-	public class LF_CLASS : ILeaf
+	public class LF_CLASS_STRUCTURE_INTERFACE : LeafBase, ILeaf
 	{
 		public readonly UInt16 NumberOfElements;
 		public readonly TypeProperties FieldProperties;
@@ -27,7 +27,36 @@ namespace Smx.PDBSharp.Leaves
 
 		public readonly string Name;
 
-		public LF_CLASS(Context pdb, Stream stream) {
+		public override string UdtName => Name;
+
+		public override bool IsDefnUdt {
+			get {
+				return FieldProperties.HasFlag(TypeProperties.IsForwardReference);
+			}
+		}
+
+		public override bool IsGlobalDefnUdt {
+			get {
+				return (
+					FieldProperties.HasFlag(TypeProperties.IsForwardReference) &&
+					FieldProperties.HasFlag(TypeProperties.IsScoped) &&
+					!IsUdtAnon
+				);
+			}
+		}
+
+		public override bool IsLocalDefnUdtWithUniqueName {
+			get {
+				return (
+					!FieldProperties.HasFlag(TypeProperties.IsForwardReference) &&
+					FieldProperties.HasFlag(TypeProperties.IsScoped) &&
+					FieldProperties.HasFlag(TypeProperties.HasUniqueName) &&
+					!IsUdtAnon
+				);
+			}
+		}
+
+		public LF_CLASS_STRUCTURE_INTERFACE(Context pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			NumberOfElements = r.ReadUInt16();

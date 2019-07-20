@@ -14,8 +14,8 @@ namespace Smx.PDBSharp.Symbols.Structures
 {
 	public class ConstSym
 	{
-		public LeafBase Type { get; set; }
-		public LeafBase Value { get; set; }
+		public LeafContainerBase Type { get; set; }
+		public LeafContainerBase Value { get; set; }
 		public string Name { get; set; }
 	}
 

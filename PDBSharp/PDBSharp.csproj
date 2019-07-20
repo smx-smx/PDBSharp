@@ -11,6 +11,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Leaves\Leaf.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="C5" Version="2.5.3" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />

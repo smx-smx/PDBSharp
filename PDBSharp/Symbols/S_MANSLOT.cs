@@ -20,7 +20,7 @@ namespace Smx.PDBSharp.Symbols
 	public class AttrSlotSym
 	{
 		public UInt32 SlotIndex { get; set; }
-		public LeafBase Type { get; set; }
+		public LeafContainerBase Type { get; set; }
 		public CV_LVAR_ATTR Attributes { get; set; }
 		public string Name { get; set; }
 	}

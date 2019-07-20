@@ -88,9 +88,13 @@ namespace Smx.PDBSharp
 		}
 
 		public byte[] GetStreamByName(string streamName) {
-			uint streamNumber = ctx.PdbStreamReader
+			if(!ctx.PdbStreamReader
 				.NameTable
-				.GetIndex(streamName);
+				.GetIndex(streamName, out uint streamNumber)
+			) {
+				return null;
+			}
+
 			return GetStream((int)streamNumber);
 		}
 		

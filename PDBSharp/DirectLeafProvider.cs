@@ -14,7 +14,7 @@ using Smx.PDBSharp.Leaves;
 
 namespace Smx.PDBSharp
 {
-	public class DirectLeafProvider : LeafBase
+	public class DirectLeafProvider : LeafContainerBase
 	{
 		private readonly uint typeIndex;
 		private readonly LeafType type;

@@ -18,38 +18,63 @@ namespace Smx.PDBSharp
 	{
 		public readonly byte[] StringTableData;
 
-		public readonly Dictionary<uint, uint> StringOffsetToNameIndex;
-		public readonly Dictionary<uint, uint> NameIndexToStringOffset;
+		private readonly Dictionary<uint, uint> Offset_Index;
+		private readonly Dictionary<uint, uint> Index_Offset;
 
 		private readonly ReaderBase rdr;
 
-		public string GetString(uint nameIndex) {
-			if (!NameIndexToStringOffset.ContainsKey(nameIndex)) {
+		private readonly Dictionary<string, uint> String_Index = new Dictionary<string, uint>();
+		private readonly Dictionary<uint, string> Index_String = new Dictionary<uint, string>();
+
+		public string GetString(uint index) {
+			if (!Index_Offset.ContainsKey(index)) {
 				return null;
 			}
 
-			uint offset = NameIndexToStringOffset[nameIndex];
+			if (Index_String.TryGetValue(index, out string cachedString)) {
+				return cachedString;
+			}
+
+			uint offset = Index_Offset[index];
 			rdr.BaseStream.Position = offset;
-			return rdr.ReadCString();
+			string str = rdr.ReadCString();
+
+			Index_String.Add(index, str);
+			return str;
 		}
 
-		public uint GetIndex(string str) {
-			//$TODO: optimize/cache values
-			return StringOffsetToNameIndex
+		public bool GetIndex(string str, out uint index) {
+			if (String_Index.TryGetValue(str, out uint cachedIndex)) {
+				index = cachedIndex;
+				return true;
+			}
+
+			uint? _index = Offset_Index
 				.Where(p => GetString(p.Value) == str)
 				.Select(p => p.Value)
-				.First();
+				.Cast<uint?>()
+				.FirstOrDefault();
+
+			if (_index == null) {
+				index = 0;
+				return false;
+			}
+
+			index = _index.Value;
+			String_Index.Add(str, index);
+
+			return true;
 		}
 
 		public NameTableReader(ReaderBase r) {
 			StringTableData = Deserializers.ReadBuffer(r);
 			rdr = new ReaderBase(new MemoryStream(StringTableData));
 
-			StringOffsetToNameIndex = Deserializers.ReadMap<uint, uint>(r);
+			Offset_Index = Deserializers.ReadMap<uint, uint>(r);
 
 			uint maxNameIndices = r.ReadUInt32();
 
-			NameIndexToStringOffset = StringOffsetToNameIndex.ToDictionary(x => x.Value, x => x.Key);
+			Index_Offset = Offset_Index.ToDictionary(x => x.Value, x => x.Key);
 		}
 	}
 }

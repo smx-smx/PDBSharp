@@ -18,7 +18,7 @@ namespace Smx.PDBSharp.Symbols
 	public class BpRelSym32
 	{
 		public UInt32 Offset { get; set; }
-		public LeafBase Type { get; set; }
+		public LeafContainerBase Type { get; set; }
 		public string Name { get; set; }
 	}
 

@@ -13,7 +13,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 {
 	public class DataSym32
 	{
-		public LeafBase Type { get; set; }
+		public LeafContainerBase Type { get; set; }
 		public UInt32 Offset { get; set; }
 		public UInt16 Segment { get; set; }
 		public string Name { get; set; }

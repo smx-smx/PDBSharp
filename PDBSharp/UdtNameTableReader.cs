@@ -6,6 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
+using Smx.PDBSharp.Leaves;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -28,27 +29,107 @@ namespace Smx.PDBSharp
 		private readonly UdtNameTableVersion Version;
 
 		private readonly byte[] data;
-		private readonly uint[] NameIndices;
+		public readonly uint[] NameIndices;
 		private readonly uint NumberOfNameIndices;
 
 		private readonly ReaderBase rdr;
 
-		public string GetString(uint nameIndex) {
-			if (nameIndex == 0)
-				return null;
+		private readonly Dictionary<string, uint> String_NameIndex = new Dictionary<string, uint>();
+		private readonly Dictionary<uint, string> NameIndex_String = new Dictionary<uint, string>();
 
-			return rdr.PerformAt(nameIndex, () => {
+		private readonly Context ctx;
+
+		public readonly Dictionary<uint, uint> NameIndex_TypeIndex = new Dictionary<uint, uint>();
+
+		//$TODO(work in progress): fix the NI -> TI mapping
+		private void BuildTypeMap() {
+			uint minTi = ctx.TpiReader.Header.MinTypeIndex;
+			uint maxTi = minTi + ctx.TpiReader.Header.NumTypes - 1;
+
+			for (uint ti = minTi; ti <= maxTi; ti++) {
+				ILeafContainer leafC = ctx.TpiReader.GetTypeByIndex(ti);
+				if(leafC == null || !(leafC.Data is LeafBase leaf)) {
+					continue;
+				}
+
+				if (!leaf.IsDefnUdt) {
+					continue;
+				}
+
+				string typeName = leaf.UdtName;
+
+				if (leaf.IsLocalDefnUdtWithUniqueName) {
+					throw new NotImplementedException();
+				}
+
+				if (!GetIndex(typeName, out uint nameIndex)) {
+					//$TODO: how do i handle this?
+					continue;
+				}
+
+				NameIndex_TypeIndex.Add(nameIndex, ti);
+			}
+		}
+
+		public string GetString(uint nameIndex) {
+			if (nameIndex == 0) {
+				return null;
+			}
+
+			if(NameIndex_String.TryGetValue(nameIndex, out string cachedString)) {
+				return cachedString;
+			}
+
+			string str = rdr.PerformAt(nameIndex, () => {
 				return rdr.ReadCString();
 			});
+
+			NameIndex_String.Add(nameIndex, str);
+			return str;
 		}
 
-		public uint GetIndex(string str) {
-			return NameIndices
-				.Where(ni => GetString(ni) == str)
-				.First();
+		public ILeafContainer GetType(string str) {
+			if (!GetIndex(str, out uint nameIndex))
+				return null;
+
+			if (!NameIndex_TypeIndex.TryGetValue(nameIndex, out uint typeIndex))
+				return null;
+
+			return ctx.TpiReader.GetTypeByIndex(typeIndex);
 		}
 
-		public UdtNameTableReader(Stream stream) : base(stream) {
+		public bool GetIndex(string str, out uint index) {
+			if (String_NameIndex.TryGetValue(str, out uint cachedIndex)) {
+				index = cachedIndex;
+				return true;
+			}
+
+			uint? _index = NameIndices
+				.Where(ni => {
+					if (ni == 0)
+						return false;
+
+					string _str = GetString(ni);
+					if (!String_NameIndex.ContainsKey(_str)) {
+						String_NameIndex.Add(_str, ni);
+					}
+					return _str == str;
+				})
+				.Cast<uint?>()
+				.FirstOrDefault();
+
+			if (_index == null) {
+				index = 0;
+				return false;
+			}
+
+			index = _index.Value;
+			return true;
+		}
+
+		public UdtNameTableReader(Context ctx, Stream stream) : base(stream) {
+			this.ctx = ctx;
+
 			Magic = ReadUInt32();
 			if(Magic != MAGIC) {
 				throw new InvalidDataException();
@@ -61,6 +142,8 @@ namespace Smx.PDBSharp
 
 			NameIndices = Deserializers.ReadArray<uint>(this);
 			NumberOfNameIndices = ReadUInt32();
+
+			//BuildTypeMap();
 		}
 	}
 }

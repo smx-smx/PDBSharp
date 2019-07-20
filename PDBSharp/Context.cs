@@ -26,6 +26,8 @@ namespace Smx.PDBSharp
 		public PdbStreamReader PdbStreamReader { get; internal set; }
 		public UdtNameTableReader UdtNameTableReader { get; internal set; }
 
+		public HasherV2 Hasher { get; internal set; }
+
 		private readonly Stream stream;
 
 		public Context(string pdbFilePath) {

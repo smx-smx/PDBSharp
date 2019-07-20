@@ -19,7 +19,7 @@ namespace Smx.PDBSharp.Symbols
 {
 	public class FileStaticSym
 	{
-		public LeafBase Type { get; set; }
+		public LeafContainerBase Type { get; set; }
 		public UInt32 ModuleFilenameOffset { get; set; }
 		public CV_LVARFLAGS Flags { get; set; }
 		public string Name { get; set; }

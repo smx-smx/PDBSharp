@@ -16,7 +16,7 @@ namespace Smx.PDBSharp.Symbols
 {
 	public class RegSym
 	{
-		public LeafBase Type { get; set; }
+		public LeafContainerBase Type { get; set; }
 		public UInt16 Register { get; set; }
 		public string Name { get; set; }
 	}

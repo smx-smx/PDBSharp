@@ -25,7 +25,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public UInt32 Length { get; set; }
 		public UInt32 DebugStartOffset { get; set; }
 		public UInt32 DebugEndOffset { get; set; }
-		public LeafBase Type { get; set; }
+		public LeafContainerBase Type { get; set; }
 		public UInt32 Offset { get; set; }
 		public UInt16 Segment { get; set; }
 		public CV_PROCFLAGS Flags { get; set; }

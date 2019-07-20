@@ -50,12 +50,6 @@ namespace Smx.PDBSharp
 			}
 		}
 
-		public IEnumerable<IModuleContainer> Modules => ReadModules();
-
-		private readonly Lazy<IEnumerable<ILeafContainer>> lazyLeaves;
-
-		public IEnumerable<ILeafContainer> Types => lazyLeaves.Value;
-
 		private readonly Context ctx;
 
 		public readonly PDBType FileType;
@@ -92,55 +86,58 @@ namespace Smx.PDBSharp
 
 			ctx.MsfReader = new MSFReader(this.stream, FileType);
 
-			// read stream table
+			// init stream table
 			{
 				byte[] streamTable = ctx.MsfReader.StreamTable();
 				ctx.StreamTableReader = new StreamTableReader(ctx, new MemoryStream(streamTable));
 			}
 
-			// read NameMap
+			// init DBI
 			{
-				byte[] nameMap = ctx.StreamTableReader.GetStream((int)DefaultStreams.PDB);
-				ctx.PdbStreamReader = new PdbStreamReader(ctx, new MemoryStream(nameMap));
+				byte[] dbi = ctx.StreamTableReader.GetStream((int)DefaultStreams.DBI);
+				ctx.DbiReader = new DBIReader(ctx, new MemoryStream(dbi));
+				OnDbiInit?.Invoke(ctx.DbiReader);
 			}
 
-			// read UdtNameMap
-			{
-				byte[] names = ctx.StreamTableReader.GetStreamByName("/names");
-				ctx.UdtNameTableReader = new UdtNameTableReader(new MemoryStream(names));
-			}
-
-			// read TPI
+			// init TPI
 			{
 				byte[] tpi = ctx.StreamTableReader.GetStream((int)DefaultStreams.TPI);
 				ctx.TpiReader = new TPIReader(ctx, new MemoryStream(tpi));
 				OnTpiInit?.Invoke(ctx.TpiReader);
 			}
 
-			foreach (var pair in ctx.TpiHashReader.NameIndexToTypeIndex) {
-				string name = ctx.UdtNameTableReader.GetString(pair.Key);
-				ILeafContainer leaf = ctx.TpiReader.GetTypeByIndex(pair.Value);
-				Console.WriteLine($"=> {name} [NI={pair.Key}] [TI={pair.Value}]");
-				Console.WriteLine(leaf.Data.GetType().Name);
+			// init TPIHash
+			if (ctx.TpiReader.Header.Hash.StreamNumber != -1) {
+				ctx.TpiHashReader = new HashDataReader(ctx, new MemoryStream(
+					ctx.StreamTableReader.GetStream(ctx.TpiReader.Header.Hash.StreamNumber))
+				);
 			}
 
-			lazyLeaves = new Lazy<IEnumerable<ILeafContainer>>(ReadTypes);
-		}
+			// init Hasher
+			ctx.Hasher = new HasherV2(ctx);
 
-		public IEnumerable<IModuleContainer> ReadModules() {
-			if (ctx.DbiReader == null) {
-				byte[] dbi = ctx.StreamTableReader.GetStream((int)DefaultStreams.DBI);
-				if (dbi.Length == 0) {
-					return Enumerable.Empty<IModuleContainer>();
+			// init NameMap
+			{
+				byte[] nameMap = ctx.StreamTableReader.GetStream((int)DefaultStreams.PDB);
+				ctx.PdbStreamReader = new PdbStreamReader(ctx, new MemoryStream(nameMap));
+			}
+
+			// init UdtNameMap
+			{
+				byte[] names = ctx.StreamTableReader.GetStreamByName("/names");
+				ctx.UdtNameTableReader = (names == null) ? null : new UdtNameTableReader(ctx, new MemoryStream(names));
+			}
+
+#if DEBUG
+			if (ctx.TpiHashReader != null) {
+				foreach (var pair in ctx.TpiHashReader.NameIndexToTypeIndex) {
+					string name = ctx.UdtNameTableReader.GetString(pair.Key);
+					ILeafContainer leaf = ctx.TpiReader.GetTypeByIndex(pair.Value);
+					Console.WriteLine($"=> {name} [NI={pair.Key}] [TI={pair.Value}]");
+					Console.WriteLine(leaf.Data.GetType().Name);
 				}
-				ctx.DbiReader = new DBIReader(ctx, new MemoryStream(dbi));
-				OnDbiInit?.Invoke(ctx.DbiReader);
 			}
-			return ctx.DbiReader.Modules;
-		}
-
-		public IEnumerable<ILeafContainer> ReadTypes() {
-			return ctx.TpiReader.ReadTypes();
+#endif
 		}
 	}
 }

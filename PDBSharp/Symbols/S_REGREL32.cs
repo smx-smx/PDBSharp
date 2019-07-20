@@ -20,7 +20,7 @@ namespace Smx.PDBSharp.Symbols
 	public class RegRel32
 	{
 		public UInt32 Offset { get; set; }
-		public LeafBase Type { get; set; }
+		public LeafContainerBase Type { get; set; }
 		public UInt16 RegisterIndex { get; set; }
 		public string Name { get; set; }
 	}

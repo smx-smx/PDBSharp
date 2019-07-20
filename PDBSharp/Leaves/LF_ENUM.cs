@@ -14,7 +14,7 @@ using System.Text;
 namespace Smx.PDBSharp.Leaves
 {
 
-	public class LF_ENUM : ILeaf
+	public class LF_ENUM : LeafBase, ILeaf
 	{
 		public readonly UInt16 NumElements;
 		public readonly TypeProperties Properties;
@@ -22,7 +22,36 @@ namespace Smx.PDBSharp.Leaves
 		public readonly ILeafContainer UnderlyingType;
 		public readonly ILeafContainer FieldType;
 
-		public readonly string FieldName;
+		public readonly string Name;
+
+		public override string UdtName => Name;
+
+		public override bool IsDefnUdt {
+			get {
+				return Properties.HasFlag(TypeProperties.IsForwardReference);
+			}
+		}
+
+		public override bool IsGlobalDefnUdt {
+			get {
+				return (
+					Properties.HasFlag(TypeProperties.IsForwardReference) &&
+					Properties.HasFlag(TypeProperties.IsScoped) &&
+					!IsUdtAnon
+				);
+			}
+		}
+
+		public override bool IsLocalDefnUdtWithUniqueName {
+			get {
+				return (
+					!Properties.HasFlag(TypeProperties.IsForwardReference) &&
+					Properties.HasFlag(TypeProperties.IsScoped) &&
+					Properties.HasFlag(TypeProperties.HasUniqueName) &&
+					!IsUdtAnon
+				);
+			}
+		}
 
 		public LF_ENUM(Context pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
@@ -31,7 +60,7 @@ namespace Smx.PDBSharp.Leaves
 			Properties = r.ReadFlagsEnum<TypeProperties>();
 			UnderlyingType = r.ReadIndexedTypeLazy();
 			FieldType = r.ReadIndexedTypeLazy();
-			FieldName = r.ReadCString();
+			Name = r.ReadCString();
 
 		}
 
@@ -41,7 +70,7 @@ namespace Smx.PDBSharp.Leaves
 			w.WriteEnum<TypeProperties>(Properties);
 			w.WriteIndexedType(UnderlyingType);
 			w.WriteIndexedType(FieldType);
-			w.WriteCString(FieldName);
+			w.WriteCString(Name);
 			w.WriteLeafHeader();
 		}
 
@@ -50,7 +79,7 @@ namespace Smx.PDBSharp.Leaves
 				$"Properties='{Properties}', " +
 				$"UnderlyingType='{UnderlyingType}', " +
 				$"FieldType='{FieldType}', " +
-				$"FieldName='{FieldName}]";
+				$"FieldName='{Name}]";
 		}
 	}
 }

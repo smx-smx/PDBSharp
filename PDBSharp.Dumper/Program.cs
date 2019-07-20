@@ -77,11 +77,12 @@ namespace Smx.PDBSharp.Dumper
 				}
 			}
 
-			foreach(var type in ctx.Pdb.Types) {
+			/*
+			foreach(var type in ctx.TpiReader.Types) {
 				//Console.WriteLine(type);
-			}
+			}*/
 
-			foreach(var container in ctx.Pdb.Modules) { 
+			foreach(var container in ctx.DbiReader.Modules) { 
 				Console.WriteLine($"[MODULE => {container.Info.ModuleName}]");
 				Console.WriteLine($"[OBJECT => {container.Info.ObjectFileName}]");
 				if (container.Module != null) {
@@ -91,11 +92,14 @@ namespace Smx.PDBSharp.Dumper
 
 				IModule mod = container.Module;
 				if (mod != null) {
+					/*
 					foreach (var sym in mod.Symbols) {
 						//Console.WriteLine(sym);
 					}
+					*/
 				}
 			}
+
 
 			ctx.Dispose();
 

@@ -82,6 +82,9 @@ namespace Smx.PDBSharp
 
 		public event OnLeafDataDelegate OnLeafData;
 
+		public Lazy<IEnumerable<ILeafContainer>> lazyLeafContainers;
+
+		public IEnumerable<ILeafContainer> Types => lazyLeafContainers.Value;
 
 		private (uint, uint) GetClosestTIOFF(UInt32 typeIndex) {
 			bool hasPrec = ctx.TpiHashReader.TypeIndexToOffset.TryPredecessor(typeIndex, out var prec);
@@ -166,20 +169,14 @@ namespace Smx.PDBSharp
 				throw new InvalidDataException();
 			}
 
-			if(Header.Hash.StreamNumber != -1){
-				ctx.TpiReader = this;
-
-				ctx.TpiHashReader = new HashDataReader(ctx, new MemoryStream(
-					ctx.StreamTableReader.GetStream(Header.Hash.StreamNumber))
-				);
-			}
-
 
 #if false
 			if(Header.Version != TPIVersion.V80) {
 				throw new NotImplementedException($"TPI Version {Header.Version} not supported yet");
 			}
 #endif
+
+			lazyLeafContainers = new Lazy<IEnumerable<ILeafContainer>>(ReadTypes);
 		}
 
 		private ILeafContainer ReadType() {
@@ -210,7 +207,7 @@ namespace Smx.PDBSharp
 			return rdr.ReadTypeLazy();
 		}
 
-		public IEnumerable<ILeafContainer> ReadTypes() {
+		private IEnumerable<ILeafContainer> ReadTypes() {
 			long savedPos = Stream.Position;
 			long processed = 0;
 			while (processed < Header.GpRecSize) {

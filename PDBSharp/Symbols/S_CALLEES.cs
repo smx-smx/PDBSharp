@@ -31,7 +31,7 @@ namespace Smx.PDBSharp.Symbols
 				.ToArray();
 		}
 
-		public S_CALLEES(IEnumerable<LeafBase> functionsList) {
+		public S_CALLEES(IEnumerable<LeafContainerBase> functionsList) {
 			Functions = functionsList.ToArray();
 			NumberOfFunctions = (uint)Functions.Length;
 		}
@@ -39,7 +39,7 @@ namespace Smx.PDBSharp.Symbols
 		public void Write(PDBFile pdb, Stream stream) {
 			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_CALLEES);
 			w.WriteUInt32(NumberOfFunctions);
-			foreach(LeafBase fn in Functions) {
+			foreach(LeafContainerBase fn in Functions) {
 				w.WriteIndexedType(fn);
 			}
 

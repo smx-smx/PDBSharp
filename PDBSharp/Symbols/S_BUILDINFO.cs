@@ -25,7 +25,7 @@ namespace Smx.PDBSharp.Symbols
 			ItemID = r.ReadIndexedTypeLazy();
 		}
 
-		public S_BUILDINFO(LeafBase itemId) {
+		public S_BUILDINFO(LeafContainerBase itemId) {
 			ItemID = itemId;
 		}
 

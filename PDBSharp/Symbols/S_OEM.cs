@@ -20,7 +20,7 @@ namespace Smx.PDBSharp.Symbols
 	public class OemSym
 	{
 		public Guid Id { get; set; }
-		public LeafBase Type { get; set; }
+		public LeafContainerBase Type { get; set; }
 		public byte[] UserData { get; set; }
 	}
 

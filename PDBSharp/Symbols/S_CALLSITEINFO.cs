@@ -21,7 +21,7 @@ namespace Smx.PDBSharp.Symbols
 	{
 		public UInt32 Offset { get; set; }
 		public UInt16 SectionIndex { get; set; }
-		public LeafBase Type { get; set; }
+		public LeafContainerBase Type { get; set; }
 	}
 
 	public class S_CALLSITEINFO : ISymbol

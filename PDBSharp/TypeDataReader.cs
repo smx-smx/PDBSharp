@@ -92,6 +92,8 @@ namespace Smx.PDBSharp
 
 		private ILeaf ReadLeaf(LeafType leafType) {
 			switch (leafType) {
+				case LeafType.LF_ALIAS:
+					return new LF_ALIAS(ctx, Stream);
 				case LeafType.LF_ARGLIST:
 					return new LF_ARGLIST(ctx, Stream);
 				case LeafType.LF_ARRAY:
@@ -104,7 +106,8 @@ namespace Smx.PDBSharp
 					return new LF_CHAR(ctx, Stream);
 				case LeafType.LF_CLASS:
 				case LeafType.LF_STRUCTURE:
-					return new LF_CLASS(ctx, Stream);
+				case LeafType.LF_INTERFACE:
+					return new LF_CLASS_STRUCTURE_INTERFACE(ctx, Stream);
 				case LeafType.LF_ENUM:
 					return new LF_ENUM(ctx, Stream);
 				case LeafType.LF_ENUMERATE:
@@ -179,7 +182,9 @@ namespace Smx.PDBSharp
 			return new LazyLeafProvider(delayedLeaf);
 		}
 
-		public LeafBase ReadTypeDirect(bool hasSize = true) {
+		public LeafContainerBase ReadTypeDirect(bool hasSize = true) {
+			long typeStartOffset = Stream.Position;
+
 			UInt16 size = 0;
 			if (hasSize) {
 				size = ReadUInt16();
@@ -188,6 +193,15 @@ namespace Smx.PDBSharp
 			ILeaf typeSym = ReadLeaf(leafType);
 
 			ConsumePadding();
+
+#if DEBUG
+			long typeDataSize = size + sizeof(UInt16);
+			UInt32 typeHash = PerformAt(typeStartOffset, () => {
+				byte[] typeData = ReadBytes((int)typeDataSize);
+				return HasherV2.HashBufferV8(typeData, 0xFFFFFFFF);
+			});
+#endif
+
 			return new DirectLeafProvider(0, leafType, typeSym);
 		}
 	}

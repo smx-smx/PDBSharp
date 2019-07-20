@@ -14,7 +14,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 {
 	public class UdtSymData
 	{
-		public LeafBase Type { get; set; }
+		public LeafContainerBase Type { get; set; }
 		public string Name { get; set; }
 	}
 

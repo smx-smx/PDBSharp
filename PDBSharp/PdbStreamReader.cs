@@ -27,6 +27,12 @@ namespace Smx.PDBSharp
 		VC140 = 20140508
 	}
 
+	public enum PDBFeature : UInt32
+	{
+		NoTypeMerge = 0x4D544F4E, //NOTM
+		MinimalDebugInfo = 0x494E494D //MINI
+	}
+
 	public class PdbStreamReader : ReaderBase
 	{
 		public readonly PDBVersion Version;
@@ -36,6 +42,8 @@ namespace Smx.PDBSharp
 		public readonly Guid NewSignature;
 
 		public readonly NameTableReader NameTable;
+
+		private readonly bool ContainsIdStream;
 
 		public PdbStreamReader(Context ctx, Stream stream) : base(stream) {
 			Version = ReadEnum<PDBVersion>();
@@ -51,6 +59,21 @@ namespace Smx.PDBSharp
 			}
 
 			NameTable = Deserializers.ReadNameTable(this);
+
+			bool flagContinue = true;
+			while(flagContinue && stream.Position + sizeof(uint) < stream.Length) {
+				UInt32 signature = ReadUInt32();
+				if(Enum.IsDefined(typeof(PDBVersion), signature)) {
+					PDBVersion version = (PDBVersion)signature;
+					switch (version) {
+						case PDBVersion.VC110:
+						case PDBVersion.VC140:
+							flagContinue = false;
+							break;
+					}	
+				} else if(Enum.IsDefined(typeof(PDBFeature), signature)) {
+				}
+			}
 		}
 	}
 }

@@ -19,7 +19,7 @@ namespace Smx.PDBSharp.Symbols
 		public UInt32 CallSiteOffset { get; set; }
 		public UInt16 SectionIndex { get; set; }
 		public UInt16 HeapAllocationInstructionSize { get; set; }
-		public LeafBase FunctionSignature { get; set; }
+		public LeafContainerBase FunctionSignature { get; set; }
 	}
 
 	public class S_HEAPALLOCSITE : ISymbol
