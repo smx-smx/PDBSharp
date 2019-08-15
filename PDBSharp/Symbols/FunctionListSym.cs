@@ -16,12 +16,12 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class S_CALLEES : ISymbol
+	public class FunctionListSym : ISymbol
 	{
 		public readonly UInt32 NumberOfFunctions;
 		public readonly ILeafContainer[] Functions;
 
-		public S_CALLEES(Context ctx, IModule mod, Stream stream) {
+		public FunctionListSym(Context ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			NumberOfFunctions = r.ReadUInt32();
@@ -31,7 +31,7 @@ namespace Smx.PDBSharp.Symbols
 				.ToArray();
 		}
 
-		public S_CALLEES(IEnumerable<LeafContainerBase> functionsList) {
+		public FunctionListSym(IEnumerable<LeafContainerBase> functionsList) {
 			Functions = functionsList.ToArray();
 			NumberOfFunctions = (uint)Functions.Length;
 		}

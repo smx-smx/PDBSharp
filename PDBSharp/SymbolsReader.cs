@@ -52,7 +52,9 @@ namespace Smx.PDBSharp
 				case SymbolType.S_BUILDINFO:
 					sym = new S_BUILDINFO(ctx, mod, Stream); break;
 				case SymbolType.S_CALLEES:
-					sym = new S_CALLEES(ctx, mod, Stream); break;
+				case SymbolType.S_CALLERS:
+				case SymbolType.S_INLINEES:
+					sym = new FunctionListSym(ctx, mod, Stream); break;
 				case SymbolType.S_CALLSITEINFO:
 					sym = new S_CALLSITEINFO(ctx, mod, Stream); break;
 				case SymbolType.S_COFFGROUP:

@@ -272,6 +272,9 @@ namespace Smx.PDBSharp
 		S_GDATA_HLSL32_EX = 0x1164,
 		S_LDATA_HLSL32_EX = 0x1165,
 
+		S_FASTLINK = 0x1167,
+		S_INLINEES = 0x1168,
+
 		S_RECTYPE_MAX,               // one greater than last
 		S_RECTYPE_LAST = S_RECTYPE_MAX - 1,
 		S_RECTYPE_PAD = S_RECTYPE_MAX + 0x100 // Used *only* to verify symbol record types so that current PDB code can potentially read
