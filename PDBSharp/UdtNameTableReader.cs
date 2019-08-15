@@ -44,7 +44,7 @@ namespace Smx.PDBSharp
 		//$TODO(work in progress): fix the NI -> TI mapping
 		private void BuildTypeMap() {
 			uint minTi = ctx.TpiReader.Header.MinTypeIndex;
-			uint maxTi = minTi + ctx.TpiReader.Header.NumTypes - 1;
+			uint maxTi = minTi + ctx.TpiReader.Header.MaxTypeIndex - 1;
 
 			for (uint ti = minTi; ti <= maxTi; ti++) {
 				ILeafContainer leafC = ctx.TpiReader.GetTypeByIndex(ti);

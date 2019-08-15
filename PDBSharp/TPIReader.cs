@@ -56,7 +56,7 @@ namespace Smx.PDBSharp
 		public UInt32 HeaderSize;
 
 		public UInt32 MinTypeIndex;
-		public UInt32 NumTypes;
+		public UInt32 MaxTypeIndex;
 
 		public UInt32 GpRecSize;
 		public TPIHash Hash;
@@ -112,7 +112,7 @@ namespace Smx.PDBSharp
 		}
 
 		private bool HasTi(UInt32 TypeIndex) {
-			return TypeIndex >= Header.MinTypeIndex && TypeIndex < Header.NumTypes;
+			return TypeIndex >= Header.MinTypeIndex && TypeIndex < Header.MaxTypeIndex;
 		}
 
 		private bool IsBuiltinTi(UInt32 TypeIndex) {

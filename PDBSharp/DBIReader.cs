@@ -78,6 +78,16 @@ namespace Smx.PDBSharp
 
 		public DBIReader(Context ctx, Stream stream) : base(stream) {
 			this.ctx = ctx;
+			lazyModuleContainers = new Lazy<IEnumerable<IModuleContainer>>(ReadModules);
+
+			if (stream.Length == 0)
+				return;
+
+			if(stream.Length < Marshal.SizeOf<DBIHeader>()) {
+				throw new InvalidDataException();
+			}
+
+
 			hdr = ReadStruct<DBIHeader>();
 
 			if(hdr.Signature != unchecked((uint)-1) || !Enum.IsDefined(typeof(DBIVersion), (uint)hdr.Version)) {
@@ -92,8 +102,6 @@ namespace Smx.PDBSharp
 			) {
 				throw new InvalidDataException();
 			}
-
-			lazyModuleContainers = new Lazy<IEnumerable<IModuleContainer>>(ReadModules);
 		}
 
 
