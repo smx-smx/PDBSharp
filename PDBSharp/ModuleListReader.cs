@@ -19,12 +19,35 @@ using Smx.PDBSharp.Symbols;
 namespace Smx.PDBSharp
 {
 
-	public interface SectionContribution
+	public interface ISectionContrib
 	{
 		int Size { get; }
 	}
 
-	public class SectionContribution40 : ReaderBase, SectionContribution
+	public class SectionContrib : SectionContrib40 {
+		public readonly UInt32 DataCrc;
+		public readonly UInt32 RelocCrc;
+
+		public const int SIZE = SectionContrib40.SIZE + 8;
+
+		public SectionContrib(Stream stream) : base(stream) {
+			DataCrc = ReadUInt32();
+			RelocCrc = ReadUInt32();
+		}
+	}
+
+	public class SectionContrib2 : SectionContrib
+	{
+		public readonly UInt32 CoffSectionIndex;
+
+		public const int SIZE = SectionContrib.SIZE + 4;
+
+		public SectionContrib2(Stream stream) : base(stream) {
+			
+		}
+	}
+
+	public class SectionContrib40 : ReaderBase
 	{
 		public readonly UInt16 SectionIndex;
 		public readonly UInt32 Offset;
@@ -32,28 +55,19 @@ namespace Smx.PDBSharp
 		public readonly UInt32 Characteristics;
 		public readonly UInt16 ModuleIndex;
 
-		// footer
-		public readonly UInt32 DataCrc;
-		public readonly UInt32 RelocCrc;
+		public const int SIZE = 20;
 
-		const int SIZE = 28;
-
-		public SectionContribution40(Stream stream) : base(stream) {
+		public SectionContrib40(Stream stream) : base(stream) {
 			SectionIndex = ReadUInt16();
 			ReadUInt16();
-
+			
 			Offset = ReadUInt32();
 			Size = ReadUInt32();
 			Characteristics = ReadUInt32();
-
+			
 			ModuleIndex = ReadUInt16();
 			ReadUInt16();
-
-			DataCrc = ReadUInt32();
-			RelocCrc = ReadUInt32();
 		}
-
-		int SectionContribution.Size => SIZE;
 	}
 
 	public class ModuleInfoFlags
@@ -68,10 +82,16 @@ namespace Smx.PDBSharp
 		public byte TSMListIndex => (byte)((flags >> 8) & 8);
 	}
 
+	public struct ECInfo
+	{
+		public UInt32 SrcFileNameIndex;
+		public UInt32 PdbFileNameIndex;
+	}
+
 	public class ModuleInfo : ReaderBase
 	{
 		public readonly UInt32 OpenModuleHandle;
-		public readonly SectionContribution SectionContribution;
+		public readonly SectionContrib SectionContribution;
 		public readonly ModuleInfoFlags Flags;
 		public readonly Int16 StreamNumber;
 		public readonly UInt32 SymbolsSize;
@@ -80,20 +100,31 @@ namespace Smx.PDBSharp
 		public readonly UInt16 NumberOfFiles;
 		public readonly UInt32 FileNameOffsets;
 
-		public readonly UInt32 SrcFileNameIndex;
-		public readonly UInt32 PdbFileNameIndex;
+		public readonly ECInfo ECInfo;
 
 		public readonly string ModuleName;
 		public readonly string ObjectFileName;
 
+		//////////////////////////////
 
-		public readonly int Size;
+		private readonly Context ctx;
+		public const int SIZE = 38 + SectionContrib.SIZE;
+		public int Size => SIZE + ModuleName.Length + ObjectFileName.Length;
 
-		public ModuleInfo(Stream stream) : base(stream) {
+		public string SourceFileName => GetEcString(ECInfo.SrcFileNameIndex);
+		public string PDBFileName => GetEcString(ECInfo.PdbFileNameIndex);
+
+		private string GetEcString(uint nameIndex) {
+			return ctx.DbiReader.EC.NameTable.GetString(nameIndex);
+		}
+
+		public ModuleInfo(Context ctx, Stream stream) : base(stream) {
+			this.ctx = ctx;
+
 			long modiStartOffset = stream.Position;
 
 			OpenModuleHandle = ReadUInt32();
-			SectionContribution = new SectionContribution40(stream);
+			SectionContribution = new SectionContrib(stream);
 
 			Flags = new ModuleInfoFlags(ReadUInt16());
 			StreamNumber = ReadInt16();
@@ -107,22 +138,10 @@ namespace Smx.PDBSharp
 
 			FileNameOffsets = ReadUInt32();
 
-			//ECInfo start
-			SrcFileNameIndex = ReadUInt32();
-			PdbFileNameIndex = ReadUInt32();
-			//ECInfo end
+			ECInfo = ReadStruct<ECInfo>();
 
 			ModuleName = ReadCString();
 			ObjectFileName = ReadCString();
-
-			// Align stream position
-			int padding = AlignStream(sizeof(int));
-
-			Size = 38 +
-				SectionContribution.Size +
-				ModuleName.Length +
-				ObjectFileName.Length +
-				padding;
 		}
 	}
 
@@ -135,7 +154,11 @@ namespace Smx.PDBSharp
 
 		private long lastPosition;
 
-		public ModuleListReader(Stream stream, uint moduleListSize) : base(stream) {
+		private readonly Context ctx;
+
+		public ModuleListReader(Context ctx, Stream stream, uint moduleListSize) : base(stream) {
+			this.ctx = ctx;
+
 			listStartOffset = stream.Position;
 			listSize = moduleListSize;
 			listEndOffset = listStartOffset + listSize;
@@ -152,9 +175,8 @@ namespace Smx.PDBSharp
 			while (lastPosition < listEndOffset) {
 				Stream.Position = lastPosition;
 
-				ModuleInfo mod = new ModuleInfo(Stream);
-				long moduleSize = mod.Size;
-				lastPosition += moduleSize;
+				ModuleInfo mod = new ModuleInfo(ctx, Stream);
+				lastPosition += mod.Size + AlignStream(sizeof(int));
 
 				yield return mod;
 			}

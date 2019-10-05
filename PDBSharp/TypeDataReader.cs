@@ -70,9 +70,10 @@ namespace Smx.PDBSharp
 
 			LeafType leafType = (LeafType)leafValue;
 			dataSize = PrimitiveDataSizes[leafType];
-
 			Stream.Seek(-2, SeekOrigin.Current);
-			ILeafContainer leaf = new TypeDataReader(ctx, Stream).ReadTypeLazy(hasSize: false);
+
+			ILeafContainer leaf = new TypeDataReader(ctx, Stream).ReadTypeDirect(hasSize: false);
+			//ILeafContainer leaf = new TypeDataReader(ctx, Stream).ReadTypeLazy(hasSize: false);
 			return leaf;
 
 		}
@@ -176,7 +177,10 @@ namespace Smx.PDBSharp
 		}
 
 		public ILeafContainer ReadTypeLazy(bool hasSize = true) {
+			long typePos = Stream.Position;
+
 			Lazy<ILeafContainer> delayedLeaf = new Lazy<ILeafContainer>(() => {
+				Stream.Position = typePos;
 				return ReadTypeDirect(hasSize);
 			});
 			return new LazyLeafProvider(delayedLeaf);

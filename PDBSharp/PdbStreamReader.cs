@@ -41,7 +41,7 @@ namespace Smx.PDBSharp
 
 		public readonly Guid NewSignature;
 
-		public readonly NameTableReader NameTable;
+		public readonly NameIndexTableReader NameTable;
 
 		private readonly bool ContainsIdStream;
 
@@ -58,7 +58,7 @@ namespace Smx.PDBSharp
 				NewSignature = ReadStruct<Guid>();
 			}
 
-			NameTable = Deserializers.ReadNameTable(this);
+			NameTable = Deserializers.ReadNameIndexTable(this);
 
 			bool flagContinue = true;
 			while(flagContinue && stream.Position + sizeof(uint) < stream.Length) {

@@ -9,72 +9,62 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 
 namespace Smx.PDBSharp
 {
+	public enum NameTableVersion : UInt32
+	{
+		Hash = 1,
+		HashV2 = 2
+	}
+
+	public delegate uint HashFunc(byte[] data, uint modulo);
+
 	public class NameTableReader
 	{
-		public readonly byte[] StringTableData;
+		private const UInt32 MAGIC = 0xeffeeffe;
 
-		private readonly Dictionary<uint, uint> Offset_Index;
-		private readonly Dictionary<uint, uint> Index_Offset;
+		public readonly NameTableVersion Version;
 
 		private readonly ReaderBase rdr;
 
-		private readonly Dictionary<string, uint> String_Index = new Dictionary<string, uint>();
-		private readonly Dictionary<uint, string> Index_String = new Dictionary<uint, string>();
+		public readonly uint NumberOfElements;
+		public readonly uint[] Indices;
 
-		public string GetString(uint index) {
-			if (!Index_Offset.ContainsKey(index)) {
-				return null;
-			}
+		private HashFunc hasher;
 
-			if (Index_String.TryGetValue(index, out string cachedString)) {
-				return cachedString;
-			}
-
-			uint offset = Index_Offset[index];
-			rdr.BaseStream.Position = offset;
-			string str = rdr.ReadCString();
-
-			Index_String.Add(index, str);
-			return str;
+		public uint HashName(string name) {
+			byte[] data = Encoding.ASCII.GetBytes(name);
+			return hasher(data, unchecked((uint)-1));
 		}
-
-		public bool GetIndex(string str, out uint index) {
-			if (String_Index.TryGetValue(str, out uint cachedIndex)) {
-				index = cachedIndex;
-				return true;
-			}
-
-			uint? _index = Offset_Index
-				.Where(p => GetString(p.Value) == str)
-				.Select(p => p.Value)
-				.Cast<uint?>()
-				.FirstOrDefault();
-
-			if (_index == null) {
-				index = 0;
-				return false;
-			}
-
-			index = _index.Value;
-			String_Index.Add(str, index);
-
-			return true;
+		
+		public string GetString(uint index) {
+			rdr.BaseStream.Position = index;
+			return rdr.ReadCString();
 		}
 
 		public NameTableReader(ReaderBase r) {
-			StringTableData = Deserializers.ReadBuffer(r);
-			rdr = new ReaderBase(new MemoryStream(StringTableData));
+			UInt32 magic = r.ReadUInt32();
+			if (magic != MAGIC) {
+				throw new InvalidDataException($"Invalid verHdr magic 0x{magic:X}");
+			}
 
-			Offset_Index = Deserializers.ReadMap<uint, uint>(r);
+			Version = r.ReadEnum<NameTableVersion>();
+			switch (Version) {
+				case NameTableVersion.Hash:
+					hasher = HasherV1.HashData;
+					break;
+				case NameTableVersion.HashV2:
+					hasher = HasherV2.HashData;
+					break;
+			}
 
-			uint maxNameIndices = r.ReadUInt32();
+			byte[] buf = Deserializers.ReadBuffer(r);
+			rdr = new ReaderBase(new MemoryStream(buf));
 
-			Index_Offset = Offset_Index.ToDictionary(x => x.Value, x => x.Key);
+			Indices = Deserializers.ReadArray<UInt32>(r);
+			NumberOfElements = r.ReadUInt32();
 		}
 	}
 }

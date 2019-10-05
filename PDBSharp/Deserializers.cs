@@ -16,13 +16,33 @@ namespace Smx.PDBSharp
 {
 	public class Deserializers
 	{
+		public static NameIndexTableReader ReadNameIndexTable(ReaderBase r) {
+			return new NameIndexTableReader(r);
+		}
+
 		public static NameTableReader ReadNameTable(ReaderBase r) {
 			return new NameTableReader(r);
 		}
 
+
 		public static byte[] ReadBuffer(ReaderBase r) {
 			int numBytes = r.ReadInt32();
 			return r.ReadBytes(numBytes);
+		}
+
+		public static T[] ReadBuffer<T>(ReaderBase r) {
+			byte[] buffer = ReadBuffer(r);
+
+			List<T> elements = new List<T>();
+
+			uint pos = 0;
+			while (pos < buffer.Length) {
+				//$TODO: interface
+				T elem = (T)Activator.CreateInstance(typeof(T), r.BaseStream);
+				elements.Add(elem);
+			}
+
+			return elements.ToArray();
 		}
 
 		public static T[] ReadArray<T>(ReaderBase r) where T : unmanaged {

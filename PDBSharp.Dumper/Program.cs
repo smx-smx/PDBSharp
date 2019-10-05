@@ -6,6 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
+using Smx.PDBSharp.Codegen;
 using Smx.PDBSharp.Leaves;
 using Smx.PDBSharp.Symbols;
 using Smx.PDBSharp.Symbols.Structures;
@@ -25,6 +26,7 @@ namespace Smx.PDBSharp.Dumper
 		public static bool OptDumpLeaves = false;
 		public static bool OptDumpSymbols = false;
 		public static bool OptDumpStreams = false;
+		public static bool OptPrintDecls = false;
 		public static string PdbFilePath = null;
 
 		private static void ParseArguments(string[] args) {
@@ -43,6 +45,9 @@ namespace Smx.PDBSharp.Dumper
 					case "-dump-syms":
 						OptDumpSymbols = true;
 						break;
+					case "-print":
+						OptPrintDecls = true;
+						break;
 					default:
 						PdbFilePath = arg;
 						return;
@@ -59,6 +64,12 @@ namespace Smx.PDBSharp.Dumper
 			}
 
 			Context ctx = new Context(PdbFilePath);
+
+			if (OptPrintDecls) {
+				var tree = new GraphBuilder(ctx).Build();
+				CodeWriter cw = new CodeWriter(tree);
+				cw.Write(Console.Out);
+			}
 
 			if (OptDumpLeaves) {
 				ctx.Pdb.OnTpiInit += Pdb_OnTpiInit;
@@ -85,6 +96,7 @@ namespace Smx.PDBSharp.Dumper
 			foreach(var container in ctx.DbiReader.Modules) { 
 				Console.WriteLine($"[MODULE => {container.Info.ModuleName}]");
 				Console.WriteLine($"[OBJECT => {container.Info.ObjectFileName}]");
+				Console.WriteLine($"[SRC    => {container.Info.SourceFileName}]");
 				if (container.Module != null) {
 					Console.WriteLine($"[TYPE   => {container.Module.GetType().Name}");
 				}
@@ -92,12 +104,14 @@ namespace Smx.PDBSharp.Dumper
 
 				IModule mod = container.Module;
 				if (mod != null) {
-					/*
 					foreach (var sym in mod.Symbols) {
-						//Console.WriteLine(sym);
+						Console.WriteLine(sym);
 					}
-					*/
 				}
+			}
+
+			foreach(var type in ctx.TpiReader.Types) {
+				Console.WriteLine(type);
 			}
 
 

@@ -14,14 +14,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.Structures
 {
-	public class FunctionListSym : ISymbol
+	public class FUNCTIONLIST
 	{
 		public readonly UInt32 NumberOfFunctions;
 		public readonly ILeafContainer[] Functions;
 
-		public FunctionListSym(Context ctx, IModule mod, Stream stream) {
+		public FUNCTIONLIST(Context ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			NumberOfFunctions = r.ReadUInt32();
@@ -31,7 +31,7 @@ namespace Smx.PDBSharp.Symbols
 				.ToArray();
 		}
 
-		public FunctionListSym(IEnumerable<LeafContainerBase> functionsList) {
+		public FUNCTIONLIST(IEnumerable<LeafContainerBase> functionsList) {
 			Functions = functionsList.ToArray();
 			NumberOfFunctions = (uint)Functions.Length;
 		}

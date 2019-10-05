@@ -53,7 +53,7 @@ namespace Smx.PDBSharp
 		public UInt32 SectionMapSize;
 		public UInt32 FileInfoSize;
 		public UInt32 TypeServerMapSize;
-		public UInt32 TypeServerIndex;
+		public UInt32 MFCTypeServerIndex;
 
 		public UInt32 DebugHeaderSize;
 		public UInt32 EcSubstreamSize;
@@ -65,21 +65,36 @@ namespace Smx.PDBSharp
 
 	public class DBIReader : ReaderBase
 	{
-		private DBIHeader hdr;
+		public readonly DBIHeader Header;
 
 		private readonly Context ctx;
 
 		private readonly Lazy<IEnumerable<IModuleContainer>> lazyModuleContainers;
+
+		public readonly DebugReader DebugInfo;
+		public readonly SectionContribsReader SectionContribs;
+
+		public readonly ECReader EC;
+		public readonly TypeServerMapReader TypeServerMap;
 
 		public IEnumerable<IModuleContainer> Modules => lazyModuleContainers.Value;
 
 		public event OnModuleDataDelegate OnModuleData;
 		public event OnModuleReaderInitDelegate OnModuleReaderInit;
 
+		/**
+		 * Layout of the DBI stream
+		 * -> Header 
+		 * -> ModuleList
+		 * -> SectionContributions
+		 * -> SectionMap
+		 * -> FileInfo
+		 * -> TypeServerMap
+		 * -> EcSubstream
+		 * -> DebugHeader
+		 **/
 		public DBIReader(Context ctx, Stream stream) : base(stream) {
 			this.ctx = ctx;
-			lazyModuleContainers = new Lazy<IEnumerable<IModuleContainer>>(ReadModules);
-
 			if (stream.Length == 0)
 				return;
 
@@ -88,25 +103,51 @@ namespace Smx.PDBSharp
 			}
 
 
-			hdr = ReadStruct<DBIHeader>();
+			Header = ReadStruct<DBIHeader>();
 
-			if(hdr.Signature != unchecked((uint)-1) || !Enum.IsDefined(typeof(DBIVersion), (uint)hdr.Version)) {
+			if(Header.Signature != unchecked((uint)-1) || !Enum.IsDefined(typeof(DBIVersion), (uint)Header.Version)) {
 				throw new InvalidDataException();
 			}
 
 			uint nStreams = ctx.StreamTableReader.NumStreams;
 			if (
-				hdr.GsSymbolsStreamNumber >= nStreams ||
-				hdr.PsSymbolsStreamNumber >= nStreams ||
-				hdr.SymbolRecordsStreamNumber >= nStreams
+				Header.GsSymbolsStreamNumber >= nStreams ||
+				Header.PsSymbolsStreamNumber >= nStreams ||
+				Header.SymbolRecordsStreamNumber >= nStreams
 			) {
 				throw new InvalidDataException();
+			}
+
+			lazyModuleContainers = new Lazy<IEnumerable<IModuleContainer>>(ReadModules);
+			stream.Position += Header.ModuleListSize;
+
+			if(Header.SectionContributionSize > 0) {
+				SectionContribs = PerformAt(stream.Position, () => new SectionContribsReader(stream));
+			}
+			stream.Position += Header.SectionContributionSize;
+
+			stream.Position += Header.SectionMapSize;
+			stream.Position += Header.FileInfoSize;
+
+			if(Header.TypeServerMapSize > 0) {
+				TypeServerMap = PerformAt(stream.Position, () => new TypeServerMapReader(stream));
+			}
+			stream.Position += Header.TypeServerMapSize;
+
+			if (Header.EcSubstreamSize > 0) {
+				EC = PerformAt(stream.Position, () => new ECReader(stream));
+			}
+			stream.Position += Header.EcSubstreamSize;
+
+			if (Header.DebugHeaderSize > 0) {
+				DebugInfo = new DebugReader(ctx, stream);
 			}
 		}
 
 
 		private IEnumerable<IModuleContainer> ReadModules() {
-			ctx.ModuleListReader = new ModuleListReader(Stream, hdr.ModuleListSize);
+			Stream.Position = Marshal.SizeOf<DBIHeader>();
+			ctx.ModuleListReader = new ModuleListReader(ctx, Stream, Header.ModuleListSize);
 
 			IEnumerable<ModuleInfo> moduleInfoList = ctx.ModuleListReader.Modules;
 			foreach (ModuleInfo mod in moduleInfoList) {
