@@ -152,17 +152,6 @@ namespace Smx.PDBSharp
 					Services.AddService<UdtNameTableReader>(udtNameTable);
 				}
 			}
-
-#if DEBUG
-			if (tpiHash != null && udtNameTable != null) {
-				foreach (var pair in tpiHash.NameIndexToTypeIndex) {
-					string name = udtNameTable.GetString(pair.Key);
-					ILeafContainer leaf = resolver.GetTypeByIndex(pair.Value);
-					Console.WriteLine($"=> {name} [NI={pair.Key}] [TI={pair.Value}]");
-					Console.WriteLine(leaf.Data.GetType().Name);
-				}
-			}
-#endif
 		}
 	}
 }

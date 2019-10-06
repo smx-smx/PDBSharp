@@ -99,7 +99,19 @@ namespace Smx.PDBSharp.Dumper
 				//Console.WriteLine(type);
 			}*/
 
-			foreach(var container in dbi.Modules) { 
+			HashDataReader tpiHash = sc.GetService<HashDataReader>();
+			UdtNameTableReader udtNameTable = sc.GetService<UdtNameTableReader>();
+			TypeResolver resolver = sc.GetService<TypeResolver>();
+			if (tpiHash != null && udtNameTable != null) {
+				foreach (var pair in tpiHash.NameIndexToTypeIndex) {
+					string name = udtNameTable.GetString(pair.Key);
+					ILeafContainer leaf = resolver.GetTypeByIndex(pair.Value);
+					Console.WriteLine($"=> {name} [NI={pair.Key}] [TI={pair.Value}]");
+					Console.WriteLine(leaf.Data.GetType().Name);
+				}
+			}
+
+			foreach (var container in dbi.Modules) { 
 				Console.WriteLine($"[MODULE => {container.Info.ModuleName}]");
 				Console.WriteLine($"[OBJECT => {container.Info.ObjectFileName}]");
 				Console.WriteLine($"[SRC    => {container.Info.SourceFileName}]");
