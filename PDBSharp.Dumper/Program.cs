@@ -111,6 +111,13 @@ namespace Smx.PDBSharp.Dumper
 				}
 			}
 
+			DebugReader debug = dbi.DebugInfo;
+			if(debug != null && debug.FPO != null) {
+				foreach(var frame in debug.FPO.Frames) {
+					ObjectDumper.Dump(frame);
+				}
+			}
+
 			foreach (var container in dbi.Modules) { 
 				Console.WriteLine($"[MODULE => {container.Info.ModuleName}]");
 				Console.WriteLine($"[OBJECT => {container.Info.ObjectFileName}]");

@@ -33,7 +33,6 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt32 ExceptionHandlerOffset;
 		public readonly UInt16 ExceptionHandlerSection;
 		public readonly FrameProcSymFlags Flags;
-
 		public S_FRAMEPROC(IServiceContainer ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 			FrameSize = r.ReadUInt32();

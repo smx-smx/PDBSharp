@@ -15,10 +15,10 @@ namespace Smx.PDBSharp
 
 	public enum FPOFrameType : byte
 	{
-		None = 0,
+		Fpo = 0,
 		Trap = 1,
 		Tss = 2,
-		NoFpo = 3
+		Std = 3
 	}
 
 	public class FPOData : ReaderBase
@@ -30,11 +30,14 @@ namespace Smx.PDBSharp
 		public readonly byte PrologSize;
 		private readonly byte flags;
 
+		// frame type determined by size
+		public FPOFrameType FrameType => (FPOFrameType)FrameSize;
+
 		public byte NumberSavedRegisters => (byte)(flags & 3);
 		public bool HasSEH => ((flags >> 3) & 1) == 1;
 		public bool UsesBasePointer => ((flags >> 4) & 1) == 1;
 		// bit 5 is reserved
-		public FPOFrameType FrameType => (FPOFrameType)((flags >> 6) & 2);
+		public byte FrameSize => (byte)((flags >> 6) & 2);
 
 		public FPOData(Stream stream) : base(stream) {
 			StartOffset = ReadUInt32();
