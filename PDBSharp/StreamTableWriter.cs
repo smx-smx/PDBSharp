@@ -53,7 +53,7 @@ namespace Smx.PDBSharp
 			// go back and write page numbers
 			Stream.Position -= streamSize;
 
-			for(int i=0; i<numPages; i++) {
+			for (int i = 0; i < numPages; i++) {
 				WriteUInt32(msf.AllocPageNumber());
 			}
 

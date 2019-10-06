@@ -6,13 +6,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using Smx.PDBSharp.Symbols.Structures;
+using Smx.PDBSharp.Symbols.Structures;
 using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
@@ -37,7 +34,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt16 ExceptionHandlerSection;
 		public readonly FrameProcSymFlags Flags;
 
-		public S_FRAMEPROC(Context ctx, IModule mod, Stream stream) {
+		public S_FRAMEPROC(IServiceContainer ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 			FrameSize = r.ReadUInt32();
 			PaddingSize = r.ReadUInt32();

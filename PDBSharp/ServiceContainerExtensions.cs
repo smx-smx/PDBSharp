@@ -6,17 +6,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-using Smx.PDBSharp.Leaves;
-using System.IO;
+using System.ComponentModel.Design;
 
 namespace Smx.PDBSharp
 {
-	public abstract class LeafContainerBase : ILeafContainer, ILeaf
+	public static class IServiceContainerExtensions
 	{
-		public abstract uint TypeIndex { get; }
-		public abstract LeafType Type { get; }
-		public abstract ILeaf Data { get; }
+		public static void AddService<T>(this IServiceContainer @this, object instance) {
+			@this.AddService(typeof(T), instance);
+		}
 
-		public abstract void Write(PDBFile pdb, Stream stream);
+		public static T GetService<T>(this IServiceContainer @this) {
+			return (T)@this.GetService(typeof(T));
+		}
 	}
 }

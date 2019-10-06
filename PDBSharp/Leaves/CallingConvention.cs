@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Leaves
 {
 	public enum CallingConvention : byte
 	{

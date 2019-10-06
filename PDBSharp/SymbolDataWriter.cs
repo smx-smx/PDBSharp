@@ -7,11 +7,8 @@
  */
 #endregion
 using Smx.PDBSharp.Symbols.Structures;
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Smx.PDBSharp
 {
@@ -36,7 +33,7 @@ namespace Smx.PDBSharp
 		}
 
 		public void WriteSymbolString(string value) {
-			if(symbolType < SymbolType.S_ST_MAX) {
+			if (symbolType < SymbolType.S_ST_MAX) {
 				WriteString(value);
 			} else {
 				WriteCString(value);

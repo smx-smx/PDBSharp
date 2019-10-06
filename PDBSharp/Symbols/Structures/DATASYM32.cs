@@ -7,6 +7,7 @@
  */
 #endregion
 using System;
+using System.ComponentModel.Design;
 using System.IO;
 
 namespace Smx.PDBSharp.Symbols.Structures
@@ -25,7 +26,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public readonly UInt16 Segment;
 		public readonly string Name;
 
-		public DataSym32Base(Context ctx, Stream stream) {
+		public DataSym32Base(IServiceContainer ctx, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			Type = r.ReadIndexedTypeLazy();

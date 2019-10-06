@@ -6,13 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-using Smx.PDBSharp.Symbols.Structures;
-using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Leaves
 {
@@ -20,7 +15,7 @@ namespace Smx.PDBSharp.Leaves
 	{
 		public readonly byte Value;
 
-		public LF_CHAR(Context pdb, Stream stream) { 
+		public LF_CHAR(IServiceContainer pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 			Value = r.ReadByte();
 		}

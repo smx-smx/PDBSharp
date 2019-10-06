@@ -7,16 +7,14 @@
  */
 #endregion
 using Smx.PDBSharp.Symbols.Structures;
-using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Text;
 
 namespace Smx.PDBSharp.Symbols
 {
 	public class S_UDT : UdtSym, ISymbol
 	{
-		public S_UDT(Context ctx, IModule mod, Stream stream) : base(ctx, stream) {
+		public S_UDT(IServiceContainer ctx, IModule mod, Stream stream) : base(ctx, stream) {
 		}
 
 		public S_UDT(UdtSymData data) : base(data) {

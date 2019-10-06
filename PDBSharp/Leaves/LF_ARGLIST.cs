@@ -7,10 +7,9 @@
  */
 #endregion
 using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace Smx.PDBSharp.Leaves
 {
@@ -19,7 +18,7 @@ namespace Smx.PDBSharp.Leaves
 		public UInt16 NumberOfArguments;
 		public ILeafContainer[] ArgumentTypes;
 
-		public LF_ARGLIST(Context pdb, Stream stream) {
+		public LF_ARGLIST(IServiceContainer pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			NumberOfArguments = r.ReadUInt16();
@@ -33,8 +32,8 @@ namespace Smx.PDBSharp.Leaves
 			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_ARGLIST);
 			w.WriteUInt16(NumberOfArguments);
 			w.WriteUInt16(0x00);
-			
-			foreach(ILeafContainer leaf in ArgumentTypes) {
+
+			foreach (ILeafContainer leaf in ArgumentTypes) {
 				w.WriteIndexedType(leaf);
 			}
 
@@ -42,7 +41,7 @@ namespace Smx.PDBSharp.Leaves
 		}
 
 		public override string ToString() {
-			return $"LF_ARGLIST[NumberOfArguments='{NumberOfArguments}', " + 
+			return $"LF_ARGLIST[NumberOfArguments='{NumberOfArguments}', " +
 				$"ArgumentTypes='{string.Join(", ", ArgumentTypes.Select(a => a.Data.ToString()))}']";
 		}
 	}

@@ -6,13 +6,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using Smx.PDBSharp.Symbols.Structures;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols.Structures
 {
@@ -21,7 +19,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public readonly UInt32 NumberOfFunctions;
 		public readonly ILeafContainer[] Functions;
 
-		public FUNCTIONLIST(Context ctx, IModule mod, Stream stream) {
+		public FUNCTIONLIST(IServiceContainer ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			NumberOfFunctions = r.ReadUInt32();
@@ -39,7 +37,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public void Write(PDBFile pdb, Stream stream) {
 			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_CALLEES);
 			w.WriteUInt32(NumberOfFunctions);
-			foreach(LeafContainerBase fn in Functions) {
+			foreach (LeafContainerBase fn in Functions) {
 				w.WriteIndexedType(fn);
 			}
 

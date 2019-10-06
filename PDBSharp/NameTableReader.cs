@@ -7,7 +7,6 @@
  */
 #endregion
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -38,7 +37,7 @@ namespace Smx.PDBSharp
 			byte[] data = Encoding.ASCII.GetBytes(name);
 			return hasher(data, unchecked((uint)-1));
 		}
-		
+
 		public string GetString(uint index) {
 			rdr.BaseStream.Position = index;
 			return rdr.ReadCString();

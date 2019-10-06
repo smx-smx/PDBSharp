@@ -6,17 +6,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-using Smx.PDBSharp.Symbols;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp
 {
-	public enum CodeViewSignature  : UInt32
+	public enum CodeViewSignature : UInt32
 	{
 		C6 = 0,
 		C7 = 1,
@@ -26,7 +23,7 @@ namespace Smx.PDBSharp
 
 	public class CodeViewModuleReader : ReaderBase, IModule
 	{
-		private readonly Context ctx;
+		private readonly IServiceContainer ctx;
 		private readonly ModuleInfo mod;
 
 		private readonly Lazy<IEnumerable<Symbol>> lazySymbols;
@@ -35,12 +32,12 @@ namespace Smx.PDBSharp
 
 		public IEnumerable<Symbol> Symbols => lazySymbols.Value;
 
-		public CodeViewModuleReader(Context ctx, ModuleInfo mod, Stream stream) : base(stream) {
+		public CodeViewModuleReader(IServiceContainer ctx, ModuleInfo mod, Stream stream) : base(stream) {
 			this.ctx = ctx;
 			this.mod = mod;
 
 			CodeViewSignature signature = ReadEnum<CodeViewSignature>();
-			if(signature != CodeViewSignature.C13){
+			if (signature != CodeViewSignature.C13) {
 				throw new NotImplementedException($"CodeView {signature} not supported yet");
 			}
 
@@ -52,7 +49,7 @@ namespace Smx.PDBSharp
 			byte[] symbolsData = ReadBytes(symbolsSize);
 
 			var rdr = new SymbolsReader(ctx, this, new MemoryStream(symbolsData));
-			if(OnSymbolData != null) {
+			if (OnSymbolData != null) {
 				rdr.OnSymbolData += OnSymbolData;
 			}
 

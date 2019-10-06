@@ -12,6 +12,7 @@ using Smx.PDBSharp.Symbols;
 using Smx.PDBSharp.Symbols.Structures;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.IO;
 using System.IO.MemoryMappedFiles;
@@ -63,27 +64,32 @@ namespace Smx.PDBSharp.Dumper
 				Environment.Exit(1);
 			}
 
-			Context ctx = new Context(PdbFilePath);
+			PDBFile pdb = PDBFile.Open(PdbFilePath);
+			IServiceContainer sc = pdb.Services;
+
+			DBIReader dbi = sc.GetService<DBIReader>();
+			TPIReader tpi = sc.GetService<TPIReader>();
+			StreamTableReader streamTable = sc.GetService<StreamTableReader>();
 
 			if (OptPrintDecls) {
-				var tree = new GraphBuilder(ctx).Build();
+				var tree = new GraphBuilder(sc).Build();
 				CodeWriter cw = new CodeWriter(tree);
 				cw.Write(Console.Out);
 			}
 
 			if (OptDumpLeaves) {
-				ctx.Pdb.OnTpiInit += Pdb_OnTpiInit;
+				pdb.OnTpiInit += Pdb_OnTpiInit;
 			}
 			if (OptDumpModules || OptDumpSymbols) {
-				ctx.Pdb.OnDbiInit += Pdb_OnDbiInit;
+				pdb.OnDbiInit += Pdb_OnDbiInit;
 			}
 
 			if (OptDumpStreams) {
 				DirectoryInfo dumpDir = Directory.CreateDirectory(Path.GetFileNameWithoutExtension(PdbFilePath));
-				for(int i=1; i<ctx.StreamTableReader.NumStreams; i++) {
+				for(int i=1; i< streamTable.NumStreams; i++) {
 					string dumpPath = Path.Combine(dumpDir.ToString(), $"stream{i}.bin");
 
-					byte[] stream = ctx.StreamTableReader.GetStream(i);
+					byte[] stream = streamTable.GetStream(i);
 					File.WriteAllBytes(dumpPath, stream);
 				}
 			}
@@ -93,7 +99,7 @@ namespace Smx.PDBSharp.Dumper
 				//Console.WriteLine(type);
 			}*/
 
-			foreach(var container in ctx.DbiReader.Modules) { 
+			foreach(var container in dbi.Modules) { 
 				Console.WriteLine($"[MODULE => {container.Info.ModuleName}]");
 				Console.WriteLine($"[OBJECT => {container.Info.ObjectFileName}]");
 				Console.WriteLine($"[SRC    => {container.Info.SourceFileName}]");
@@ -110,15 +116,12 @@ namespace Smx.PDBSharp.Dumper
 				}
 			}
 
-			foreach(var type in ctx.TpiReader.Types) {
+			foreach(var type in tpi.Types) {
 				Console.WriteLine(type);
 			}
 
-
-			ctx.Dispose();
-
-			Console.WriteLine("Press Enter to continue...");
-			Console.ReadLine();
+			/*Console.WriteLine("Press Enter to continue...");
+			Console.ReadLine();*/
 		}
 
 		private static void Pdb_OnDbiInit(DBIReader DBI) {

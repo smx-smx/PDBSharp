@@ -6,15 +6,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-using Smx.PDBSharp.Leaves;
-using Smx.PDBSharp.Symbols;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp
 {
@@ -39,18 +35,17 @@ namespace Smx.PDBSharp
 
 		private readonly Stream stream;
 
-		public TPIReader Tpi => ctx.TpiReader;
-		public DBIReader Dbi => ctx.DbiReader;
+		private readonly StreamTableReader StreamTable;
+
+		public IServiceContainer Services { get; } = new ServiceContainer();
 
 		public IEnumerable<byte[]> Streams {
 			get {
-				for(int i=0; i<ctx.StreamTableReader.NumStreams; i++) {
-					yield return ctx.StreamTableReader.GetStream(i);
+				for (int i = 0; i < StreamTable.NumStreams; i++) {
+					yield return StreamTable.GetStream(i);
 				}
 			}
 		}
-
-		private readonly Context ctx;
 
 		public readonly PDBType FileType;
 
@@ -72,67 +67,90 @@ namespace Smx.PDBSharp
 
 		}
 
-		public PDBFile(Context ctx, Stream stream) {
-			this.ctx = ctx;
+		public static PDBFile Open(string pdbFilePath) {
+			Stream stream = new FileStream(pdbFilePath, FileMode.Open, FileAccess.Read);
+			return new PDBFile(stream);
+		}
+
+		public PDBFile(Stream stream) {
+			this.StreamTable = Services.GetService<StreamTableReader>();
+
 			this.stream = stream;
 			this.FileType = DetectPdbType();
 
-			ctx.Pdb = this;
+			Services.AddService<PDBFile>(this);
 
 			//$TODO
 			if (this.FileType == PDBType.Small) {
 				throw new NotImplementedException($"Small/Old/JG PDBs not supported/tested yet");
 			}
 
-			ctx.MsfReader = new MSFReader(this.stream, FileType);
 
+			MSFReader msf = new MSFReader(this.stream, FileType);
+			Services.AddService<MSFReader>(msf);
+
+			StreamTableReader streamTable;
 			// init stream table
 			{
-				byte[] streamTable = ctx.MsfReader.StreamTable();
-				ctx.StreamTableReader = new StreamTableReader(ctx, new MemoryStream(streamTable));
+				byte[] streamTableData = msf.StreamTable();
+				streamTable = new StreamTableReader(Services, new MemoryStream(streamTableData));
 			}
+			Services.AddService<StreamTableReader>(streamTable);
 
+			DBIReader dbi;
 			// init DBI
 			{
-				byte[] dbi = ctx.StreamTableReader.GetStream((int)DefaultStreams.DBI);
-				ctx.DbiReader = new DBIReader(ctx, new MemoryStream(dbi));
-				OnDbiInit?.Invoke(ctx.DbiReader);
+				byte[] dbiData = streamTable.GetStream(DefaultStreams.DBI);
+				dbi = new DBIReader(Services, new MemoryStream(dbiData));
+				OnDbiInit?.Invoke(dbi);
 			}
+			Services.AddService<DBIReader>(dbi);
 
+			TPIReader tpi;
 			// init TPI
 			{
-				byte[] tpi = ctx.StreamTableReader.GetStream((int)DefaultStreams.TPI);
-				ctx.TpiReader = new TPIReader(ctx, new MemoryStream(tpi));
-				OnTpiInit?.Invoke(ctx.TpiReader);
+				byte[] tpiData = streamTable.GetStream(DefaultStreams.TPI);
+				tpi = new TPIReader(Services, new MemoryStream(tpiData));
+				OnTpiInit?.Invoke(tpi);
+			}
+			Services.AddService<TPIReader>(tpi);
+
+			HashDataReader tpiHash = null;
+			// init TPIHash
+			if (tpi.Header.Hash.StreamNumber != -1) {
+				byte[] tpiHashData = streamTable.GetStream(tpi.Header.Hash.StreamNumber);
+				tpiHash = new HashDataReader(Services, new MemoryStream(tpiHashData));
+				Services.AddService<HashDataReader>(tpiHash);
 			}
 
-			// init TPIHash
-			if (ctx.TpiReader.Header.Hash.StreamNumber != -1) {
-				ctx.TpiHashReader = new HashDataReader(ctx, new MemoryStream(
-					ctx.StreamTableReader.GetStream(ctx.TpiReader.Header.Hash.StreamNumber))
-				);
-			}
 
 			// init Hasher
-			ctx.Hasher = new HasherV2(ctx);
+			HasherV2 hasher = new HasherV2(Services);
+			Services.AddService<HasherV2>(hasher);
 
+			PdbStreamReader nameMap;
 			// init NameMap
 			{
-				byte[] nameMap = ctx.StreamTableReader.GetStream((int)DefaultStreams.PDB);
-				ctx.PdbStreamReader = new PdbStreamReader(ctx, new MemoryStream(nameMap));
+				byte[] nameMapData = streamTable.GetStream(DefaultStreams.PDB);
+				nameMap = new PdbStreamReader(new MemoryStream(nameMapData));
 			}
+			Services.AddService<PdbStreamReader>(nameMap);
 
+			UdtNameTableReader udtNameTable = null;
 			// init UdtNameMap
 			{
-				byte[] names = ctx.StreamTableReader.GetStreamByName("/names");
-				ctx.UdtNameTableReader = (names == null) ? null : new UdtNameTableReader(ctx, new MemoryStream(names));
+				byte[] namesData = streamTable.GetStreamByName("/names");
+				if (namesData != null) {
+					udtNameTable = new UdtNameTableReader(Services, new MemoryStream(namesData));
+					Services.AddService<UdtNameTableReader>(udtNameTable);
+				}
 			}
 
 #if DEBUG
-			if (ctx.TpiHashReader != null) {
-				foreach (var pair in ctx.TpiHashReader.NameIndexToTypeIndex) {
-					string name = ctx.UdtNameTableReader.GetString(pair.Key);
-					ILeafContainer leaf = ctx.TpiReader.GetTypeByIndex(pair.Value);
+			if (tpiHash != null && udtNameTable != null) {
+				foreach (var pair in tpiHash.NameIndexToTypeIndex) {
+					string name = udtNameTable.GetString(pair.Key);
+					ILeafContainer leaf = tpi.GetTypeByIndex(pair.Value);
 					Console.WriteLine($"=> {name} [NI={pair.Key}] [TI={pair.Value}]");
 					Console.WriteLine(leaf.Data.GetType().Name);
 				}

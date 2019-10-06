@@ -7,9 +7,8 @@
  */
 #endregion
 using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Text;
 
 namespace Smx.PDBSharp.Leaves
 {
@@ -24,7 +23,7 @@ namespace Smx.PDBSharp.Leaves
 			throw new NotImplementedException();
 		}
 
-		public LF_ALIAS(Context ctx, Stream stream) {
+		public LF_ALIAS(IServiceContainer ctx, Stream stream) {
 			TypeDataReader r = new TypeDataReader(ctx, stream);
 			UnderlyingType = r.ReadIndexedTypeLazy();
 			Name = r.ReadCString();

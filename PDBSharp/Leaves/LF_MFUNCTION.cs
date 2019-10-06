@@ -7,9 +7,8 @@
  */
 #endregion
 using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Text;
 
 namespace Smx.PDBSharp.Leaves
 {
@@ -26,7 +25,7 @@ namespace Smx.PDBSharp.Leaves
 
 		public readonly FunctionAttributes Attributes;
 
-		public LF_MFUNCTION(Context pdb, Stream stream) {
+		public LF_MFUNCTION(IServiceContainer pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			ReturnValueType = r.ReadIndexedTypeLazy();

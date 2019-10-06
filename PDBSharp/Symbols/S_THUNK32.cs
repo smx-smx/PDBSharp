@@ -6,14 +6,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using Smx.PDBSharp.Symbols.Structures;
 using Smx.PDBSharp.Thunks;
 using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
@@ -46,7 +42,7 @@ namespace Smx.PDBSharp.Symbols
 
 		public readonly IThunk Thunk;
 
-		public S_THUNK32(Context ctx, IModule mod, Stream stream) {
+		public S_THUNK32(IServiceContainer ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			ParentOffset = r.ReadUInt32();

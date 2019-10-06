@@ -7,22 +7,17 @@
  */
 #endregion
 using Smx.PDBSharp.Symbols;
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
 
 namespace Smx.PDBSharp.Codegen
 {
 	public class ModuleDependencyGraphBuilder
 	{
-		private readonly Context ctx;
 		private readonly IModuleContainer module;
 
 		private readonly IList<SymbolNode> nodes = new List<SymbolNode>();
 
-		public ModuleDependencyGraphBuilder(Context ctx, IModuleContainer module) {
-			this.ctx = ctx;
+		public ModuleDependencyGraphBuilder(IModuleContainer module) {
 			this.module = module;
 		}
 

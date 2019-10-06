@@ -7,9 +7,7 @@
  */
 #endregion
 using Smx.PDBSharp.Leaves;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Smx.PDBSharp.Codegen
 {
@@ -39,7 +37,7 @@ namespace Smx.PDBSharp.Codegen
 					AddDependency(lfEnum.UnderlyingType);
 					break;
 				case LF_ARGLIST lfArgList:
-					foreach(var arg in lfArgList.ArgumentTypes) {
+					foreach (var arg in lfArgList.ArgumentTypes) {
 						AddDependency(arg);
 					}
 					break;
@@ -48,7 +46,7 @@ namespace Smx.PDBSharp.Codegen
 					AddDependency(lfArray.IndexingType);
 					break;
 				case LF_FIELDLIST lfFieldList:
-					foreach(var field in lfFieldList.Fields) {
+					foreach (var field in lfFieldList.Fields) {
 						AddDependency(field);
 					}
 					break;

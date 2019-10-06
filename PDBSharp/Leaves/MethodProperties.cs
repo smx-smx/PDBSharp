@@ -10,11 +10,11 @@ namespace Smx.PDBSharp.Leaves
 {
 	public enum MethodProperties : byte
 	{
-		Vanilla	= 0x00,
+		Vanilla = 0x00,
 		Virtual = 0x01,
-		Static  = 0x02,
-		Friend  = 0x03,
-		Intro   = 0x04,
+		Static = 0x02,
+		Friend = 0x03,
+		Intro = 0x04,
 		PureVirt = 0x05,
 		PureIntro = 0x06
 	}

@@ -6,18 +6,19 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using Smx.PDBSharp.Leaves;
+using System;
+using System.ComponentModel.Design;
+using System.IO;
 
 namespace Smx.PDBSharp
 {
 	public class LazyLeafProvider : ILeafContainer
 	{
+		private readonly TPIReader Tpi;
+
 		private ILeafContainer ReadLeaf() {
-			return ctx.TpiReader.GetTypeByIndex(typeIndex);
+			return Tpi.GetTypeByIndex(typeIndex);
 		}
 
 		public void Write(PDBFile pdb, Stream stream) {
@@ -33,11 +34,11 @@ namespace Smx.PDBSharp
 
 		public ILeaf Data => Leaf?.Data;
 
-		private readonly Context ctx;
 		private readonly uint typeIndex;
 
-		public LazyLeafProvider(Context ctx, uint typeIndex) {
-			this.ctx = ctx;
+		public LazyLeafProvider(IServiceContainer ctx, uint typeIndex) {
+			this.Tpi = ctx.GetService<TPIReader>();
+
 			this.typeIndex = typeIndex;
 			lazy = new Lazy<ILeafContainer>(ReadLeaf);
 		}

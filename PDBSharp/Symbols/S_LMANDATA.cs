@@ -7,16 +7,14 @@
  */
 #endregion
 using Smx.PDBSharp.Symbols.Structures;
-using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Text;
 
 namespace Smx.PDBSharp.Symbols
 {
 	public class S_LMANDATA : DataSym32Base, ISymbol
 	{
-		public S_LMANDATA(Context ctx, IModule mod, Stream stream) : base(ctx, stream) {
+		public S_LMANDATA(IServiceContainer ctx, IModule mod, Stream stream) : base(ctx, stream) {
 		}
 
 		public S_LMANDATA(DataSym32 data) : base(data) {

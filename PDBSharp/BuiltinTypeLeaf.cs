@@ -6,11 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-using Smx.PDBSharp.Leaves;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace Smx.PDBSharp
 {
@@ -25,15 +22,15 @@ namespace Smx.PDBSharp
 		public BuiltinTypeLeaf(UInt32 TypeIndex) {
 			// Remove type mode
 			SpecialType = (SpecialType)(TypeIndex & 0xFF);
-			
+
 			// Retain type mode only
 			TypeMode = (SpecialTypeMode)(TypeIndex & 0xF00);
 
-			if(!Enum.IsDefined(typeof(SpecialType), SpecialType)) {
+			if (!Enum.IsDefined(typeof(SpecialType), SpecialType)) {
 				throw new InvalidDataException($"Unknown SpecialType 0x{SpecialType:X}");
 			}
 
-			if(!Enum.IsDefined(typeof(SpecialTypeMode), TypeMode)) {
+			if (!Enum.IsDefined(typeof(SpecialTypeMode), TypeMode)) {
 				throw new InvalidDataException($"Unknown TypeMode 0x{TypeMode:X}");
 			}
 		}

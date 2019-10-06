@@ -9,7 +9,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace Smx.PDBSharp
 {
@@ -53,7 +52,7 @@ namespace Smx.PDBSharp
 		private readonly Lazy<IEnumerable<FPOData>> lazyFrames;
 
 		private IEnumerable<FPOData> ReadFrames() {
-			while(Stream.Position < Stream.Length) {
+			while (Stream.Position < Stream.Length) {
 				yield return new FPOData(Stream);
 			}
 		}

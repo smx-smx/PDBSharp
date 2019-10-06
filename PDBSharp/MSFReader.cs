@@ -6,14 +6,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp
 {
@@ -53,7 +50,7 @@ namespace Smx.PDBSharp
 		}
 
 		public IEnumerable<byte[]> GetPages(uint numPages) {
-			for(int i = 0; i < numPages; i++) {
+			for (int i = 0; i < numPages; i++) {
 				var pageNum = ReadUInt32();
 				yield return ReadPage(pageNum);
 			}
@@ -77,14 +74,14 @@ namespace Smx.PDBSharp
 			var numStreamTablePages = GetNumPages(hdr.DirectorySize);
 
 			var rdr = new BinaryReader(new MemoryStream(streamTableList));
-			for(int i = 0; i < numStreamTablePages; i++) {
+			for (int i = 0; i < numStreamTablePages; i++) {
 				uint pageNum = rdr.ReadUInt32();
 				yield return ReadPage(pageNum);
 			}
 		}
 
 		private byte[] StreamTableList() {
-			if(streamTableList != null)
+			if (streamTableList != null)
 				return streamTableList;
 
 			streamTableList = GetPages_StreamTableList()
@@ -95,11 +92,11 @@ namespace Smx.PDBSharp
 		}
 
 		public byte[] StreamTable() {
-			if(streamTableList == null) {
+			if (streamTableList == null) {
 				StreamTableList();
 			}
 
-			if(streamTable != null)
+			if (streamTable != null)
 				return streamTable;
 
 			streamTable = GetPages_StreamTable().SelectMany(x => x).ToArray();

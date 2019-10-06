@@ -6,15 +6,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
+using Smx.PDBSharp.Leaves;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using Smx.PDBSharp.Leaves;
-using Smx.PDBSharp.Symbols;
 
 namespace Smx.PDBSharp
 {
@@ -34,8 +31,8 @@ namespace Smx.PDBSharp
 			{ LeafType.LF_REAL128, 16 }
 		});
 
-		protected readonly Context ctx;
-		public TypeDataReader(Context ctx, Stream stream) : base(stream) {
+		protected readonly IServiceContainer ctx;
+		public TypeDataReader(IServiceContainer ctx, Stream stream) : base(stream) {
 			this.ctx = ctx;
 		}
 
@@ -64,7 +61,7 @@ namespace Smx.PDBSharp
 				return null;
 			}
 
-			if(!Enum.IsDefined(typeof(LeafType), leafValue)) {
+			if (!Enum.IsDefined(typeof(LeafType), leafValue)) {
 				throw new InvalidDataException($"Unknown ILeaf type {leafValue} while computing ILeaf data size");
 			}
 
@@ -81,7 +78,7 @@ namespace Smx.PDBSharp
 		private void ConsumePadding() {
 			long remaining = Stream.Length - Stream.Position;
 			long savedPos = Stream.Position;
-			while(remaining-- > 0) {
+			while (remaining-- > 0) {
 				byte b = ReadByte();
 				if (b >= (byte)LeafType.LF_PAD0 && b <= (byte)LeafType.LF_PAD15) {
 					continue;

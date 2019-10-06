@@ -6,22 +6,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using Smx.PDBSharp.Symbols;
 using Smx.PDBSharp.Symbols.Structures;
 using Smx.PDBSharp.Thunks;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp
 {
-	public class SymbolDataReader: TypeDataReader {
+	public class SymbolDataReader : TypeDataReader
+	{
 		protected readonly SymbolHeader Header;
 
 		protected readonly long startOffset;
@@ -29,14 +24,14 @@ namespace Smx.PDBSharp
 
 		public int Remaining => (int)(endOffset - Stream.Position);
 
-		public SymbolDataReader(Context ctx, SymbolHeader header, Stream stream) : base(ctx, stream) {
+		public SymbolDataReader(IServiceContainer ctx, SymbolHeader header, Stream stream) : base(ctx, stream) {
 			startOffset = stream.Position - Marshal.SizeOf<SymbolHeader>();
 			Header = header;
 			endOffset = startOffset + Header.Length;
 			CheckHeader();
 		}
 
-		public SymbolDataReader(Context ctx, Stream stream) : base(ctx, stream) {
+		public SymbolDataReader(IServiceContainer ctx, Stream stream) : base(ctx, stream) {
 			startOffset = stream.Position;
 			Header = ReadHeader();
 			endOffset = startOffset + sizeof(UInt16) + Header.Length;
@@ -55,7 +50,7 @@ namespace Smx.PDBSharp
 			if (offset == 0)
 				return null;
 
-			if(!(mod is CodeViewModuleReader cv)) {
+			if (!(mod is CodeViewModuleReader cv)) {
 				throw new InvalidOperationException();
 			}
 

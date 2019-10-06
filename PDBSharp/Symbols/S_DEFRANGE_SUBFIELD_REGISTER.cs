@@ -6,13 +6,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using Smx.PDBSharp.Symbols.Structures;
+using Smx.PDBSharp.Symbols.Structures;
 using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
@@ -33,7 +30,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly CV_LVAR_ADDR_RANGE Range;
 		public readonly CV_LVAR_ADDR_GAP[] Gaps;
 
-		public S_DEFRANGE_SUBFIELD_REGISTER(Context ctx, IModule mod, Stream stream) {
+		public S_DEFRANGE_SUBFIELD_REGISTER(IServiceContainer ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 			Register = r.ReadUInt16();
 			Attributes = r.ReadFlagsEnum<RangeAttributes>();
@@ -56,7 +53,7 @@ namespace Smx.PDBSharp.Symbols
 			w.WriteEnum<RangeAttributes>(Attributes);
 			w.WriteUInt32(ParentVariableOffset & 0xFFF);
 			Range.Write(w);
-			foreach(CV_LVAR_ADDR_GAP gap in Gaps) {
+			foreach (CV_LVAR_ADDR_GAP gap in Gaps) {
 				gap.Write(w);
 			}
 

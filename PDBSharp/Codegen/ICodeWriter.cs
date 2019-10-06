@@ -6,10 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-using System;
 using System.CodeDom.Compiler;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Smx.PDBSharp.Codegen
 {

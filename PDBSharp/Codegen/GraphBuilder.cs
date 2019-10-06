@@ -6,27 +6,26 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
-using System.Text;
 
 namespace Smx.PDBSharp.Codegen
 {
 	public class GraphBuilder
 	{
-		private readonly Context ctx;
+		private readonly DBIReader Dbi;
 
-		public GraphBuilder(Context ctx) {
-			this.ctx = ctx;
+		public GraphBuilder(IServiceContainer ctx) {
+			this.Dbi = ctx.GetService<DBIReader>();
 		}
 
 		private IEnumerable<SymbolNode> BuildGraph(IModuleContainer module) {
-			return new ModuleDependencyGraphBuilder(ctx, module).BuildTree();
+			return new ModuleDependencyGraphBuilder(module).BuildTree();
 		}
 
 		public IEnumerable<SymbolNode> Build() {
-			IEnumerable<SymbolNode> tree = ctx.DbiReader.Modules
+			IEnumerable<SymbolNode> tree = Dbi.Modules
 				.Select(mod => BuildGraph(mod))
 				//skip modules without graph
 				.Where(graph => graph != null)

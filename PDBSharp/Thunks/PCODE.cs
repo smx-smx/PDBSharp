@@ -6,17 +6,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using Smx.PDBSharp.Symbols.Structures;
+using System.ComponentModel.Design;
+using System.IO;
 
 namespace Smx.PDBSharp.Thunks
 {
 	public class PCODE : SymbolDataReader, IThunk
 	{
-		public PCODE(Context ctx, SymbolHeader header, Stream stream) : base(ctx, header, stream) {
+		public PCODE(IServiceContainer ctx, SymbolHeader header, Stream stream) : base(ctx, header, stream) {
 		}
 
 		public void Write(SymbolDataWriter w) {

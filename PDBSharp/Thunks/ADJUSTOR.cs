@@ -6,15 +6,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using Smx.PDBSharp.Symbols;
 using Smx.PDBSharp.Symbols.Structures;
 using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Thunks
 {
@@ -23,7 +18,7 @@ namespace Smx.PDBSharp.Thunks
 		public readonly UInt16 Delta;
 		public readonly string Name;
 
-		public ADJUSTOR(Context ctx, SymbolHeader symHeader, Stream stream) : base(ctx, symHeader, stream) {
+		public ADJUSTOR(IServiceContainer ctx, SymbolHeader symHeader, Stream stream) : base(ctx, symHeader, stream) {
 			Delta = ReadUInt16();
 			Name = ReadSymbolString();
 		}

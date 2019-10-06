@@ -8,8 +8,8 @@
 #endregion
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Text;
 
 namespace Smx.PDBSharp.Leaves
 {
@@ -24,7 +24,7 @@ namespace Smx.PDBSharp.Leaves
 		public readonly UInt32 NamesSize;
 		public readonly string[] Names;
 
-		public LF_VFTABLE(Context pdb, Stream stream) {
+		public LF_VFTABLE(IServiceContainer pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			Type = r.ReadIndexedTypeLazy();
@@ -36,7 +36,7 @@ namespace Smx.PDBSharp.Leaves
 
 			uint read = 0;
 			long savedPos = stream.Position;
-			while(read < NamesSize) {
+			while (read < NamesSize) {
 				lstNames.Add(r.ReadCString());
 				read += (uint)(stream.Position - savedPos);
 				savedPos = stream.Position;
@@ -50,7 +50,7 @@ namespace Smx.PDBSharp.Leaves
 			w.WriteIndexedType(BaseVfTable);
 			w.WriteUInt32(OffsetInObjectLayout);
 			w.WriteUInt32(NamesSize);
-			foreach(string name in Names) {
+			foreach (string name in Names) {
 				w.WriteCString(name);
 			}
 			w.WriteLeafHeader();

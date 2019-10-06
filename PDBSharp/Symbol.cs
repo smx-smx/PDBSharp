@@ -7,9 +7,6 @@
  */
 #endregion
 using Smx.PDBSharp.Symbols;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Smx.PDBSharp
 {

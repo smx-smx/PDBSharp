@@ -12,8 +12,6 @@ using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 
 namespace Smx.PDBSharp.Codegen
 {
@@ -67,7 +65,7 @@ namespace Smx.PDBSharp.Codegen
 				case LeafType.LF_ARGLIST:
 					LF_ARGLIST lfArgList = leafc.Data as LF_ARGLIST;
 					itw.Write('(');
-					for(int i=0; i<lfArgList.NumberOfArguments; i++) {
+					for (int i = 0; i < lfArgList.NumberOfArguments; i++) {
 						WriteType(lfArgList.ArgumentTypes[i]);
 						if (lfArgList.ArgumentTypes[i].Data is BuiltinTypeLeaf bt &&
 							i + 1 == lfArgList.NumberOfArguments &&
@@ -78,7 +76,7 @@ namespace Smx.PDBSharp.Codegen
 						} else {
 							itw.Write($" a{i + 1}");
 						}
-						if(i + 1 < lfArgList.NumberOfArguments) {
+						if (i + 1 < lfArgList.NumberOfArguments) {
 							itw.Write(", ");
 						}
 					}
@@ -150,7 +148,7 @@ namespace Smx.PDBSharp.Codegen
 
 		public void Write(TextWriter writer) {
 			this.itw = new IndentedTextWriter(writer);
-			foreach(var sym in tree) {
+			foreach (var sym in tree) {
 				WriteSymbol(sym);
 			}
 		}

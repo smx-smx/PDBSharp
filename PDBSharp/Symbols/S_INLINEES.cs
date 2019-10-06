@@ -7,16 +7,14 @@
  */
 #endregion
 using Smx.PDBSharp.Symbols.Structures;
-using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Text;
 
 namespace Smx.PDBSharp.Symbols
 {
 	public class S_INLINEES : FUNCTIONLIST, ISymbol
 	{
-		public S_INLINEES(Context ctx, IModule mod, Stream stream) : base(ctx, mod, stream) {
+		public S_INLINEES(IServiceContainer ctx, IModule mod, Stream stream) : base(ctx, mod, stream) {
 		}
 	}
 }

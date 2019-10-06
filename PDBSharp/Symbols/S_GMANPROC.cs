@@ -7,16 +7,14 @@
  */
 #endregion
 using Smx.PDBSharp.Symbols.Structures;
-using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Text;
 
 namespace Smx.PDBSharp.Symbols
 {
 	public class S_GMANPROC : ManProcSymBase, ISymbol
 	{
-		public S_GMANPROC(Context ctx, IModule mod, Stream stream) : base(ctx, mod, stream) {
+		public S_GMANPROC(IServiceContainer ctx, IModule mod, Stream stream) : base(ctx, mod, stream) {
 		}
 
 		public S_GMANPROC(ManProcSym data) : base(data) {

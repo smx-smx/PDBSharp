@@ -7,13 +7,12 @@
  */
 #endregion
 using C5;
-using Smx.PDBSharp.Leaves;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Smx.PDBSharp
 {
@@ -27,17 +26,14 @@ namespace Smx.PDBSharp
 	{
 		public readonly TreeDictionary<UInt32, UInt32> TypeIndexToOffset = new TreeDictionary<uint, uint>();
 		public Dictionary<UInt32, UInt32> HashValueToTypeIndex = new Dictionary<uint, uint>();
-		public Dictionary<uint, uint> NameIndexToTypeIndex { get; private set;  }
+		public Dictionary<uint, uint> NameIndexToTypeIndex { get; private set; }
 
 
 		public readonly UInt32[] RecordHashValues;
 
-		private readonly Context ctx;
-
-		public HashDataReader(Context ctx, Stream stream) : base(stream) {
-			this.ctx = ctx;
-
-			TPIHash hash = ctx.TpiReader.Header.Hash;
+		public HashDataReader(IServiceContainer ctx, Stream stream) : base(stream) {
+			TPIReader tpi = ctx.GetService<TPIReader>();
+			TPIHash hash = tpi.Header.Hash;
 
 			switch (hash.HashKeySize) {
 				case sizeof(UInt16):

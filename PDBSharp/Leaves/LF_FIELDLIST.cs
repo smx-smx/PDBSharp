@@ -8,9 +8,8 @@
 #endregion
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Linq;
-using System.Text;
 
 namespace Smx.PDBSharp.Leaves
 {
@@ -19,8 +18,8 @@ namespace Smx.PDBSharp.Leaves
 		private readonly Lazy<IEnumerable<LeafContainerBase>> lazyFields;
 		public IEnumerable<LeafContainerBase> Fields => lazyFields.Value;
 
-		private IEnumerable<LeafContainerBase> ReadFields(Context pdb, Stream stream) {
-			while(stream.Position + sizeof(UInt16) < stream.Length) {
+		private IEnumerable<LeafContainerBase> ReadFields(IServiceContainer pdb, Stream stream) {
+			while (stream.Position + sizeof(UInt16) < stream.Length) {
 				// We have to read the type directly to increase Stream.Position
 				LeafContainerBase leaf = new TypeDataReader(pdb, stream).ReadTypeDirect(hasSize: false);
 				if (leaf == null)
@@ -31,15 +30,15 @@ namespace Smx.PDBSharp.Leaves
 
 		public void Write(PDBFile pdb, Stream stream) {
 			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_FIELDLIST);
-			
-			foreach(LeafContainerBase lf in Fields) {
+
+			foreach (LeafContainerBase lf in Fields) {
 				lf.Write(pdb, stream);
 			}
 
 			w.WriteLeafHeader(hasSize: false);
 		}
 
-		public LF_FIELDLIST(Context pdb, Stream stream) {
+		public LF_FIELDLIST(IServiceContainer pdb, Stream stream) {
 			lazyFields = new Lazy<IEnumerable<LeafContainerBase>>(() => {
 				return ReadFields(pdb, stream);
 			});

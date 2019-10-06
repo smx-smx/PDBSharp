@@ -6,15 +6,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-using Smx.PDBSharp.Symbols;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp
 {
@@ -67,8 +63,6 @@ namespace Smx.PDBSharp
 	{
 		public readonly DBIHeader Header;
 
-		private readonly Context ctx;
-
 		private readonly Lazy<IEnumerable<IModuleContainer>> lazyModuleContainers;
 
 		public readonly DebugReader DebugInfo;
@@ -77,10 +71,14 @@ namespace Smx.PDBSharp
 		public readonly ECReader EC;
 		public readonly TypeServerMapReader TypeServerMap;
 
+		private readonly StreamTableReader StreamTable;
+
 		public IEnumerable<IModuleContainer> Modules => lazyModuleContainers.Value;
 
 		public event OnModuleDataDelegate OnModuleData;
 		public event OnModuleReaderInitDelegate OnModuleReaderInit;
+
+		private readonly IServiceContainer ctx;
 
 		/**
 		 * Layout of the DBI stream
@@ -93,23 +91,24 @@ namespace Smx.PDBSharp
 		 * -> EcSubstream
 		 * -> DebugHeader
 		 **/
-		public DBIReader(Context ctx, Stream stream) : base(stream) {
+		public DBIReader(IServiceContainer ctx, Stream stream) : base(stream) {
 			this.ctx = ctx;
 			if (stream.Length == 0)
 				return;
 
-			if(stream.Length < Marshal.SizeOf<DBIHeader>()) {
+			if (stream.Length < Marshal.SizeOf<DBIHeader>()) {
 				throw new InvalidDataException();
 			}
 
+			this.StreamTable = ctx.GetService<StreamTableReader>();
 
 			Header = ReadStruct<DBIHeader>();
 
-			if(Header.Signature != unchecked((uint)-1) || !Enum.IsDefined(typeof(DBIVersion), (uint)Header.Version)) {
+			if (Header.Signature != unchecked((uint)-1) || !Enum.IsDefined(typeof(DBIVersion), (uint)Header.Version)) {
 				throw new InvalidDataException();
 			}
 
-			uint nStreams = ctx.StreamTableReader.NumStreams;
+			uint nStreams = StreamTable.NumStreams;
 			if (
 				Header.GsSymbolsStreamNumber >= nStreams ||
 				Header.PsSymbolsStreamNumber >= nStreams ||
@@ -121,7 +120,7 @@ namespace Smx.PDBSharp
 			lazyModuleContainers = new Lazy<IEnumerable<IModuleContainer>>(ReadModules);
 			stream.Position += Header.ModuleListSize;
 
-			if(Header.SectionContributionSize > 0) {
+			if (Header.SectionContributionSize > 0) {
 				SectionContribs = PerformAt(stream.Position, () => new SectionContribsReader(stream));
 			}
 			stream.Position += Header.SectionContributionSize;
@@ -129,7 +128,7 @@ namespace Smx.PDBSharp
 			stream.Position += Header.SectionMapSize;
 			stream.Position += Header.FileInfoSize;
 
-			if(Header.TypeServerMapSize > 0) {
+			if (Header.TypeServerMapSize > 0) {
 				TypeServerMap = PerformAt(stream.Position, () => new TypeServerMapReader(stream));
 			}
 			stream.Position += Header.TypeServerMapSize;
@@ -147,12 +146,14 @@ namespace Smx.PDBSharp
 
 		private IEnumerable<IModuleContainer> ReadModules() {
 			Stream.Position = Marshal.SizeOf<DBIHeader>();
-			ctx.ModuleListReader = new ModuleListReader(ctx, Stream, Header.ModuleListSize);
 
-			IEnumerable<ModuleInfo> moduleInfoList = ctx.ModuleListReader.Modules;
+			ModuleListReader rdr = new ModuleListReader(ctx, Stream, Header.ModuleListSize);
+			ctx.AddService<ModuleListReader>(rdr);
+
+			IEnumerable<ModuleInfo> moduleInfoList = rdr.Modules;
 			foreach (ModuleInfo mod in moduleInfoList) {
 				LazyModuleProvider provider = new LazyModuleProvider(ctx, mod);
-				
+
 				if (OnModuleReaderInit != null) {
 					provider.OnModuleReaderInit += OnModuleReaderInit;
 				}

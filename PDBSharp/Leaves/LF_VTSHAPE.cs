@@ -7,10 +7,8 @@
  */
 #endregion
 using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Linq;
-using System.Text;
 
 namespace Smx.PDBSharp.Leaves
 {
@@ -23,7 +21,7 @@ namespace Smx.PDBSharp.Leaves
 
 		public readonly VTableShapeDescriptor[] Descriptors;
 
-		public LF_VTSHAPE(Context pdb, Stream stream) {
+		public LF_VTSHAPE(IServiceContainer pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			NumberOfEntries = r.ReadUInt16();
@@ -34,9 +32,9 @@ namespace Smx.PDBSharp.Leaves
 
 			Descriptors = new VTableShapeDescriptor[NumberOfEntries];
 
-			for(int i=0; i<NumberOfEntries; i++) {
-				byte data = descriptorsData[i/2];
-				switch(i % 2) {
+			for (int i = 0; i < NumberOfEntries; i++) {
+				byte data = descriptorsData[i / 2];
+				switch (i % 2) {
 					case 0:
 						data &= 0xF;
 						break;
@@ -55,10 +53,10 @@ namespace Smx.PDBSharp.Leaves
 
 			byte data = 0x00;
 
-			for (int i=0; i<NumberOfEntries; i++) {
+			for (int i = 0; i < NumberOfEntries; i++) {
 				byte descr = (byte)Descriptors[i];
 
-				switch(i % 2) {
+				switch (i % 2) {
 					case 0:
 						data = (byte)(descr & 0xF);
 						break;

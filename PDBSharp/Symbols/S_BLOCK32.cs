@@ -6,13 +6,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-using Smx.PDBSharp.Symbols.Structures;
 using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
@@ -37,7 +33,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt16 Segment;
 		public readonly string Name;
 
-		public S_BLOCK32(Context ctx, IModule mod, Stream stream) {
+		public S_BLOCK32(IServiceContainer ctx, IModule mod, Stream stream) {
 			SymbolDataReader r = new SymbolDataReader(ctx, stream);
 			ParentOffset = r.ReadUInt32();
 			Parent = r.ReadSymbol(mod, ParentOffset);
@@ -49,7 +45,7 @@ namespace Smx.PDBSharp.Symbols
 			Name = r.ReadSymbolString();
 		}
 
-		public S_BLOCK32(BlockSym32 data){
+		public S_BLOCK32(BlockSym32 data) {
 			ParentOffset = data.Parent;
 			End = data.End;
 			Length = data.Length;

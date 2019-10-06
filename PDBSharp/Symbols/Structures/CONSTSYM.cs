@@ -6,8 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-using Smx.PDBSharp.Leaves;
-using System;
+using System.ComponentModel.Design;
 using System.IO;
 
 namespace Smx.PDBSharp.Symbols.Structures
@@ -25,7 +24,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public readonly ILeafContainer Value;
 		public readonly string Name;
 
-		public ConstSymBase(Context ctx, Stream stream) {
+		public ConstSymBase(IServiceContainer ctx, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			Type = r.ReadIndexedTypeLazy();

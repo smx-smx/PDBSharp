@@ -7,9 +7,8 @@
  */
 #endregion
 using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Text;
 
 namespace Smx.PDBSharp.Leaves
 {
@@ -22,10 +21,10 @@ namespace Smx.PDBSharp.Leaves
 		public PointerAttributes(UInt32 attrs) {
 			this.attrs = attrs;
 
-			if(!Enum.IsDefined(typeof(PointerType), this.PointerType)){
+			if (!Enum.IsDefined(typeof(PointerType), this.PointerType)) {
 				throw new InvalidDataException();
 			}
-			if(!Enum.IsDefined(typeof(PointerMode), this.PointerMode)) {
+			if (!Enum.IsDefined(typeof(PointerMode), this.PointerMode)) {
 				throw new InvalidDataException();
 			}
 		}
@@ -44,7 +43,7 @@ namespace Smx.PDBSharp.Leaves
 		public readonly ILeafContainer UnderlyingType;
 		public readonly PointerAttributes Attributes;
 
-		public LF_POINTER(Context pdb, Stream stream) {
+		public LF_POINTER(IServiceContainer pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			UnderlyingType = r.ReadIndexedTypeLazy();

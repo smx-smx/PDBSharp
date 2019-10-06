@@ -6,13 +6,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using Smx.PDBSharp.Symbols.Structures;
+using Smx.PDBSharp.Symbols.Structures;
 using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
@@ -29,7 +26,7 @@ namespace Smx.PDBSharp.Symbols
 		public CV_LVAR_ADDR_RANGE Range;
 		public CV_LVAR_ADDR_GAP[] Gaps;
 
-		public S_DEFRANGE_FRAMEPOINTER_REL(Context ctx, IModule mod, Stream stream) {
+		public S_DEFRANGE_FRAMEPOINTER_REL(IServiceContainer ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 			FramePointerOffset = r.ReadUInt32();
 			Range = new CV_LVAR_ADDR_RANGE(stream);

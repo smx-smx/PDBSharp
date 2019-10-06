@@ -8,7 +8,7 @@
 #endregion
 using DamienG.Security.Cryptography;
 using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
 using System.Text;
 
@@ -16,9 +16,10 @@ namespace Smx.PDBSharp
 {
 	public class HasherV2
 	{
-		private readonly Context ctx;
-		public HasherV2(Context ctx) {
-			this.ctx = ctx;
+		private readonly TPIReader Tpi;
+
+		public HasherV2(IServiceContainer ctx) {
+			this.Tpi = ctx.GetService<TPIReader>();
 		}
 
 		private static UInt32 HashUlong(uint number) {
@@ -31,12 +32,12 @@ namespace Smx.PDBSharp
 
 		public UInt32 HashTypeIndex(uint typeIndex) {
 			byte[] data = BitConverter.GetBytes(typeIndex);
-			return HashData(data, ctx.TpiReader.Header.Hash.NumHashBuckets);
+			return HashData(data, Tpi.Header.Hash.NumHashBuckets);
 		}
 
 		public UInt32 HashString(string str) {
 			byte[] data = Encoding.ASCII.GetBytes(str);
-			return HashData(data, ctx.TpiReader.Header.Hash.NumHashBuckets);
+			return HashData(data, Tpi.Header.Hash.NumHashBuckets);
 		}
 
 		public static UInt32 HashData(byte[] data, uint modulo) {
@@ -51,7 +52,7 @@ namespace Smx.PDBSharp
 					hash ^= (hash >> 6);
 				}
 
-				while(remaining > 0) {
+				while (remaining > 0) {
 					remaining--;
 					hash += br.ReadByte();
 					hash += (hash << 10);

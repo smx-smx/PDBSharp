@@ -9,8 +9,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Linq;
 
 namespace Smx.PDBSharp
 {
@@ -50,10 +48,10 @@ namespace Smx.PDBSharp
 			T[] arr = new T[numElements];
 
 			int tSize = Marshal.SizeOf<T>();
-			for(int i=0; i<numElements; i++) {
+			for (int i = 0; i < numElements; i++) {
 				unsafe {
-					fixed(byte *data = r.ReadBytes(tSize)) {
-						T element = *(T *)data;
+					fixed (byte* data = r.ReadBytes(tSize)) {
+						T element = *(T*)data;
 						arr.SetValue(element, i);
 					}
 				}
@@ -64,8 +62,7 @@ namespace Smx.PDBSharp
 
 		public static Dictionary<Tkey, Tval> ReadMap<Tkey, Tval>(ReaderBase r)
 			where Tkey : unmanaged
-			where Tval : unmanaged
-		{
+			where Tval : unmanaged {
 			// sum of bitsizes of each member
 			uint cardinality = r.ReadUInt32();
 			int numElements = r.ReadInt32();
@@ -77,14 +74,14 @@ namespace Smx.PDBSharp
 			int valueSize = Marshal.SizeOf<Tval>();
 
 			Dictionary<Tkey, Tval> map = new Dictionary<Tkey, Tval>(numElements);
-			
-			for (int i=0; i<numElements; i++) {
+
+			for (int i = 0; i < numElements; i++) {
 				if (!available.Contains(i)) {
 					continue;
 				}
 				unsafe {
-					fixed(byte *pKey = r.ReadBytes(keySize))
-					fixed(byte *pVal = r.ReadBytes(valueSize)) {
+					fixed (byte* pKey = r.ReadBytes(keySize))
+					fixed (byte* pVal = r.ReadBytes(valueSize)) {
 						Tkey key = *(Tkey*)pKey;
 						Tval val = *(Tval*)pVal;
 						map.Add(key, val);

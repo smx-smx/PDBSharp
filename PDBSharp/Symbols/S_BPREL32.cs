@@ -7,11 +7,8 @@
  */
 #endregion
 using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Text;
-using Smx.PDBSharp.Leaves;
-using Smx.PDBSharp.Symbols.Structures;
 
 namespace Smx.PDBSharp.Symbols
 {
@@ -27,8 +24,8 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt32 Offset;
 		public readonly ILeafContainer Type;
 		public readonly string Name;
-	
-		public S_BPREL32(Context ctx, IModule mod, Stream stream) {
+
+		public S_BPREL32(IServiceContainer ctx, IModule mod, Stream stream) {
 			SymbolDataReader r = new SymbolDataReader(ctx, stream);
 			Offset = r.ReadUInt32();
 			Type = r.ReadIndexedTypeLazy();

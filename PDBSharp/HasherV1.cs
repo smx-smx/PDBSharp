@@ -7,17 +7,13 @@
  */
 #endregion
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace Smx.PDBSharp
 {
 	public class HasherV1
 	{
-		public readonly Context ctx;
-		public HasherV1(Context ctx) {
-			this.ctx = ctx;
+		public HasherV1() {
 		}
 
 		private const uint LOWER_MASK = 0x20202020;
@@ -32,11 +28,11 @@ namespace Smx.PDBSharp
 					hash ^= br.ReadUInt32();
 				}
 
-				if((data.Length & 2) != 0) {
+				if ((data.Length & 2) != 0) {
 					hash ^= br.ReadUInt16();
 				}
 
-				if((data.Length & 1) != 0) {
+				if ((data.Length & 1) != 0) {
 					hash ^= br.ReadByte();
 				}
 

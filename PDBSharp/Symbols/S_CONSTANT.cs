@@ -7,16 +7,14 @@
  */
 #endregion
 using Smx.PDBSharp.Symbols.Structures;
-using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Text;
 
 namespace Smx.PDBSharp.Symbols
 {
 	public class S_CONSTANT : ConstSymBase, ISymbol
 	{
-		public S_CONSTANT(Context ctx, IModule mod, Stream stream) : base(ctx, stream) {
+		public S_CONSTANT(IServiceContainer ctx, IModule mod, Stream stream) : base(ctx, stream) {
 		}
 
 		public S_CONSTANT(ConstSym data) : base(data) {

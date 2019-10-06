@@ -8,11 +8,8 @@
 #endregion
 using Smx.PDBSharp.Symbols.Structures;
 using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
@@ -71,7 +68,7 @@ namespace Smx.PDBSharp.Symbols
 		/// </summary>
 		public readonly UInt16 TargetSection;
 
-		public S_TRAMPOLINE(Context ctx, IModule mod, Stream stream) {
+		public S_TRAMPOLINE(IServiceContainer ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			TrampolineType = r.ReadEnum<TrampolineType>();

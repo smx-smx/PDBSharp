@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -88,11 +87,11 @@ namespace Smx.PDBSharp
 		}
 
 		public void WritePages(Dictionary<uint, byte[]> pages) {
-			foreach(var pageNum in pages.Keys) { 
+			foreach (var pageNum in pages.Keys) {
 				WriteUInt32(pageNum);
 			}
 
-			foreach(var page in pages) { 
+			foreach (var page in pages) {
 				WritePage(page.Key, page.Value);
 			}
 		}

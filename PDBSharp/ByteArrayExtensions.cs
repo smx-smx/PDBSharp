@@ -7,10 +7,7 @@
  */
 #endregion
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp
 {
@@ -29,7 +26,7 @@ namespace Smx.PDBSharp
 			StringBuilder sb = new StringBuilder(max);
 
 			int i = 0, j = 0, octets = 0;
-			while(i<bytes.Length) {
+			while (i < bytes.Length) {
 				int offset = i & 15;
 				if (offset == 0) {
 					sb.AppendFormat("{0:X8}   ", i);
@@ -37,21 +34,21 @@ namespace Smx.PDBSharp
 
 				sb.AppendFormat("{0:X2} ", bytes[i++]);
 
-				if(i > 0 && (i & 7) == 0) {
+				if (i > 0 && (i & 7) == 0) {
 					if (++octets == 2)
 						sb.Append("  ");
 					else
 						sb.Append(' ');
 				}
 
-				if(octets == 2 || i == bytes.Length) {
+				if (octets == 2 || i == bytes.Length) {
 					int ws = sb.Length % ROW_SIZE;
-					if(ws < ROW_PRESIZE) {
+					if (ws < ROW_PRESIZE) {
 						sb.Append(new string(' ', ROW_PRESIZE - ws));
 					}
 
 					// go back to saved pos, and print the bytes content
-					for(int k=j; k<i; k++) {
+					for (int k = j; k < i; k++) {
 						if (bytes[k] < 0x20)
 							sb.Append('.');
 						else

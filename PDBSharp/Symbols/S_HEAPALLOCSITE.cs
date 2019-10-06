@@ -6,11 +6,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-using Smx.PDBSharp.Leaves;
 using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Text;
 
 namespace Smx.PDBSharp.Symbols
 {
@@ -29,7 +27,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt16 HeapAllocationInstructionSize;
 		public readonly ILeafContainer FunctionSignature;
 
-		public S_HEAPALLOCSITE(Context ctx, IModule mod, Stream stream) {
+		public S_HEAPALLOCSITE(IServiceContainer ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			CallSiteOffset = r.ReadUInt32();

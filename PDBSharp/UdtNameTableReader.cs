@@ -9,9 +9,9 @@
 using Smx.PDBSharp.Leaves;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace Smx.PDBSharp
 {
@@ -37,18 +37,18 @@ namespace Smx.PDBSharp
 		private readonly Dictionary<string, uint> String_NameIndex = new Dictionary<string, uint>();
 		private readonly Dictionary<uint, string> NameIndex_String = new Dictionary<uint, string>();
 
-		private readonly Context ctx;
+		private readonly TPIReader Tpi;
 
 		public readonly Dictionary<uint, uint> NameIndex_TypeIndex = new Dictionary<uint, uint>();
 
 		//$TODO(work in progress): fix the NI -> TI mapping
 		private void BuildTypeMap() {
-			uint minTi = ctx.TpiReader.Header.MinTypeIndex;
-			uint maxTi = minTi + ctx.TpiReader.Header.MaxTypeIndex - 1;
+			uint minTi = Tpi.Header.MinTypeIndex;
+			uint maxTi = minTi + Tpi.Header.MaxTypeIndex - 1;
 
 			for (uint ti = minTi; ti <= maxTi; ti++) {
-				ILeafContainer leafC = ctx.TpiReader.GetTypeByIndex(ti);
-				if(leafC == null || !(leafC.Data is LeafBase leaf)) {
+				ILeafContainer leafC = Tpi.GetTypeByIndex(ti);
+				if (leafC == null || !(leafC.Data is LeafBase leaf)) {
 					continue;
 				}
 
@@ -76,7 +76,7 @@ namespace Smx.PDBSharp
 				return null;
 			}
 
-			if(NameIndex_String.TryGetValue(nameIndex, out string cachedString)) {
+			if (NameIndex_String.TryGetValue(nameIndex, out string cachedString)) {
 				return cachedString;
 			}
 
@@ -95,7 +95,7 @@ namespace Smx.PDBSharp
 			if (!NameIndex_TypeIndex.TryGetValue(nameIndex, out uint typeIndex))
 				return null;
 
-			return ctx.TpiReader.GetTypeByIndex(typeIndex);
+			return Tpi.GetTypeByIndex(typeIndex);
 		}
 
 		public bool GetIndex(string str, out uint index) {
@@ -127,11 +127,11 @@ namespace Smx.PDBSharp
 			return true;
 		}
 
-		public UdtNameTableReader(Context ctx, Stream stream) : base(stream) {
-			this.ctx = ctx;
+		public UdtNameTableReader(IServiceContainer ctx, Stream stream) : base(stream) {
+			this.Tpi = ctx.GetService<TPIReader>();
 
 			Magic = ReadUInt32();
-			if(Magic != MAGIC) {
+			if (Magic != MAGIC) {
 				throw new InvalidDataException();
 			}
 

@@ -6,13 +6,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using Smx.PDBSharp.Symbols.Structures;
 using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
@@ -27,7 +23,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt32 Signature;
 		public readonly string Name;
 
-		public S_OBJNAME(Context ctx, IModule mod, Stream stream) {
+		public S_OBJNAME(IServiceContainer ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			Signature = r.ReadUInt32();

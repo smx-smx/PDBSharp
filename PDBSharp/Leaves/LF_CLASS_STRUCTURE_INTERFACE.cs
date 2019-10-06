@@ -7,9 +7,8 @@
  */
 #endregion
 using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Text;
 
 namespace Smx.PDBSharp.Leaves
 {
@@ -56,7 +55,7 @@ namespace Smx.PDBSharp.Leaves
 			}
 		}
 
-		public LF_CLASS_STRUCTURE_INTERFACE(Context pdb, Stream stream) {
+		public LF_CLASS_STRUCTURE_INTERFACE(IServiceContainer pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			NumberOfElements = r.ReadUInt16();
@@ -66,7 +65,7 @@ namespace Smx.PDBSharp.Leaves
 			VShapeTableType = r.ReadIndexedTypeLazy();
 
 			StructSize = r.ReadVaryingType(out uint dataSize);
-	
+
 			Name = r.ReadCString();
 		}
 

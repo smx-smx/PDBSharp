@@ -34,7 +34,7 @@ namespace Smx.PDBSharp
 		}
 
 		public void WriteVaryingType(ILeafContainer leaf) {
-			if((ushort)leaf.Type < (ushort)LeafType.LF_NUMERIC) {
+			if ((ushort)leaf.Type < (ushort)LeafType.LF_NUMERIC) {
 				throw new NotImplementedException();
 			}
 

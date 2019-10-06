@@ -6,13 +6,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using Smx.PDBSharp.Symbols.Structures;
-using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
@@ -21,7 +17,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly string[] Data;
 		public readonly byte Flags;
 
-		public S_ENVBLOCK(Context ctx, IModule mod, Stream stream) {
+		public S_ENVBLOCK(IServiceContainer ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			Flags = r.ReadByte(); //fEC -> reserved (1 bit)
@@ -45,7 +41,7 @@ namespace Smx.PDBSharp.Symbols
 		public void Write(PDBFile pdb, Stream stream) {
 			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_ENVBLOCK);
 			w.WriteByte(Flags);
-			foreach(string str in Data) {
+			foreach (string str in Data) {
 				w.WriteSymbolString(str);
 			}
 

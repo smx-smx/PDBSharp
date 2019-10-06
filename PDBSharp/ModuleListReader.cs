@@ -8,13 +8,8 @@
 #endregion
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using Smx.PDBSharp.Symbols;
 
 namespace Smx.PDBSharp
 {
@@ -24,7 +19,8 @@ namespace Smx.PDBSharp
 		int Size { get; }
 	}
 
-	public class SectionContrib : SectionContrib40 {
+	public class SectionContrib : SectionContrib40
+	{
 		public readonly UInt32 DataCrc;
 		public readonly UInt32 RelocCrc;
 
@@ -43,7 +39,7 @@ namespace Smx.PDBSharp
 		public const int SIZE = SectionContrib.SIZE + 4;
 
 		public SectionContrib2(Stream stream) : base(stream) {
-			
+
 		}
 	}
 
@@ -60,11 +56,11 @@ namespace Smx.PDBSharp
 		public SectionContrib40(Stream stream) : base(stream) {
 			SectionIndex = ReadUInt16();
 			ReadUInt16();
-			
+
 			Offset = ReadUInt32();
 			Size = ReadUInt32();
 			Characteristics = ReadUInt32();
-			
+
 			ModuleIndex = ReadUInt16();
 			ReadUInt16();
 		}
@@ -107,7 +103,8 @@ namespace Smx.PDBSharp
 
 		//////////////////////////////
 
-		private readonly Context ctx;
+		private readonly ECReader EC;
+
 		public const int SIZE = 38 + SectionContrib.SIZE;
 		public int Size => SIZE + ModuleName.Length + ObjectFileName.Length;
 
@@ -115,11 +112,12 @@ namespace Smx.PDBSharp
 		public string PDBFileName => GetEcString(ECInfo.PdbFileNameIndex);
 
 		private string GetEcString(uint nameIndex) {
-			return ctx.DbiReader.EC.NameTable.GetString(nameIndex);
+			return EC.NameTable.GetString(nameIndex);
 		}
 
-		public ModuleInfo(Context ctx, Stream stream) : base(stream) {
-			this.ctx = ctx;
+		public ModuleInfo(IServiceContainer ctx, Stream stream) : base(stream) {
+			DBIReader dbi = ctx.GetService<DBIReader>();
+			this.EC = dbi.EC;
 
 			long modiStartOffset = stream.Position;
 
@@ -154,9 +152,9 @@ namespace Smx.PDBSharp
 
 		private long lastPosition;
 
-		private readonly Context ctx;
+		private readonly IServiceContainer ctx;
 
-		public ModuleListReader(Context ctx, Stream stream, uint moduleListSize) : base(stream) {
+		public ModuleListReader(IServiceContainer ctx, Stream stream, uint moduleListSize) : base(stream) {
 			this.ctx = ctx;
 
 			listStartOffset = stream.Position;

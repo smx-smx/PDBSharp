@@ -7,9 +7,8 @@
  */
 #endregion
 using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Text;
 
 namespace Smx.PDBSharp.Symbols
 {
@@ -21,7 +20,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly ILeafContainer Inlinee;
 		public readonly byte[] BinaryAnnotations;
 
-		public S_INLINESITE(Context ctx, IModule mod, Stream stream) {
+		public S_INLINESITE(IServiceContainer ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 			InlinerParentOffset = r.ReadUInt32();
 			Inliner = r.ReadSymbol(mod, InlinerParentOffset);

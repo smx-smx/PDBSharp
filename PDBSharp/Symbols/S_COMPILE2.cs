@@ -6,13 +6,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using Smx.PDBSharp.Symbols.Structures;
+using Smx.PDBSharp.Symbols.Structures;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
@@ -43,7 +41,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly string VersionString;
 		public readonly string[] OptionalData;
 
-		public S_COMPILE2(Context ctx, IModule mod, Stream stream){
+		public S_COMPILE2(IServiceContainer ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 			Flags = new CompileSym2Flags(r.ReadUInt32());
 			Machine = r.ReadUInt16();
@@ -56,7 +54,7 @@ namespace Smx.PDBSharp.Symbols
 			VersionString = r.ReadSymbolString();
 
 			List<string> optionalData = new List<string>();
-			while(r.HasMoreData) {
+			while (r.HasMoreData) {
 				string str = r.ReadSymbolString();
 				if (str.Length == 0)
 					break;
@@ -90,7 +88,7 @@ namespace Smx.PDBSharp.Symbols
 			w.WriteUInt16(BackendVersionBuild);
 			w.WriteSymbolString(VersionString);
 
-			foreach(string str in OptionalData) {
+			foreach (string str in OptionalData) {
 				w.WriteSymbolString(str);
 			}
 

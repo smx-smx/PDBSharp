@@ -7,11 +7,8 @@
  */
 #endregion
 using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Smx.PDBSharp
 {
@@ -36,7 +33,7 @@ namespace Smx.PDBSharp
 	{
 		public readonly Int16[] DebugStreams = new short[(int)DebugType.DebugTypeMax];
 
-		private readonly Context ctx;
+		private readonly StreamTableReader StreamTable;
 
 		public FPOReader FPO => lazyFPO.Value;
 		private readonly Lazy<FPOReader> lazyFPO;
@@ -46,7 +43,7 @@ namespace Smx.PDBSharp
 				return null;
 
 			int streamNumber = DebugStreams[(int)type];
-			return ctx.StreamTableReader.GetStream(streamNumber);
+			return StreamTable.GetStream(streamNumber);
 		}
 
 		public bool HasStream(DebugType type) {
@@ -61,10 +58,10 @@ namespace Smx.PDBSharp
 			return new FPOReader(new MemoryStream(fpo));
 		}
 
-		public DebugReader(Context ctx, Stream stream) : base(stream) {
-			this.ctx = ctx;
+		public DebugReader(IServiceContainer ctx, Stream stream) : base(stream) {
+			this.StreamTable = ctx.GetService<StreamTableReader>();
 
-			for(int i=0; i<(int)DebugType.DebugTypeMax; i++) {
+			for (int i = 0; i < (int)DebugType.DebugTypeMax; i++) {
 				DebugStreams[i] = ReadInt16();
 			}
 

@@ -9,11 +9,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Smx.PDBSharp
 {
-	public class BitSet {
+	public class BitSet
+	{
 		const int BITS_PER_WORD = 32;
 
 		private readonly uint[] values;

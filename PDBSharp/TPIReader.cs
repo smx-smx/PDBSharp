@@ -6,19 +6,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-using C5;
 using Smx.PDBSharp.Leaves;
-using Smx.PDBSharp.Symbols;
-using Smx.PDBSharp.Symbols.Structures;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp
 {
@@ -78,7 +71,7 @@ namespace Smx.PDBSharp
 	{
 		public readonly TPIHeader Header;
 
-		private readonly Context ctx;
+		private readonly IServiceContainer ctx;
 
 		public event OnLeafDataDelegate OnLeafData;
 
@@ -86,9 +79,11 @@ namespace Smx.PDBSharp
 
 		public IEnumerable<ILeafContainer> Types => lazyLeafContainers.Value;
 
+		private readonly HashDataReader TpiHash;
+
 		private (uint, uint) GetClosestTIOFF(UInt32 typeIndex) {
-			bool hasPrec = ctx.TpiHashReader.TypeIndexToOffset.TryPredecessor(typeIndex, out var prec);
-			bool hasSucc = ctx.TpiHashReader.TypeIndexToOffset.TrySuccessor(typeIndex, out var succ);
+			bool hasPrec = TpiHash.TypeIndexToOffset.TryPredecessor(typeIndex, out var prec);
+			bool hasSucc = TpiHash.TypeIndexToOffset.TrySuccessor(typeIndex, out var succ);
 
 			if (hasPrec && hasSucc) {
 				//[prev] <this> [next]
@@ -129,27 +124,27 @@ namespace Smx.PDBSharp
 			}
 
 			UInt32 typeOffset;
-			if (ctx.TpiHashReader.TypeIndexToOffset.Contains(TypeIndex)) {
-				typeOffset = Header.HeaderSize + ctx.TpiHashReader.TypeIndexToOffset[TypeIndex];
+			if (TpiHash.TypeIndexToOffset.Contains(TypeIndex)) {
+				typeOffset = Header.HeaderSize + TpiHash.TypeIndexToOffset[TypeIndex];
 				return PerformAt(typeOffset, () => ReadType());
 			} else {
 				(var closestTi, var closestOff) = GetClosestTIOFF(TypeIndex);
 
 				uint curOffset = closestOff;
-				for(uint ti=closestTi; ti<=TypeIndex; ti++) {
+				for (uint ti = closestTi; ti <= TypeIndex; ti++) {
 					uint offset;
-					if (ctx.TpiHashReader.TypeIndexToOffset.Contains(ti)) {
+					if (TpiHash.TypeIndexToOffset.Contains(ti)) {
 						// use existing TIOff
-						offset = ctx.TpiHashReader.TypeIndexToOffset[ti];
+						offset = TpiHash.TypeIndexToOffset[ti];
 						curOffset += GetTypeSize(offset);
 					} else {
-						ctx.TpiHashReader.TypeIndexToOffset[ti] = curOffset;
+						TpiHash.TypeIndexToOffset[ti] = curOffset;
 						curOffset += GetTypeSize(curOffset);
 					}
 				}
 
 				//safety
-				if (!ctx.TpiHashReader.TypeIndexToOffset.Contains(TypeIndex)) {
+				if (!TpiHash.TypeIndexToOffset.Contains(TypeIndex)) {
 					throw new InvalidDataException($"Type Index {TypeIndex} not found");
 				}
 
@@ -157,15 +152,15 @@ namespace Smx.PDBSharp
 			}
 		}
 
-		public TPIReader(Context ctx, Stream stream) : base(stream) {
-			this.ctx = ctx;
+		public TPIReader(IServiceContainer ctx, Stream stream) : base(stream) {
+			this.TpiHash = ctx.GetService<HashDataReader>();
 
 			Header = ReadStruct<TPIHeader>();
-			if(Header.HeaderSize != Marshal.SizeOf<TPIHeader>()) {
+			if (Header.HeaderSize != Marshal.SizeOf<TPIHeader>()) {
 				throw new InvalidDataException();
-			}	
+			}
 
-			if(!Enum.IsDefined(typeof(TPIVersion), Header.Version)) {
+			if (!Enum.IsDefined(typeof(TPIVersion), Header.Version)) {
 				throw new InvalidDataException();
 			}
 
@@ -189,10 +184,8 @@ namespace Smx.PDBSharp
 			byte[] leafDataBuf = new byte[dataSize];
 
 			{
-				TPIHash tpiHash = ctx.TpiReader.Header.Hash;
-
 				UInt32 leafHash = HasherV2.HashBufferV8(leafDataBuf, 0xFFFFFFFF);
-				UInt32 hash = HasherV2.HashData(leafDataBuf, tpiHash.NumHashBuckets);
+				UInt32 hash = HasherV2.HashData(leafDataBuf, Header.Hash.NumHashBuckets);
 			}
 
 			MemoryStream stream = new MemoryStream(leafDataBuf);

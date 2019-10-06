@@ -7,16 +7,14 @@
  */
 #endregion
 using Smx.PDBSharp.Symbols.Structures;
-using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Text;
 
 namespace Smx.PDBSharp.Symbols
 {
 	public class S_GPROC32 : ProcSym32Base, ISymbol
 	{
-		public S_GPROC32(Context ctx, IModule mod, Stream stream) : base(ctx, mod, stream) {
+		public S_GPROC32(IServiceContainer ctx, IModule mod, Stream stream) : base(ctx, mod, stream) {
 		}
 
 		public S_GPROC32(ProcSym32 data) : base(data) {

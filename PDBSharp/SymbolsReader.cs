@@ -10,13 +10,8 @@ using Smx.PDBSharp.Symbols;
 using Smx.PDBSharp.Symbols.Structures;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp
 {
@@ -24,12 +19,12 @@ namespace Smx.PDBSharp
 
 	public class SymbolsReader : ReaderBase
 	{
-		private readonly Context ctx;
+		private readonly IServiceContainer ctx;
 		private readonly IModule mod;
 
 		public event OnSymbolDataDelegate OnSymbolData;
 
-		public SymbolsReader(Context ctx, IModule mod, Stream stream) : base(stream) {
+		public SymbolsReader(IServiceContainer ctx, IModule mod, Stream stream) : base(stream) {
 			this.ctx = ctx;
 			this.mod = mod;
 		}

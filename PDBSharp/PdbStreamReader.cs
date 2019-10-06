@@ -7,9 +7,7 @@
  */
 #endregion
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace Smx.PDBSharp
 {
@@ -45,33 +43,33 @@ namespace Smx.PDBSharp
 
 		private readonly bool ContainsIdStream;
 
-		public PdbStreamReader(Context ctx, Stream stream) : base(stream) {
+		public PdbStreamReader(Stream stream) : base(stream) {
 			Version = ReadEnum<PDBVersion>();
 			Signature = ReadUInt32();
 			NumberOfUpdates = ReadUInt32();
 
-			if(Version < PDBVersion.VC4 || Version > PDBVersion.VC140) {
+			if (Version < PDBVersion.VC4 || Version > PDBVersion.VC140) {
 				return;
 			}
 
-			if(Version > PDBVersion.VC70Dep) {
+			if (Version > PDBVersion.VC70Dep) {
 				NewSignature = ReadStruct<Guid>();
 			}
 
 			NameTable = Deserializers.ReadNameIndexTable(this);
 
 			bool flagContinue = true;
-			while(flagContinue && stream.Position + sizeof(uint) < stream.Length) {
+			while (flagContinue && stream.Position + sizeof(uint) < stream.Length) {
 				UInt32 signature = ReadUInt32();
-				if(Enum.IsDefined(typeof(PDBVersion), signature)) {
+				if (Enum.IsDefined(typeof(PDBVersion), signature)) {
 					PDBVersion version = (PDBVersion)signature;
 					switch (version) {
 						case PDBVersion.VC110:
 						case PDBVersion.VC140:
 							flagContinue = false;
 							break;
-					}	
-				} else if(Enum.IsDefined(typeof(PDBFeature), signature)) {
+					}
+				} else if (Enum.IsDefined(typeof(PDBFeature), signature)) {
 				}
 			}
 		}

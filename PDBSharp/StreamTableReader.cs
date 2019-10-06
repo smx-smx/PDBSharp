@@ -6,22 +6,25 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp
 {
 	public class StreamTableReader : ReaderBase
 	{
-		private readonly Context ctx;
 		public readonly UInt32[] StreamSizes;
+		private readonly MSFReader msf;
+		private readonly PdbStreamReader streamReader;
 
-		public StreamTableReader(Context ctx, Stream stream) : base(stream) {
-			this.ctx = ctx;
+		public StreamTableReader(IServiceContainer ctx, Stream stream) : base(stream) {
+
+			msf = ctx.GetService<MSFReader>();
+			streamReader = ctx.GetService<PdbStreamReader>();
+
 			NumStreams = ReadUInt32();
 			StreamSizes = ReadStreamSizes();
 
@@ -48,19 +51,19 @@ namespace Smx.PDBSharp
 		/// <returns></returns>
 		private IEnumerable<UInt32> GetListPages_Stream(int streamNumber) {
 			var streamSize = StreamSizes[streamNumber];
-			
+
 			// skip stream sizes
 			uint dataOffset = sizeof(UInt32) * (NumStreams + 1);
 
 			// skip the page list for the streams before us
-			for(int i=0; i<streamNumber; i++) {
-				dataOffset += ctx.MsfReader.GetNumPages(StreamSizes[i]) * sizeof(UInt32);
+			for (int i = 0; i < streamNumber; i++) {
+				dataOffset += msf.GetNumPages(StreamSizes[i]) * sizeof(UInt32);
 			}
 
 			Stream.Seek(dataOffset, SeekOrigin.Begin);
 
 			// how many pages are we going to read
-			var numStreamPages = ctx.MsfReader.GetNumPages(streamSize);
+			var numStreamPages = msf.GetNumPages(streamSize);
 			UInt32[] pageList = Enumerable
 				.Range(1, (int)numStreamPages)
 				.Select(_ => ReadUInt32())
@@ -74,13 +77,15 @@ namespace Smx.PDBSharp
 
 			// for each page in list, read the page data and combine
 			return pages
-				.Select(page => ctx.MsfReader.ReadPage(page))
+				.Select(page => msf.ReadPage(page))
 				.SelectMany(x => x)
 				.ToArray();
 		}
 
+		public byte[] GetStream(DefaultStreams streamNumber) => GetStream((int)streamNumber);
+
 		public byte[] GetStream(int streamNumber) {
-			if(streamsData[streamNumber] != null)
+			if (streamsData[streamNumber] != null)
 				return streamsData[streamNumber];
 
 			streamsData[streamNumber] = ReadStream(streamNumber);
@@ -88,7 +93,10 @@ namespace Smx.PDBSharp
 		}
 
 		public byte[] GetStreamByName(string streamName) {
-			if(!ctx.PdbStreamReader
+			if (streamReader == null)
+				return null;
+
+			if (!streamReader
 				.NameTable
 				.GetIndex(streamName, out uint streamNumber)
 			) {
@@ -97,6 +105,6 @@ namespace Smx.PDBSharp
 
 			return GetStream((int)streamNumber);
 		}
-		
+
 	}
 }

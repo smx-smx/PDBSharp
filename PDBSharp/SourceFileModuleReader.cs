@@ -8,10 +8,9 @@
 #endregion
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.ComponentModel.Design;
 using System.IO;
 using System.Linq;
-using Smx.PDBSharp.Symbols;
 
 namespace Smx.PDBSharp
 {
@@ -31,14 +30,12 @@ namespace Smx.PDBSharp
 		public readonly string FileName;
 
 
-		private readonly ModuleInfo modInfo;
-
 		public event OnSymbolDataDelegate OnSymbolData;
 
 		public IEnumerable<Symbol> Symbols => Enumerable.Empty<Symbol>();
 
-		public SourceFileModuleReader(PDBFile pdb, Stream stream) : base(stream) {
-			this.pdb = pdb;
+		public SourceFileModuleReader(IServiceContainer ctx, Stream stream) : base(stream) {
+			this.pdb = ctx.GetService<PDBFile>();
 
 			// including .c file
 			NumberOfFiles = ReadUInt16();
@@ -86,7 +83,7 @@ namespace Smx.PDBSharp
 			// skip it for now, and go read child headers
 			Children = childFileOffsets.Select(offset => {
 				return PerformAt(offset, () => {
-					return new SourceFileModuleReader(this.pdb, this.Stream);
+					return new SourceFileModuleReader(ctx, this.Stream);
 				});
 			}).ToArray();
 		}

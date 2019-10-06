@@ -6,22 +6,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using Smx.PDBSharp.Leaves;
-using Smx.PDBSharp.Symbols.Structures;
-using Smx.PDBSharp.Thunks;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp
 {
 	public class ReaderBase : StreamCommon
 	{
+		public static explicit operator Stream(ReaderBase rdr) => rdr.Reader.BaseStream;
 
 		private readonly BinaryReader Reader;
 

@@ -8,11 +8,8 @@
 #endregion
 using Smx.PDBSharp.Symbols.Structures;
 using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
@@ -32,7 +29,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly CV_LVAR_ADDR_RANGE Range;
 		public readonly CV_LVAR_ADDR_GAP[] Gaps;
 
-		public S_DEFRANGE_REGISTER(Context ctx, IModule mod, Stream stream) {
+		public S_DEFRANGE_REGISTER(IServiceContainer ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 			Register = r.ReadUInt16();
 			Attributes = r.ReadFlagsEnum<RangeAttributes>();
@@ -52,7 +49,7 @@ namespace Smx.PDBSharp.Symbols
 			w.WriteUInt16(Register);
 			w.WriteEnum<RangeAttributes>(Attributes);
 			Range.Write(w);
-			foreach(CV_LVAR_ADDR_GAP gap in Gaps) {
+			foreach (CV_LVAR_ADDR_GAP gap in Gaps) {
 				gap.Write(w);
 			}
 

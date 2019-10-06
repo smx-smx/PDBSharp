@@ -6,14 +6,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Diagnostics;
-using System.Text;
+using System;
+using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.IO;
 
 namespace Smx.PDBSharp
 {
@@ -79,7 +75,7 @@ namespace Smx.PDBSharp
 
 		public StructureReader(Func<int, byte[]> readBytes) {
 			this.readBytes = readBytes;
-			if(typeof(T).IsDefined(typeof(EndianAttribute), false)) {
+			if (typeof(T).IsDefined(typeof(EndianAttribute), false)) {
 				EndianAttribute attr = (EndianAttribute)(typeof(T).GetCustomAttribute(typeof(EndianAttribute), false));
 				this.defaultEndianess = attr.Endianness;
 			}
@@ -90,11 +86,11 @@ namespace Smx.PDBSharp
 		}
 
 		private int FieldSize(FieldInfo field) {
-			if(field.FieldType.IsArray) {
+			if (field.FieldType.IsArray) {
 				MarshalAsAttribute attr = (MarshalAsAttribute)field.GetCustomAttribute(typeof(MarshalAsAttribute), false);
 				return Marshal.SizeOf(field.FieldType.GetElementType()) * attr.SizeConst;
 			} else {
-				if(field.FieldType.IsEnum) {
+				if (field.FieldType.IsEnum) {
 					return Marshal.SizeOf(Enum.GetUnderlyingType(field.FieldType));
 				}
 				return Marshal.SizeOf(field.FieldType);
@@ -103,10 +99,10 @@ namespace Smx.PDBSharp
 
 		private void SwapEndian(byte[] data, Type type, FieldInfo field) {
 			int offset = Marshal.OffsetOf(type, field.Name).ToInt32();
-			if(field.FieldType.IsArray) {
+			if (field.FieldType.IsArray) {
 				MarshalAsAttribute attr = (MarshalAsAttribute)field.GetCustomAttribute(typeof(MarshalAsAttribute), false);
 				int subSize = Marshal.SizeOf(field.FieldType.GetElementType());
-				for(int i = 0; i < attr.SizeConst; i++) {
+				for (int i = 0; i < attr.SizeConst; i++) {
 					Array.Reverse(data, offset + (i * subSize), subSize);
 				}
 			} else {
@@ -116,16 +112,16 @@ namespace Smx.PDBSharp
 
 		/* Adapted from http://stackoverflow.com/a/2624377 */
 		private void RespectEndianness(Type type, byte[] data) {
-			foreach(var field in type.GetFields()) {
-				if(field.IsDefined(typeof(EndianAttribute), false)) {
+			foreach (var field in type.GetFields()) {
+				if (field.IsDefined(typeof(EndianAttribute), false)) {
 					Endianness fieldEndianess = ((EndianAttribute)field.GetCustomAttributes(typeof(EndianAttribute), false)[0]).Endianness;
-					if(
+					if (
 						(fieldEndianess == Endianness.BigEndian && BitConverter.IsLittleEndian) ||
 						(fieldEndianess == Endianness.LittleEndian && !BitConverter.IsLittleEndian)
 					) {
 						SwapEndian(data, type, field);
 					}
-				} else if(
+				} else if (
 					(this.defaultEndianess == Endianness.BigEndian && BitConverter.IsLittleEndian) ||
 					(this.defaultEndianess == Endianness.LittleEndian && !BitConverter.IsLittleEndian)
 				) {

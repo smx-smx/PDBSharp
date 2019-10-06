@@ -6,8 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-using Smx.PDBSharp.Symbols.Structures;
 using System;
+using System.ComponentModel.Design;
 using System.IO;
 
 namespace Smx.PDBSharp.Symbols.Structures
@@ -63,7 +63,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public readonly UInt16 ReturnRegister;
 		public readonly string Name;
 
-		public ManProcSymBase(Context ctx, IModule mod, Stream stream) {
+		public ManProcSymBase(IServiceContainer ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			ParentOffset = r.ReadUInt32();

@@ -6,14 +6,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using Smx.PDBSharp;
 using Smx.PDBSharp.Symbols.Structures;
-using Smx.PDBSharp.Thunks;
 using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Smx.PDBSharp.Thunks
 {
@@ -21,7 +17,7 @@ namespace Smx.PDBSharp.Thunks
 	{
 		public readonly UInt16 VTableOffset;
 
-		public VCALL(Context ctx, SymbolHeader header, Stream stream) : base(ctx, header, stream) {
+		public VCALL(IServiceContainer ctx, SymbolHeader header, Stream stream) : base(ctx, header, stream) {
 			VTableOffset = ReadUInt16();
 		}
 

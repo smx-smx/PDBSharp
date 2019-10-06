@@ -7,9 +7,8 @@
  */
 #endregion
 using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Text;
 
 namespace Smx.PDBSharp.Leaves
 {
@@ -52,7 +51,7 @@ namespace Smx.PDBSharp.Leaves
 
 		public override string UdtName => Name;
 
-		public LF_UNION(Context pdb, Stream stream) {
+		public LF_UNION(IServiceContainer pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			NumberOfElements = r.ReadUInt16();

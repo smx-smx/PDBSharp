@@ -6,14 +6,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-using Smx.PDBSharp.Leaves;
 using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols.Structures
 {
@@ -49,7 +44,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public readonly Symbol ParentSymbol;
 		public readonly Symbol NextSymbol;
 
-		public ProcSym32Base(Context ctx, IModule mod, Stream stream) {
+		public ProcSym32Base(IServiceContainer ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			ParentOffset = r.ReadUInt32();

@@ -6,13 +6,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿using Smx.PDBSharp.Symbols.Structures;
+using Smx.PDBSharp.Symbols.Structures;
 using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Symbols
 {
@@ -31,7 +28,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly CookieType Type;
 		public readonly byte Flags;
 
-		public S_FRAMECOOKIE(Context ctx, IModule mod, Stream stream) {
+		public S_FRAMECOOKIE(IServiceContainer ctx, IModule mod, Stream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			Offset = r.ReadUInt32();

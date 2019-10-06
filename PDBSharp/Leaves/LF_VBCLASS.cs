@@ -6,10 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-using System;
-using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.IO;
-using System.Text;
 
 namespace Smx.PDBSharp.Leaves
 {
@@ -22,7 +20,7 @@ namespace Smx.PDBSharp.Leaves
 		public readonly ILeafContainer OffsetFromAddress;
 		public readonly ILeafContainer OffsetFromTable;
 
-		public LF_VBCLASS(Context pdb, Stream stream) {
+		public LF_VBCLASS(IServiceContainer pdb, Stream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			Attributes = new FieldAttributes(r.ReadUInt16());
