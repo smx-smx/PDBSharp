@@ -99,7 +99,7 @@ namespace Smx.PDBSharp.Dumper
 				//Console.WriteLine(type);
 			}*/
 
-			HashDataReader tpiHash = sc.GetService<HashDataReader>();
+			TPIHashReader tpiHash = sc.GetService<TPIHashReader>();
 			UdtNameTableReader udtNameTable = sc.GetService<UdtNameTableReader>();
 			TypeResolver resolver = sc.GetService<TypeResolver>();
 			if (tpiHash != null && udtNameTable != null) {

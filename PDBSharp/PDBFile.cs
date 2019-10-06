@@ -115,12 +115,12 @@ namespace Smx.PDBSharp
 			}
 			Services.AddService<TPIReader>(tpi);
 
-			HashDataReader tpiHash = null;
+			TPIHashReader tpiHash = null;
 			// init TPIHash
 			if (tpi.Header.Hash.StreamNumber != -1) {
 				byte[] tpiHashData = streamTable.GetStream(tpi.Header.Hash.StreamNumber);
-				tpiHash = new HashDataReader(Services, new MemoryStream(tpiHashData));
-				Services.AddService<HashDataReader>(tpiHash);
+				tpiHash = new TPIHashReader(Services, new MemoryStream(tpiHashData));
+				Services.AddService<TPIHashReader>(tpiHash);
 			}
 
 			// init resolver

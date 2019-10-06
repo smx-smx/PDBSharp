@@ -18,7 +18,7 @@ namespace Smx.PDBSharp
 	public class TypeResolver
 	{
 		private readonly TPIReader tpi;
-		private readonly HashDataReader tpiHash;
+		private readonly TPIHashReader tpiHash;
 
 		private (uint, uint) GetClosestTIOFF(UInt32 typeIndex) {
 			bool hasPrec = tpiHash.TypeIndexToOffset.TryPredecessor(typeIndex, out var prec);
@@ -79,7 +79,7 @@ namespace Smx.PDBSharp
 
 		public TypeResolver(IServiceContainer ctx) {
 			tpi = ctx.GetService<TPIReader>();
-			tpiHash = ctx.GetService<HashDataReader>();
+			tpiHash = ctx.GetService<TPIHashReader>();
 		}
 	}
 }

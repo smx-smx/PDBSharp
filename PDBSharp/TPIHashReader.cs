@@ -22,7 +22,7 @@ namespace Smx.PDBSharp
 		public UInt32 Offset;
 	}
 
-	public class HashDataReader : ReaderBase
+	public class TPIHashReader : ReaderBase
 	{
 		public readonly TreeDictionary<UInt32, UInt32> TypeIndexToOffset = new TreeDictionary<uint, uint>();
 		public Dictionary<UInt32, UInt32> HashValueToTypeIndex = new Dictionary<uint, uint>();
@@ -31,7 +31,7 @@ namespace Smx.PDBSharp
 
 		public readonly UInt32[] RecordHashValues;
 
-		public HashDataReader(IServiceContainer ctx, Stream stream) : base(stream) {
+		public TPIHashReader(IServiceContainer ctx, Stream stream) : base(stream) {
 			TPIReader tpi = ctx.GetService<TPIReader>();
 			TPIHash hash = tpi.Header.Hash;
 
