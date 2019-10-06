@@ -18,12 +18,10 @@ namespace Smx.PDBSharp
 	{
 		public readonly UInt32[] StreamSizes;
 		private readonly MSFReader msf;
-		private readonly PdbStreamReader streamReader;
 
 		public StreamTableReader(IServiceContainer ctx, Stream stream) : base(stream) {
 
 			msf = ctx.GetService<MSFReader>();
-			streamReader = ctx.GetService<PdbStreamReader>();
 
 			NumStreams = ReadUInt32();
 			StreamSizes = ReadStreamSizes();
@@ -91,20 +89,5 @@ namespace Smx.PDBSharp
 			streamsData[streamNumber] = ReadStream(streamNumber);
 			return streamsData[streamNumber];
 		}
-
-		public byte[] GetStreamByName(string streamName) {
-			if (streamReader == null)
-				return null;
-
-			if (!streamReader
-				.NameTable
-				.GetIndex(streamName, out uint streamNumber)
-			) {
-				return null;
-			}
-
-			return GetStream((int)streamNumber);
-		}
-
 	}
 }

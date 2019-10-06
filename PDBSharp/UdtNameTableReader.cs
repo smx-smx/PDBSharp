@@ -39,6 +39,8 @@ namespace Smx.PDBSharp
 
 		private readonly TPIReader Tpi;
 
+		private readonly TypeResolver resolver;
+
 		public readonly Dictionary<uint, uint> NameIndex_TypeIndex = new Dictionary<uint, uint>();
 
 		//$TODO(work in progress): fix the NI -> TI mapping
@@ -47,7 +49,7 @@ namespace Smx.PDBSharp
 			uint maxTi = minTi + Tpi.Header.MaxTypeIndex - 1;
 
 			for (uint ti = minTi; ti <= maxTi; ti++) {
-				ILeafContainer leafC = Tpi.GetTypeByIndex(ti);
+				ILeafContainer leafC = resolver.GetTypeByIndex(ti);
 				if (leafC == null || !(leafC.Data is LeafBase leaf)) {
 					continue;
 				}
@@ -95,7 +97,7 @@ namespace Smx.PDBSharp
 			if (!NameIndex_TypeIndex.TryGetValue(nameIndex, out uint typeIndex))
 				return null;
 
-			return Tpi.GetTypeByIndex(typeIndex);
+			return resolver.GetTypeByIndex(typeIndex);
 		}
 
 		public bool GetIndex(string str, out uint index) {
@@ -129,6 +131,7 @@ namespace Smx.PDBSharp
 
 		public UdtNameTableReader(IServiceContainer ctx, Stream stream) : base(stream) {
 			this.Tpi = ctx.GetService<TPIReader>();
+			this.resolver = ctx.GetService<TypeResolver>();
 
 			Magic = ReadUInt32();
 			if (Magic != MAGIC) {

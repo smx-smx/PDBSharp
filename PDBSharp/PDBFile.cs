@@ -123,6 +123,10 @@ namespace Smx.PDBSharp
 				Services.AddService<HashDataReader>(tpiHash);
 			}
 
+			// init resolver
+			TypeResolver resolver = new TypeResolver(Services);
+			Services.AddService<TypeResolver>(resolver);
+
 
 			// init Hasher
 			HasherV2 hasher = new HasherV2(Services);
@@ -136,10 +140,13 @@ namespace Smx.PDBSharp
 			}
 			Services.AddService<PdbStreamReader>(nameMap);
 
+			NamedStreamTableReader namedStreamTable = new NamedStreamTableReader(Services);
+			Services.AddService<NamedStreamTableReader>(namedStreamTable);
+
 			UdtNameTableReader udtNameTable = null;
 			// init UdtNameMap
 			{
-				byte[] namesData = streamTable.GetStreamByName("/names");
+				byte[] namesData = namedStreamTable.GetStreamByName("/names");
 				if (namesData != null) {
 					udtNameTable = new UdtNameTableReader(Services, new MemoryStream(namesData));
 					Services.AddService<UdtNameTableReader>(udtNameTable);
@@ -150,7 +157,7 @@ namespace Smx.PDBSharp
 			if (tpiHash != null && udtNameTable != null) {
 				foreach (var pair in tpiHash.NameIndexToTypeIndex) {
 					string name = udtNameTable.GetString(pair.Key);
-					ILeafContainer leaf = tpi.GetTypeByIndex(pair.Value);
+					ILeafContainer leaf = resolver.GetTypeByIndex(pair.Value);
 					Console.WriteLine($"=> {name} [NI={pair.Key}] [TI={pair.Value}]");
 					Console.WriteLine(leaf.Data.GetType().Name);
 				}

@@ -79,81 +79,22 @@ namespace Smx.PDBSharp
 
 		public IEnumerable<ILeafContainer> Types => lazyLeafContainers.Value;
 
-		private readonly HashDataReader TpiHash;
-
-		private (uint, uint) GetClosestTIOFF(UInt32 typeIndex) {
-			bool hasPrec = TpiHash.TypeIndexToOffset.TryPredecessor(typeIndex, out var prec);
-			bool hasSucc = TpiHash.TypeIndexToOffset.TrySuccessor(typeIndex, out var succ);
-
-			if (hasPrec && hasSucc) {
-				//[prev] <this> [next]
-				//$TODO: maybe succ is closer?
-				return (prec.Key, prec.Value);
-			} else if (hasPrec) {
-				//[prev] <this> EOF
-				return (prec.Key, prec.Value);
-			} else if (hasSucc) {
-				//BEGIN <this> [next]
-				return (Header.MinTypeIndex, 0);
-			} else {
-				throw new InvalidDataException();
-			}
-		}
-
-		private uint GetTypeSize(UInt32 offset) {
+		public uint GetLeafSize(UInt32 offset) {
 			return PerformAt(Header.HeaderSize + offset, () => {
 				return (uint)ReadUInt16() + sizeof(UInt16);
 			});
 		}
 
-		private bool HasTi(UInt32 TypeIndex) {
+		public bool HasTi(UInt32 TypeIndex) {
 			return TypeIndex >= Header.MinTypeIndex && TypeIndex < Header.MaxTypeIndex;
 		}
 
-		private bool IsBuiltinTi(UInt32 TypeIndex) {
+		public bool IsBuiltinTi(UInt32 TypeIndex) {
 			return TypeIndex <= ((uint)SpecialTypeMode.NearPointer128 | 0xFF);
 		}
 
-		public ILeafContainer GetTypeByIndex(UInt32 TypeIndex) {
-			if (!HasTi(TypeIndex)) {
-				if (IsBuiltinTi(TypeIndex)) {
-					ILeaf builtin = new BuiltinTypeLeaf(TypeIndex);
-					return new DirectLeafProvider(TypeIndex, LeafType.SPECIAL_BUILTIN, builtin);
-				}
-				return null;
-			}
-
-			UInt32 typeOffset;
-			if (TpiHash.TypeIndexToOffset.Contains(TypeIndex)) {
-				typeOffset = Header.HeaderSize + TpiHash.TypeIndexToOffset[TypeIndex];
-				return PerformAt(typeOffset, () => ReadType());
-			} else {
-				(var closestTi, var closestOff) = GetClosestTIOFF(TypeIndex);
-
-				uint curOffset = closestOff;
-				for (uint ti = closestTi; ti <= TypeIndex; ti++) {
-					uint offset;
-					if (TpiHash.TypeIndexToOffset.Contains(ti)) {
-						// use existing TIOff
-						offset = TpiHash.TypeIndexToOffset[ti];
-						curOffset += GetTypeSize(offset);
-					} else {
-						TpiHash.TypeIndexToOffset[ti] = curOffset;
-						curOffset += GetTypeSize(curOffset);
-					}
-				}
-
-				//safety
-				if (!TpiHash.TypeIndexToOffset.Contains(TypeIndex)) {
-					throw new InvalidDataException($"Type Index {TypeIndex} not found");
-				}
-
-				return GetTypeByIndex(TypeIndex);
-			}
-		}
-
 		public TPIReader(IServiceContainer ctx, Stream stream) : base(stream) {
-			this.TpiHash = ctx.GetService<HashDataReader>();
+			this.ctx = ctx;
 
 			Header = ReadStruct<TPIHeader>();
 			if (Header.HeaderSize != Marshal.SizeOf<TPIHeader>()) {
@@ -172,6 +113,10 @@ namespace Smx.PDBSharp
 #endif
 
 			lazyLeafContainers = new Lazy<IEnumerable<ILeafContainer>>(ReadTypes);
+		}
+
+		public ILeafContainer ReadType(uint typeOffset) {
+			return PerformAt(typeOffset, () => ReadType());
 		}
 
 		private ILeafContainer ReadType() {

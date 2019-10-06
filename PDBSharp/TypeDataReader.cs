@@ -180,7 +180,7 @@ namespace Smx.PDBSharp
 				Stream.Position = typePos;
 				return ReadTypeDirect(hasSize);
 			});
-			return new LazyLeafProvider(delayedLeaf);
+			return new LazyLeafProvider(ctx, delayedLeaf);
 		}
 
 		public LeafContainerBase ReadTypeDirect(bool hasSize = true) {

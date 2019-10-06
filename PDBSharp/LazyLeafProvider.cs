@@ -15,10 +15,10 @@ namespace Smx.PDBSharp
 {
 	public class LazyLeafProvider : ILeafContainer
 	{
-		private readonly TPIReader Tpi;
+		private readonly TypeResolver resolver;
 
 		private ILeafContainer ReadLeaf() {
-			return Tpi.GetTypeByIndex(typeIndex);
+			return resolver.GetTypeByIndex(typeIndex);
 		}
 
 		public void Write(PDBFile pdb, Stream stream) {
@@ -37,13 +37,14 @@ namespace Smx.PDBSharp
 		private readonly uint typeIndex;
 
 		public LazyLeafProvider(IServiceContainer ctx, uint typeIndex) {
-			this.Tpi = ctx.GetService<TPIReader>();
+			this.resolver = ctx.GetService<TypeResolver>();
 
 			this.typeIndex = typeIndex;
 			lazy = new Lazy<ILeafContainer>(ReadLeaf);
 		}
 
-		public LazyLeafProvider(Lazy<ILeafContainer> lazyProvider) {
+		public LazyLeafProvider(IServiceContainer ctx, Lazy<ILeafContainer> lazyProvider) {
+			this.resolver = ctx.GetService<TypeResolver>();
 			lazy = lazyProvider;
 		}
 
