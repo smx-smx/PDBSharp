@@ -45,6 +45,8 @@ namespace Smx.PDBSharp
 
 			ISymbol sym;
 			switch (hdr.Type) {
+				case SymbolType.S_ANNOTATION:
+					sym = new S_ANNOTATION(ctx, mod, Stream); break;
 				case SymbolType.S_BLOCK32:
 					sym = new S_BLOCK32(ctx, mod, Stream); break;
 				case SymbolType.S_BPREL32:
