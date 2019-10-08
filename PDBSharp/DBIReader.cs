@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace Smx.PDBSharp
@@ -121,7 +122,7 @@ namespace Smx.PDBSharp
 			stream.Position += Header.ModuleListSize;
 
 			if (Header.SectionContributionSize > 0) {
-				SectionContribs = PerformAt(stream.Position, () => new SectionContribsReader(stream));
+				SectionContribs = PerformAt(stream.Position, () => new SectionContribsReader(Header.SectionContributionSize, stream));
 			}
 			stream.Position += Header.SectionContributionSize;
 

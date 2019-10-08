@@ -39,7 +39,7 @@ namespace Smx.PDBSharp
 		public const int SIZE = SectionContrib.SIZE + 4;
 
 		public SectionContrib2(Stream stream) : base(stream) {
-
+			CoffSectionIndex = ReadUInt32();
 		}
 	}
 
