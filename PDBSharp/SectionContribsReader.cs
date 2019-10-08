@@ -25,21 +25,28 @@ namespace Smx.PDBSharp
 
 		public readonly SCVersion Version;
 
-		private readonly Lazy<IEnumerable<SectionContrib>> sectionContribsLazy;
-		public IEnumerable<SectionContrib> SectionContribs => sectionContribsLazy.Value;
+		private readonly Lazy<IEnumerable<SectionContrib40>> sectionContribsLazy;
+		public IEnumerable<SectionContrib40> SectionContribs => sectionContribsLazy.Value;
 
 		private readonly long StreamOffset;
 		private readonly uint SectionContribsSize;
 		private uint ReadBytes = 0;
 
-		private IEnumerable<SectionContrib> ReadSectionContribsV1() {
+		private IEnumerable<SectionContrib40> ReadSectionContribsOld() {
+			while(ReadBytes < SectionContribsSize) {
+				yield return PerformAt(StreamOffset + ReadBytes, () => new SectionContrib40(Stream));
+				ReadBytes += SectionContrib40.SIZE;
+			}
+		}
+
+		private IEnumerable<SectionContrib40> ReadSectionContribsV1() {
 			while (ReadBytes < SectionContribsSize) {
 				yield return PerformAt(StreamOffset + ReadBytes, () => new SectionContrib(Stream));
 				ReadBytes += SectionContrib.SIZE;
 			}
 		}
 
-		private IEnumerable<SectionContrib2> ReadSectionContribsV2() {
+		private IEnumerable<SectionContrib40> ReadSectionContribsV2() {
 			while(ReadBytes < SectionContribsSize) {
 				yield return PerformAt(StreamOffset + ReadBytes, () => new SectionContrib2(Stream));
 				ReadBytes += SectionContrib2.SIZE;
@@ -53,13 +60,14 @@ namespace Smx.PDBSharp
 			Version = ReadEnum<SCVersion>();
 			switch (Version) {
 				case SCVersion.V60:
-					sectionContribsLazy = new Lazy<IEnumerable<SectionContrib>>(ReadSectionContribsV1);
+					sectionContribsLazy = new Lazy<IEnumerable<SectionContrib40>>(ReadSectionContribsV1);
 					break;
 				case SCVersion.New:
-					sectionContribsLazy = new Lazy<IEnumerable<SectionContrib>>(ReadSectionContribsV2);
+					sectionContribsLazy = new Lazy<IEnumerable<SectionContrib40>>(ReadSectionContribsV2);
 					break;
 				default:
-					throw new NotImplementedException("VC++ 4.0 SectionContrib not yet implemented");
+					sectionContribsLazy = new Lazy<IEnumerable<SectionContrib40>>(ReadSectionContribsOld);
+					break;
 			}
 
 			// after version
