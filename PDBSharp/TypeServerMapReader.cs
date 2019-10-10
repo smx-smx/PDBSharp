@@ -11,9 +11,9 @@ using System.IO;
 
 namespace Smx.PDBSharp
 {
-	public class TypeServerMapReader : ReaderBase
+	public class TypeServerMapReader : ReaderSpan
 	{
-		public TypeServerMapReader(Stream stream) : base(stream) {
+		public TypeServerMapReader(ReaderSpan stream) : base(stream) {
 			throw new NotImplementedException();
 		}
 	}

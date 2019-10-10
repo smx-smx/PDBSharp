@@ -29,14 +29,14 @@ namespace Smx.PDBSharp
 		DebugTypeMax
 	}
 
-	public class DebugReader : ReaderBase
+	public class DebugReader : ReaderSpan
 	{
 		public readonly Int16[] DebugStreams = new short[(int)DebugType.DebugTypeMax];
 
 		private readonly StreamTableReader StreamTable;
 
 		public FPOReader FPO => lazyFPO.Value;
-		private readonly Lazy<FPOReader> lazyFPO;
+		private readonly ILazy<FPOReader> lazyFPO;
 
 		public byte[] GetStream(DebugType type) {
 			if (!HasStream(type))
@@ -55,17 +55,17 @@ namespace Smx.PDBSharp
 			if (fpo == null)
 				return null;
 
-			return new FPOReader(new MemoryStream(fpo));
+			return new FPOReader(fpo);
 		}
 
-		public DebugReader(IServiceContainer ctx, Stream stream) : base(stream) {
+		public DebugReader(IServiceContainer ctx, ReaderSpan stream) : base(stream) {
 			this.StreamTable = ctx.GetService<StreamTableReader>();
 
 			for (int i = 0; i < (int)DebugType.DebugTypeMax; i++) {
 				DebugStreams[i] = ReadInt16();
 			}
 
-			lazyFPO = new Lazy<FPOReader>(CreateFPOReader);
+			lazyFPO = LazyFactory.CreateLazy(CreateFPOReader);
 		}
 	}
 }

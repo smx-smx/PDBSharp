@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.IO;
+using System.IO.MemoryMappedFiles;
 using System.Text;
 
 namespace Smx.PDBSharp
@@ -25,7 +26,7 @@ namespace Smx.PDBSharp
 	public delegate void OnTpiInitDelegate(TPIReader TPI);
 	public delegate void OnDbiInitDelegate(DBIReader DBI);
 
-	public class PDBFile
+	public class PDBFile : IDisposable
 	{
 		public event OnTpiInitDelegate OnTpiInit;
 		public event OnDbiInitDelegate OnDbiInit;
@@ -33,7 +34,8 @@ namespace Smx.PDBSharp
 		public const string SMALL_MAGIC = "Microsoft C/C++ program database 2.00\r\n\x1a" + "JG";
 		public const string BIG_MAGIC = "Microsoft C/C++ MSF 7.00\r\n\x1a" + "DS";
 
-		private readonly Stream stream;
+		private readonly MemoryMappedFile mf;
+		private readonly FileStream fs;
 
 		private readonly StreamTableReader StreamTable;
 
@@ -52,11 +54,12 @@ namespace Smx.PDBSharp
 		private PDBType DetectPdbType() {
 			int maxSize = Math.Max(SMALL_MAGIC.Length, BIG_MAGIC.Length);
 
-			byte[] buffer = new byte[maxSize];
-			stream.Read(buffer, 0, maxSize);
-			stream.Position = 0;
+			byte[] magic;
+			using(var span = new MemoryMappedSpan(mf, fs.Length)) {
+				magic = span.GetSpan().Slice(0, maxSize).ToArray();
+			}
 
-			string msfMagic = Encoding.ASCII.GetString(buffer);
+			string msfMagic = Encoding.ASCII.GetString(magic);
 			if (msfMagic.StartsWith(BIG_MAGIC)) {
 				return PDBType.Big;
 			} else if (msfMagic.StartsWith(SMALL_MAGIC)) {
@@ -68,14 +71,19 @@ namespace Smx.PDBSharp
 		}
 
 		public static PDBFile Open(string pdbFilePath) {
-			Stream stream = new FileStream(pdbFilePath, FileMode.Open, FileAccess.Read);
+			FileStream stream = new FileStream(pdbFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
 			return new PDBFile(stream);
 		}
 
-		public PDBFile(Stream stream) {
+		public void Dispose() {
+			mf.Dispose();
+		}
+
+		public PDBFile(FileStream stream) {
+			this.fs = stream;
 			this.StreamTable = Services.GetService<StreamTableReader>();
 
-			this.stream = stream;
+			this.mf = MemoryMappedFile.CreateFromFile(stream, null, 0, MemoryMappedFileAccess.Read, HandleInheritability.Inheritable, true);
 			this.FileType = DetectPdbType();
 
 			Services.AddService<PDBFile>(this);
@@ -86,14 +94,14 @@ namespace Smx.PDBSharp
 			}
 
 
-			MSFReader msf = new MSFReader(this.stream, FileType);
+			MSFReader msf = new MSFReader(mf, stream.Length, FileType);
 			Services.AddService<MSFReader>(msf);
 
 			StreamTableReader streamTable;
 			// init stream table
 			{
 				byte[] streamTableData = msf.StreamTable();
-				streamTable = new StreamTableReader(Services, new MemoryStream(streamTableData));
+				streamTable = new StreamTableReader(Services, streamTableData);
 			}
 			Services.AddService<StreamTableReader>(streamTable);
 
@@ -101,7 +109,7 @@ namespace Smx.PDBSharp
 			// init DBI
 			{
 				byte[] dbiData = streamTable.GetStream(DefaultStreams.DBI);
-				dbi = new DBIReader(Services, new MemoryStream(dbiData));
+				dbi = new DBIReader(Services, dbiData);
 				OnDbiInit?.Invoke(dbi);
 			}
 			Services.AddService<DBIReader>(dbi);
@@ -110,7 +118,7 @@ namespace Smx.PDBSharp
 			// init TPI
 			{
 				byte[] tpiData = streamTable.GetStream(DefaultStreams.TPI);
-				tpi = new TPIReader(Services, new MemoryStream(tpiData));
+				tpi = new TPIReader(Services, new ReaderSpan(tpiData));
 				OnTpiInit?.Invoke(tpi);
 			}
 			Services.AddService<TPIReader>(tpi);
@@ -119,7 +127,7 @@ namespace Smx.PDBSharp
 			// init TPIHash
 			if (tpi.Header.Hash.StreamNumber != -1) {
 				byte[] tpiHashData = streamTable.GetStream(tpi.Header.Hash.StreamNumber);
-				tpiHash = new TPIHashReader(Services, new MemoryStream(tpiHashData));
+				tpiHash = new TPIHashReader(Services, tpiHashData);
 				Services.AddService<TPIHashReader>(tpiHash);
 			}
 
@@ -136,7 +144,7 @@ namespace Smx.PDBSharp
 			// init NameMap
 			{
 				byte[] nameMapData = streamTable.GetStream(DefaultStreams.PDB);
-				nameMap = new PdbStreamReader(new MemoryStream(nameMapData));
+				nameMap = new PdbStreamReader(nameMapData);
 			}
 			Services.AddService<PdbStreamReader>(nameMap);
 
@@ -148,7 +156,7 @@ namespace Smx.PDBSharp
 			{
 				byte[] namesData = namedStreamTable.GetStreamByName("/names");
 				if (namesData != null) {
-					udtNameTable = new UdtNameTableReader(Services, new MemoryStream(namesData));
+					udtNameTable = new UdtNameTableReader(Services, namesData);
 					Services.AddService<UdtNameTableReader>(udtNameTable);
 				}
 			}

@@ -17,7 +17,7 @@ namespace Smx.PDBSharp.Leaves
 		public readonly CVModifier Flags;
 		public readonly ILeafContainer ModifiedType;
 
-		public LF_MODIFIER(IServiceContainer pdb, Stream stream) {
+		public LF_MODIFIER(IServiceContainer pdb, ReaderSpan stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			ModifiedType = r.ReadIndexedTypeLazy();

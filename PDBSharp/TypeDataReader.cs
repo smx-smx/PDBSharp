@@ -15,7 +15,7 @@ using System.IO;
 
 namespace Smx.PDBSharp
 {
-	public class TypeDataReader : ReaderBase
+	public class TypeDataReader : ReaderSpan
 	{
 
 		public static readonly ReadOnlyDictionary<LeafType, uint> PrimitiveDataSizes = new ReadOnlyDictionary<LeafType, uint>(new Dictionary<LeafType, uint>() {
@@ -32,7 +32,7 @@ namespace Smx.PDBSharp
 		});
 
 		protected readonly IServiceContainer ctx;
-		public TypeDataReader(IServiceContainer ctx, Stream stream) : base(stream) {
+		public TypeDataReader(IServiceContainer ctx, ReaderSpan data) : base(data) {
 			this.ctx = ctx;
 		}
 
@@ -67,23 +67,23 @@ namespace Smx.PDBSharp
 
 			LeafType leafType = (LeafType)leafValue;
 			dataSize = PrimitiveDataSizes[leafType];
-			Stream.Seek(-2, SeekOrigin.Current);
+			Seek(-2, SeekOrigin.Current);
 
-			ILeafContainer leaf = new TypeDataReader(ctx, Stream).ReadTypeDirect(hasSize: false);
-			//ILeafContainer leaf = new TypeDataReader(ctx, Stream).ReadTypeLazy(hasSize: false);
+			ILeafContainer leaf = new TypeDataReader(ctx, this).ReadTypeDirect(hasSize: false);
+			//ILeafContainer leaf = new TypeDataReader(ctx, this).ReadTypeLazy(hasSize: false);
 			return leaf;
 
 		}
 
 		private void ConsumePadding() {
-			long remaining = Stream.Length - Stream.Position;
-			long savedPos = Stream.Position;
+			long remaining = Length - Position;
+			long savedPos = Position;
 			while (remaining-- > 0) {
 				byte b = ReadByte();
 				if (b >= (byte)LeafType.LF_PAD0 && b <= (byte)LeafType.LF_PAD15) {
 					continue;
 				}
-				Stream.Seek(-1, SeekOrigin.Current);
+				Seek(-1, SeekOrigin.Current);
 				break;
 			}
 		}
@@ -91,81 +91,81 @@ namespace Smx.PDBSharp
 		private ILeaf ReadLeaf(LeafType leafType) {
 			switch (leafType) {
 				case LeafType.LF_ALIAS:
-					return new LF_ALIAS(ctx, Stream);
+					return new LF_ALIAS(ctx, this);
 				case LeafType.LF_ARGLIST:
-					return new LF_ARGLIST(ctx, Stream);
+					return new LF_ARGLIST(ctx, this);
 				case LeafType.LF_ARRAY:
-					return new LF_ARRAY(ctx, Stream);
+					return new LF_ARRAY(ctx, this);
 				case LeafType.LF_BCLASS:
-					return new LF_BCLASS(ctx, Stream);
+					return new LF_BCLASS(ctx, this);
 				case LeafType.LF_BITFIELD:
-					return new LF_BITFIELD(ctx, Stream);
+					return new LF_BITFIELD(ctx, this);
 				case LeafType.LF_CHAR:
-					return new LF_CHAR(ctx, Stream);
+					return new LF_CHAR(ctx, this);
 				case LeafType.LF_CLASS:
 				case LeafType.LF_STRUCTURE:
 				case LeafType.LF_INTERFACE:
-					return new LF_CLASS_STRUCTURE_INTERFACE(ctx, Stream);
+					return new LF_CLASS_STRUCTURE_INTERFACE(ctx, this);
 				case LeafType.LF_ENUM:
-					return new LF_ENUM(ctx, Stream);
+					return new LF_ENUM(ctx, this);
 				case LeafType.LF_ENUMERATE:
 				case LeafType.LF_ENUMERATE_ST:
-					return new LF_ENUMERATE(ctx, Stream);
+					return new LF_ENUMERATE(ctx, this);
 				case LeafType.LF_FIELDLIST:
-					return new LF_FIELDLIST(ctx, Stream);
+					return new LF_FIELDLIST(ctx, this);
 				case LeafType.LF_INDEX:
-					return new LF_INDEX(ctx, Stream);
+					return new LF_INDEX(ctx, this);
 				case LeafType.LF_LONG:
-					return new LF_LONG(ctx, Stream);
+					return new LF_LONG(ctx, this);
 				case LeafType.LF_MEMBER:
-					return new LF_MEMBER(ctx, Stream);
+					return new LF_MEMBER(ctx, this);
 				case LeafType.LF_METHOD:
-					return new LF_METHOD(ctx, Stream);
+					return new LF_METHOD(ctx, this);
 				case LeafType.LF_METHODLIST:
-					return new LF_METHODLIST(ctx, Stream);
+					return new LF_METHODLIST(ctx, this);
 				case LeafType.LF_MODIFIER:
-					return new LF_MODIFIER(ctx, Stream);
+					return new LF_MODIFIER(ctx, this);
 				case LeafType.LF_MFUNCTION:
-					return new LF_MFUNCTION(ctx, Stream);
+					return new LF_MFUNCTION(ctx, this);
 				case LeafType.LF_NESTTYPE:
-					return new LF_NESTTYPE(ctx, Stream);
+					return new LF_NESTTYPE(ctx, this);
 				case LeafType.LF_ONEMETHOD:
-					return new LF_ONEMETHOD(ctx, Stream);
+					return new LF_ONEMETHOD(ctx, this);
 				case LeafType.LF_POINTER:
-					return new LF_POINTER(ctx, Stream);
+					return new LF_POINTER(ctx, this);
 				case LeafType.LF_PROCEDURE:
-					return new LF_PROCEDURE(ctx, Stream);
+					return new LF_PROCEDURE(ctx, this);
 				case LeafType.LF_QUADWORD:
-					return new LF_QUADWORD(ctx, Stream);
+					return new LF_QUADWORD(ctx, this);
 				case LeafType.LF_REAL32:
-					return new LF_REAL32(ctx, Stream);
+					return new LF_REAL32(ctx, this);
 				case LeafType.LF_REAL64:
-					return new LF_REAL64(ctx, Stream);
+					return new LF_REAL64(ctx, this);
 				case LeafType.LF_SHORT:
-					return new LF_SHORT(ctx, Stream);
+					return new LF_SHORT(ctx, this);
 				case LeafType.LF_STMEMBER:
-					return new LF_STMEMBER(ctx, Stream);
+					return new LF_STMEMBER(ctx, this);
 				case LeafType.LF_ULONG:
-					return new LF_ULONG(ctx, Stream);
+					return new LF_ULONG(ctx, this);
 				case LeafType.LF_UNION:
-					return new LF_UNION(ctx, Stream);
+					return new LF_UNION(ctx, this);
 				case LeafType.LF_UQUADWORD:
-					return new LF_UQUADWORD(ctx, Stream);
+					return new LF_UQUADWORD(ctx, this);
 				case LeafType.LF_USHORT:
-					return new LF_USHORT(ctx, Stream);
+					return new LF_USHORT(ctx, this);
 				case LeafType.LF_VARSTRING:
-					return new LF_VARSTRING(ctx, Stream);
+					return new LF_VARSTRING(ctx, this);
 				case LeafType.LF_VBCLASS:
 				case LeafType.LF_IVBCLASS:
-					return new LF_VBCLASS(ctx, Stream);
+					return new LF_VBCLASS(ctx, this);
 				case LeafType.LF_VFTABLE:
-					return new LF_VFTABLE(ctx, Stream);
+					return new LF_VFTABLE(ctx, this);
 				case LeafType.LF_VFTPATH_16t:
-					return new LF_VFTPATH_16t(ctx, Stream);
+					return new LF_VFTPATH_16t(ctx, this);
 				case LeafType.LF_VFUNCTAB:
-					return new LF_VFUNCTAB(ctx, Stream);
+					return new LF_VFUNCTAB(ctx, this);
 				case LeafType.LF_VTSHAPE:
-					return new LF_VTSHAPE(ctx, Stream);
+					return new LF_VTSHAPE(ctx, this);
 				case LeafType.SPECIAL_BUILTIN:
 					throw new InvalidDataException("SPECIAL_BUILTIN is a custom ILeaf marker, it can't be present in a valid ctx file");
 				default:
@@ -174,17 +174,17 @@ namespace Smx.PDBSharp
 		}
 
 		public ILeafContainer ReadTypeLazy(bool hasSize = true) {
-			long typePos = Stream.Position;
+			long typePos = Position;
 
-			Lazy<ILeafContainer> delayedLeaf = new Lazy<ILeafContainer>(() => {
-				Stream.Position = typePos;
+			ILazy<ILeafContainer> delayedLeaf = LazyFactory.CreateLazy<ILeafContainer>(() => {
+				Position = typePos;
 				return ReadTypeDirect(hasSize);
 			});
 			return new LazyLeafProvider(ctx, delayedLeaf);
 		}
 
 		public LeafContainerBase ReadTypeDirect(bool hasSize = true) {
-			long typeStartOffset = Stream.Position;
+			long typeStartOffset = Position;
 
 			UInt16 size = 0;
 			if (hasSize) {

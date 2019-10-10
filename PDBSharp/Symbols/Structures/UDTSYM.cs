@@ -22,7 +22,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public readonly ILeafContainer Type;
 		public readonly string Name;
 
-		public UdtSym(IServiceContainer ctx, Stream stream) {
+		public UdtSym(IServiceContainer ctx, ReaderSpan stream) {
 			var r = new SymbolDataReader(ctx, stream);
 			Type = r.ReadIndexedTypeLazy();
 			Name = r.ReadSymbolString();

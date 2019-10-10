@@ -19,7 +19,7 @@ namespace Smx.PDBSharp.Leaves
 
 		public readonly UInt32 VBaseOffset;
 
-		public LF_METHODLIST(IServiceContainer pdb, Stream stream) {
+		public LF_METHODLIST(IServiceContainer pdb, ReaderSpan stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			Attributes = new FieldAttributes(r.ReadUInt16());

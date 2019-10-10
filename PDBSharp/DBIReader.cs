@@ -60,11 +60,11 @@ namespace Smx.PDBSharp
 		public UInt32 Reserved;
 	}
 
-	public class DBIReader : ReaderBase
+	public class DBIReader : ReaderSpan
 	{
 		public readonly DBIHeader Header;
 
-		private readonly Lazy<IEnumerable<IModuleContainer>> lazyModuleContainers;
+		private readonly ILazy<IEnumerable<IModuleContainer>> lazyModuleContainers;
 
 		public readonly DebugReader DebugInfo;
 		public readonly SectionContribsReader SectionContribs;
@@ -92,22 +92,22 @@ namespace Smx.PDBSharp
 		 * -> EcSubstream
 		 * -> DebugHeader
 		 **/
-		public DBIReader(IServiceContainer ctx, Stream stream) : base(stream) {
+		public DBIReader(IServiceContainer ctx, byte[] data) : base(data) {
 			this.ctx = ctx;
-			if (stream.Length == 0)
+			if (Length == 0)
 				return;
 
-			if (stream.Length < Marshal.SizeOf<DBIHeader>()) {
+			if (Length < Marshal.SizeOf<DBIHeader>()) {
 				throw new InvalidDataException();
 			}
 
-			this.StreamTable = ctx.GetService<StreamTableReader>();
-
-			Header = ReadStruct<DBIHeader>();
+			Header = Read<DBIHeader>();
 
 			if (Header.Signature != unchecked((uint)-1) || !Enum.IsDefined(typeof(DBIVersion), (uint)Header.Version)) {
 				throw new InvalidDataException();
 			}
+
+			this.StreamTable = ctx.GetService<StreamTableReader>();
 
 			uint nStreams = StreamTable.NumStreams;
 			if (
@@ -118,37 +118,38 @@ namespace Smx.PDBSharp
 				throw new InvalidDataException();
 			}
 
-			lazyModuleContainers = new Lazy<IEnumerable<IModuleContainer>>(ReadModules);
-			stream.Position += Header.ModuleListSize;
+			lazyModuleContainers = LazyFactory.CreateLazy(ReadModules);
+			Position += Header.ModuleListSize;
 
 			if (Header.SectionContributionSize > 0) {
-				SectionContribs = PerformAt(stream.Position, () => new SectionContribsReader(Header.SectionContributionSize, stream));
+				SectionContribs = new SectionContribsReader(Header.SectionContributionSize, this);
 			}
-			stream.Position += Header.SectionContributionSize;
+			Position += Header.SectionContributionSize;
 
-			stream.Position += Header.SectionMapSize;
-			stream.Position += Header.FileInfoSize;
+			Position += Header.SectionMapSize;
+			Position += Header.FileInfoSize;
 
 			if (Header.TypeServerMapSize > 0) {
-				TypeServerMap = PerformAt(stream.Position, () => new TypeServerMapReader(stream));
+				TypeServerMap = new TypeServerMapReader(this);
 			}
-			stream.Position += Header.TypeServerMapSize;
+			Position += Header.TypeServerMapSize;
 
 			if (Header.EcSubstreamSize > 0) {
-				EC = PerformAt(stream.Position, () => new ECReader(stream));
+				EC = new ECReader(this);
 			}
-			stream.Position += Header.EcSubstreamSize;
+			Position += Header.EcSubstreamSize;
 
 			if (Header.DebugHeaderSize > 0) {
-				DebugInfo = new DebugReader(ctx, stream);
+				DebugInfo = new DebugReader(ctx, this);
 			}
+
 		}
 
 
 		private IEnumerable<IModuleContainer> ReadModules() {
-			Stream.Position = Marshal.SizeOf<DBIHeader>();
+			Position = Marshal.SizeOf<DBIHeader>();
 
-			ModuleListReader rdr = new ModuleListReader(ctx, Stream, Header.ModuleListSize);
+			ModuleListReader rdr = new ModuleListReader(ctx, this, Header.ModuleListSize);
 			ctx.AddService<ModuleListReader>(rdr);
 
 			IEnumerable<ModuleInfo> moduleInfoList = rdr.Modules;

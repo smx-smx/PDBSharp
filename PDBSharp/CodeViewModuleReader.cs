@@ -21,18 +21,18 @@ namespace Smx.PDBSharp
 		C13 = 4
 	}
 
-	public class CodeViewModuleReader : ReaderBase, IModule
+	public class CodeViewModuleReader : ReaderSpan, IModule
 	{
 		private readonly IServiceContainer ctx;
 		private readonly ModuleInfo mod;
 
-		private readonly Lazy<IEnumerable<Symbol>> lazySymbols;
+		private readonly ILazy<IEnumerable<Symbol>> lazySymbols;
 
 		public event OnSymbolDataDelegate OnSymbolData;
 
 		public IEnumerable<Symbol> Symbols => lazySymbols.Value;
 
-		public CodeViewModuleReader(IServiceContainer ctx, ModuleInfo mod, Stream stream) : base(stream) {
+		public CodeViewModuleReader(IServiceContainer ctx, ModuleInfo mod, ReaderSpan stream) : base(stream) {
 			this.ctx = ctx;
 			this.mod = mod;
 
@@ -41,14 +41,14 @@ namespace Smx.PDBSharp
 				throw new NotImplementedException($"CodeView {signature} not supported yet");
 			}
 
-			lazySymbols = new Lazy<IEnumerable<Symbol>>(ReadSymbols);
+			lazySymbols = LazyFactory.CreateLazy(ReadSymbols);
 		}
 
 		private IEnumerable<Symbol> ReadSymbols() {
 			int symbolsSize = (int)mod.SymbolsSize - sizeof(CodeViewSignature); //exclude signature
+			
 			byte[] symbolsData = ReadBytes(symbolsSize);
-
-			var rdr = new SymbolsReader(ctx, this, new MemoryStream(symbolsData));
+			var rdr = new SymbolsReader(ctx, this, symbolsData);
 			if (OnSymbolData != null) {
 				rdr.OnSymbolData += OnSymbolData;
 			}

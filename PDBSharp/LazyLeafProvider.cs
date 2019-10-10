@@ -25,7 +25,7 @@ namespace Smx.PDBSharp
 			Leaf.Data.Write(pdb, stream);
 		}
 
-		private readonly Lazy<ILeafContainer> lazy;
+		private readonly ILazy<ILeafContainer> lazy;
 		public ILeafContainer Leaf => lazy.Value;
 
 		public uint TypeIndex => Leaf.TypeIndex;
@@ -40,10 +40,10 @@ namespace Smx.PDBSharp
 			this.resolver = ctx.GetService<TypeResolver>();
 
 			this.typeIndex = typeIndex;
-			lazy = new Lazy<ILeafContainer>(ReadLeaf);
+			lazy = LazyFactory.CreateLazy(ReadLeaf);
 		}
 
-		public LazyLeafProvider(IServiceContainer ctx, Lazy<ILeafContainer> lazyProvider) {
+		public LazyLeafProvider(IServiceContainer ctx, ILazy<ILeafContainer> lazyProvider) {
 			this.resolver = ctx.GetService<TypeResolver>();
 			lazy = lazyProvider;
 		}

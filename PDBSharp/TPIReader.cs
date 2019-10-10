@@ -67,7 +67,7 @@ namespace Smx.PDBSharp
 
 	public delegate void OnLeafDataDelegate(byte[] data);
 
-	public class TPIReader : ReaderBase
+	public class TPIReader : ReaderSpan
 	{
 		public readonly TPIHeader Header;
 
@@ -75,7 +75,7 @@ namespace Smx.PDBSharp
 
 		public event OnLeafDataDelegate OnLeafData;
 
-		public Lazy<IEnumerable<ILeafContainer>> lazyLeafContainers;
+		public ILazy<IEnumerable<ILeafContainer>> lazyLeafContainers;
 
 		public IEnumerable<ILeafContainer> Types => lazyLeafContainers.Value;
 
@@ -93,10 +93,10 @@ namespace Smx.PDBSharp
 			return TypeIndex <= ((uint)SpecialTypeMode.NearPointer128 | 0xFF);
 		}
 
-		public TPIReader(IServiceContainer ctx, Stream stream) : base(stream) {
+		public TPIReader(IServiceContainer ctx, ReaderSpan stream) : base(stream) {
 			this.ctx = ctx;
 
-			Header = ReadStruct<TPIHeader>();
+			Header = Read<TPIHeader>();
 			if (Header.HeaderSize != Marshal.SizeOf<TPIHeader>()) {
 				throw new InvalidDataException();
 			}
@@ -112,46 +112,47 @@ namespace Smx.PDBSharp
 			}
 #endif
 
-			lazyLeafContainers = new Lazy<IEnumerable<ILeafContainer>>(ReadTypes);
+			lazyLeafContainers = LazyFactory.CreateLazy(ReadTypes);
 		}
 
 		public ILeafContainer ReadType(uint typeOffset) {
-			return PerformAt(typeOffset, () => ReadType());
+			return PerformAt(typeOffset, () => ReadType(out long datSize));
 		}
 
-		private ILeafContainer ReadType() {
-			UInt16 length = ReadUInt16();
+		private ILeafContainer ReadType(out long dataSize) {
+			ushort length = ReadUInt16();
 			if (length == 0) {
+				dataSize = sizeof(ushort);
 				return null;
 			}
+			dataSize = sizeof(ushort) + length;
+			Position -= sizeof(ushort);
 
-			int dataSize = length + sizeof(UInt16);
-			byte[] leafDataBuf = new byte[dataSize];
-
+#if !PERF
 			{
+				var leafDataBuf = ReadBytes((int)length + sizeof(ushort));
+
 				UInt32 leafHash = HasherV2.HashBufferV8(leafDataBuf, 0xFFFFFFFF);
 				UInt32 hash = HasherV2.HashData(leafDataBuf, Header.Hash.NumHashBuckets);
+
+				Position -= sizeof(ushort) + length;
 			}
+#endif
 
-			MemoryStream stream = new MemoryStream(leafDataBuf);
-			BinaryWriter wr = new BinaryWriter(stream);
-			wr.Write(length);
-			wr.Write(ReadBytes(length));
+			//OnLeafData?.Invoke(leafDataBuf);
 
-			OnLeafData?.Invoke(leafDataBuf);
+			var typeSpan = Memory.Slice((int)Position, (int)dataSize);
+			TypeDataReader rdr = new TypeDataReader(ctx, new ReaderSpan(typeSpan));
+			Position += dataSize;
 
-			stream.Position = 0;
-			TypeDataReader rdr = new TypeDataReader(ctx, stream);
 			return rdr.ReadTypeLazy();
 		}
 
 		private IEnumerable<ILeafContainer> ReadTypes() {
-			long savedPos = Stream.Position;
 			long processed = 0;
 			while (processed < Header.GpRecSize) {
-				yield return ReadType();
-				processed += Stream.Position - savedPos;
-				savedPos = Stream.Position;
+				yield return ReadType(out long dataSize);
+				processed += dataSize;
 			}
 		}
 	}

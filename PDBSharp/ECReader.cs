@@ -10,11 +10,11 @@ using System.IO;
 
 namespace Smx.PDBSharp
 {
-	public class ECReader : ReaderBase
+	public class ECReader : ReaderSpan
 	{
 		public readonly NameTableReader NameTable;
 
-		public ECReader(Stream stream) : base(stream) {
+		public ECReader(ReaderSpan stream) : base(stream) {
 			NameTable = Deserializers.ReadNameTable(this);
 		}
 	}

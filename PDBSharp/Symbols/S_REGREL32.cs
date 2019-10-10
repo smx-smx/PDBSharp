@@ -27,7 +27,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt16 RegisterIndex;
 		public readonly string Name;
 
-		public S_REGREL32(IServiceContainer ctx, IModule mod, Stream stream) {
+		public S_REGREL32(IServiceContainer ctx, IModule mod, ReaderSpan stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			Offset = r.ReadUInt32();

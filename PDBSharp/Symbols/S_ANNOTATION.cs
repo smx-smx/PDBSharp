@@ -20,7 +20,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt16 NumberOfStrings;
 		public readonly string[] Annotations;
 
-		public S_ANNOTATION(IServiceContainer ctx, IModule mod, Stream stream) {
+		public S_ANNOTATION(IServiceContainer ctx, IModule mod, ReaderSpan stream) {
 			var r = new SymbolDataReader(ctx, stream);
 			Offset = r.ReadUInt32();
 			Segment = r.ReadUInt16();

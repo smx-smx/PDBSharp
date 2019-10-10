@@ -15,7 +15,7 @@ namespace Smx.PDBSharp.Leaves
 	{
 		public readonly byte Value;
 
-		public LF_CHAR(IServiceContainer pdb, Stream stream) {
+		public LF_CHAR(IServiceContainer pdb, ReaderSpan stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 			Value = r.ReadByte();
 		}

@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace Smx.PDBSharp
 {
@@ -21,7 +22,26 @@ namespace Smx.PDBSharp
 		Std = 3
 	}
 
-	public class FPOData : ReaderBase
+	public struct FPOData
+	{
+		public readonly UInt32 StartOffset;
+		public readonly UInt32 FunctionSize;
+		public readonly UInt32 SizeLocalsDwords;
+		public readonly UInt16 SizeParamsDwords;
+		public readonly byte PrologSize;
+		private readonly byte flags;
+
+		// frame type determined by size
+		public FPOFrameType FrameType => (FPOFrameType)FrameSize;
+
+		public byte NumberSavedRegisters => (byte)(flags & 3);
+		public bool HasSEH => ((flags >> 3) & 1) == 1;
+		public bool UsesBasePointer => ((flags >> 4) & 1) == 1;
+		// bit 5 is reserved
+		public byte FrameSize => (byte)((flags >> 6) & 2);
+	}
+
+	public class _FPOData : ReaderSpan
 	{
 		public readonly UInt32 StartOffset;
 		public readonly UInt32 FunctionSize;
@@ -39,7 +59,7 @@ namespace Smx.PDBSharp
 		// bit 5 is reserved
 		public byte FrameSize => (byte)((flags >> 6) & 2);
 
-		public FPOData(Stream stream) : base(stream) {
+		public _FPOData(ReaderSpan stream) : base(stream) {
 			StartOffset = ReadUInt32();
 			FunctionSize = ReadUInt32();
 			SizeLocalsDwords = ReadUInt32();
@@ -47,21 +67,27 @@ namespace Smx.PDBSharp
 			PrologSize = ReadByte();
 			flags = ReadByte();
 		}
+
+		public const int SIZE = 16;
 	}
 
-	public class FPOReader : ReaderBase
+	public unsafe class FPOReader : ReaderSpan
 	{
 		public IEnumerable<FPOData> Frames => lazyFrames.Value;
-		private readonly Lazy<IEnumerable<FPOData>> lazyFrames;
+		private readonly ILazy<IEnumerable<FPOData>> lazyFrames;
+
+		private readonly int itemSize = sizeof(FPOData);
 
 		private IEnumerable<FPOData> ReadFrames() {
-			while (Stream.Position < Stream.Length) {
-				yield return new FPOData(Stream);
+			while (Position < Length) {
+				this.Span.Slice((int)Position, itemSize);
+				yield return Span.Read<FPOData>((int)Position);
+				Position += itemSize;
 			}
 		}
 
-		public FPOReader(Stream stream) : base(stream) {
-			lazyFrames = new Lazy<IEnumerable<FPOData>>(ReadFrames);
+		public FPOReader(byte[] data) : base(data) {
+			lazyFrames = LazyFactory.CreateLazy(ReadFrames);
 		}
 	}
 

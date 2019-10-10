@@ -28,7 +28,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly CV_PROCFLAGS Flags;
 		public readonly string Name;
 
-		public S_LABEL32(IServiceContainer ctx, IModule mod, Stream stream) {
+		public S_LABEL32(IServiceContainer ctx, IModule mod, ReaderSpan stream) {
 			var r = new SymbolDataReader(ctx, stream);
 			Offset = r.ReadUInt32();
 			Segment = r.ReadUInt16();

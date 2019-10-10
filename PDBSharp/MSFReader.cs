@@ -9,15 +9,17 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace Smx.PDBSharp
 {
-	public struct DSHeader
+	public unsafe struct DSHeader
 	{
-		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 0x20)]
-		public byte[] Magic;
+		public const int MAGIC_SIZE = 32;
+
+		public fixed byte Magic[MAGIC_SIZE];
 		public UInt32 PageSize;
 		public UInt32 FpmPageNumber;
 		public UInt32 NumPages;
@@ -25,44 +27,57 @@ namespace Smx.PDBSharp
 		public UInt32 PageMap; //should be 0 in the header
 	}
 
-	public class MSFReader : ReaderBase
+	public unsafe class MSFReader : IDisposable
 	{
 		private readonly PDBType type;
-
-		private DSHeader hdr;
-
 		private byte[] streamTableList;
 		private byte[] streamTable;
 
-		public DSHeader Header => hdr;
+        public DSHeader Header { get; }
 
-		public MSFReader(Stream msf, PDBType type) : base(msf) {
+        private readonly long Length;
+
+		private readonly MemoryMappedSpan mf;
+
+		private unsafe DSHeader ReadHeader() {
+			var span = this.mf.GetSpan();
+			int size = sizeof(DSHeader);
+			return span.Read<DSHeader>(0);
+		}
+
+		public MSFReader(MemoryMappedFile mfile, long length, PDBType type) {
+			this.mf = new MemoryMappedSpan(mfile, length);
 			this.type = type;
-			this.hdr = ReadStruct<DSHeader>();
+			this.Header = ReadHeader();
 		}
 
 		public uint GetPageLocation(uint pageNumber) {
-			return hdr.PageSize * pageNumber;
+			return Header.PageSize * pageNumber;
 		}
 
 		public uint GetNumPages(uint numBytes) {
-			return (numBytes + hdr.PageSize - 1) / hdr.PageSize;
+			return (numBytes + Header.PageSize - 1) / Header.PageSize;
 		}
 
-		public IEnumerable<byte[]> GetPages(uint numPages) {
-			for (int i = 0; i < numPages; i++) {
-				var pageNum = ReadUInt32();
-				yield return ReadPage(pageNum);
-			}
+		private long GetDataSize(uint numPages) {
+			return numPages * Header.PageSize;
 		}
 
 		public IEnumerable<byte[]> GetPages(long offset, uint numPages) {
-			return PerformAt(offset, () => GetPages(numPages));
+			int dataLength = (int)(numPages * sizeof(uint));	
+			uint[] pageNums = mf.GetSpan()
+				.Slice((int)offset, dataLength)
+				.Cast<uint>()
+				.ToArray();
+
+			foreach (uint pageNum in pageNums) {
+				yield return ReadPage(pageNum);
+			}		
 		}
 
 		private IEnumerable<byte[]> GetPages_StreamTableList() {
 			// number of pages to represent the list of streams
-			var numStreamTablePages = GetNumPages(hdr.DirectorySize);
+			var numStreamTablePages = GetNumPages(Header.DirectorySize);
 			// number of pages to represent the list of pages
 			var numListPages = GetNumPages(numStreamTablePages);
 
@@ -71,7 +86,7 @@ namespace Smx.PDBSharp
 		}
 
 		private IEnumerable<byte[]> GetPages_StreamTable() {
-			var numStreamTablePages = GetNumPages(hdr.DirectorySize);
+			var numStreamTablePages = GetNumPages(Header.DirectorySize);
 
 			var rdr = new BinaryReader(new MemoryStream(streamTableList));
 			for (int i = 0; i < numStreamTablePages; i++) {
@@ -104,10 +119,14 @@ namespace Smx.PDBSharp
 		}
 
 		public byte[] ReadPage(uint pageNumber) {
-			return PerformAt<byte[]>(pageNumber * hdr.PageSize, () => {
-				//Trace.WriteLine($"Reading Page {pageNumber} @ {pageNumber * hdr.PageSize:X8}");
-				return ReadBytes((int)hdr.PageSize);
-			});
+			long offset = pageNumber * Header.PageSize;
+
+			byte[] data = mf.GetSpan().Slice((int)offset, (int)Header.PageSize).ToArray();
+			return data;
+		}
+
+		public void Dispose() {
+			mf.Dispose();
 		}
 	}
 }

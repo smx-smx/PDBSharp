@@ -19,7 +19,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly byte Machine;
 		public readonly string VersionString;
 
-		public S_COMPILE(IServiceContainer ctx, IModule mod, Stream stream) {
+		public S_COMPILE(IServiceContainer ctx, IModule mod, ReaderSpan stream) {
 			var r = new SymbolDataReader(ctx, stream);
 			Machine = r.ReadByte();
 			uint flags = (uint)(r.ReadByte() | (r.ReadByte() << 8) | (r.ReadByte() << 16));

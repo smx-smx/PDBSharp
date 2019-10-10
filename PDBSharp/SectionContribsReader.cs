@@ -20,12 +20,12 @@ namespace Smx.PDBSharp
 	}
 
 
-	public class SectionContribsReader : ReaderBase
+	public class SectionContribsReader : ReaderSpan
 	{
 
 		public readonly SCVersion Version;
 
-		private readonly Lazy<IEnumerable<SectionContrib40>> sectionContribsLazy;
+		private readonly ILazy<IEnumerable<SectionContrib40>> sectionContribsLazy;
 		public IEnumerable<SectionContrib40> SectionContribs => sectionContribsLazy.Value;
 
 		private readonly long StreamOffset;
@@ -34,44 +34,44 @@ namespace Smx.PDBSharp
 
 		private IEnumerable<SectionContrib40> ReadSectionContribsOld() {
 			while(ReadBytes < SectionContribsSize) {
-				yield return PerformAt(StreamOffset + ReadBytes, () => new SectionContrib40(Stream));
+				yield return PerformAt(StreamOffset + ReadBytes, () => new SectionContrib40(this));
 				ReadBytes += SectionContrib40.SIZE;
 			}
 		}
 
 		private IEnumerable<SectionContrib40> ReadSectionContribsV1() {
 			while (ReadBytes < SectionContribsSize) {
-				yield return PerformAt(StreamOffset + ReadBytes, () => new SectionContrib(Stream));
+				yield return PerformAt(StreamOffset + ReadBytes, () => new SectionContrib(this));
 				ReadBytes += SectionContrib.SIZE;
 			}
 		}
 
 		private IEnumerable<SectionContrib40> ReadSectionContribsV2() {
 			while(ReadBytes < SectionContribsSize) {
-				yield return PerformAt(StreamOffset + ReadBytes, () => new SectionContrib2(Stream));
+				yield return PerformAt(StreamOffset + ReadBytes, () => new SectionContrib2(this));
 				ReadBytes += SectionContrib2.SIZE;
 			}
 		}
 
 
-		public SectionContribsReader(uint sectionContribsSize, Stream stream) : base(stream) {
+		public SectionContribsReader(uint sectionContribsSize, ReaderSpan stream) : base(stream) {
 			this.SectionContribsSize = sectionContribsSize;
 
 			Version = ReadEnum<SCVersion>();
 			switch (Version) {
 				case SCVersion.V60:
-					sectionContribsLazy = new Lazy<IEnumerable<SectionContrib40>>(ReadSectionContribsV1);
+					sectionContribsLazy = LazyFactory.CreateLazy(ReadSectionContribsV1);
 					break;
 				case SCVersion.New:
-					sectionContribsLazy = new Lazy<IEnumerable<SectionContrib40>>(ReadSectionContribsV2);
+					sectionContribsLazy = LazyFactory.CreateLazy(ReadSectionContribsV2);
 					break;
 				default:
-					sectionContribsLazy = new Lazy<IEnumerable<SectionContrib40>>(ReadSectionContribsOld);
+					sectionContribsLazy = LazyFactory.CreateLazy(ReadSectionContribsOld);
 					break;
 			}
 
 			// after version
-			StreamOffset = Stream.Position;
+			StreamOffset = Position;
 		}
 	}
 }

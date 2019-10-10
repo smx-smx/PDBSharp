@@ -114,7 +114,7 @@ namespace Smx.PDBSharp.Dumper
 				return sb.ToString();
 			}
 
-			if (baseType == typeof(Lazy<>)) {
+			if (baseType == typeof(ILazy<>)) {
 				object value = t.GetProperty("Value").GetValue(obj);
 				CrIndentPush(sb);
 				sb.Append(new ObjectDumper(value, depth + depthOffset).GetString());

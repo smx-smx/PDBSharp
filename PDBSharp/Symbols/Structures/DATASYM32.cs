@@ -26,7 +26,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public readonly UInt16 Segment;
 		public readonly string Name;
 
-		public DataSym32Base(IServiceContainer ctx, Stream stream) {
+		public DataSym32Base(IServiceContainer ctx, ReaderSpan stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			Type = r.ReadIndexedTypeLazy();

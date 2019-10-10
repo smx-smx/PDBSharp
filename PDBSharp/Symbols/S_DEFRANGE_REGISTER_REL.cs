@@ -33,7 +33,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly CV_LVAR_ADDR_GAP[] Gaps;
 
 
-		public S_DEFRANGE_REGISTER_REL(IServiceContainer ctx, IModule mod, Stream stream) {
+		public S_DEFRANGE_REGISTER_REL(IServiceContainer ctx, IModule mod, ReaderSpan stream) {
 			var r = new SymbolDataReader(ctx, stream);
 			BaseRegister = r.ReadUInt16();
 

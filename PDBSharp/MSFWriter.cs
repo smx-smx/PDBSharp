@@ -30,14 +30,17 @@ namespace Smx.PDBSharp
 			set => hdr.PageSize = value;
 		}
 
+		private unsafe void WriteMagic(string magicStr) {
+			byte[] magic = Encoding.ASCII.GetBytes(magicStr);
+			fixed(byte *ptr = hdr.Magic) {
+				for(int i=0; i<magic.Length; i++) {
+					ptr[i] = magic[i];
+				}
+			}
+		}
+
 		public MSFWriter(Stream stream) : base(stream) {
-			//$TODO: Small PDB
-			int magicSize = Marshal.OffsetOf<DSHeader>("PageSize").ToInt32();
-			hdr.Magic = new byte[magicSize];
-
-			byte[] magic = Encoding.ASCII.GetBytes(PDBFile.BIG_MAGIC);
-			Array.Copy(magic, hdr.Magic, magic.Length);
-
+			WriteMagic(PDBFile.BIG_MAGIC);
 			StreamTable = new StreamTableWriter(this, this.Stream);
 		}
 

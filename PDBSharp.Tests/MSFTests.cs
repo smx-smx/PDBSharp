@@ -47,7 +47,6 @@ namespace Tests
 
 			File.Delete(filePath);
 		}
-#endif
 
 		[Test]
 		public void TestHeader() {
@@ -68,5 +67,6 @@ namespace Tests
 
 			File.Delete(filePath);
 		}
+#endif
 	}
 }

@@ -19,7 +19,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public readonly UInt32 NumberOfFunctions;
 		public readonly ILeafContainer[] Functions;
 
-		public FUNCTIONLIST(IServiceContainer ctx, IModule mod, Stream stream) {
+		public FUNCTIONLIST(IServiceContainer ctx, IModule mod, ReaderSpan stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			NumberOfFunctions = r.ReadUInt32();

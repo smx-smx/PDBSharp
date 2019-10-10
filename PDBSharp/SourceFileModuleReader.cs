@@ -20,7 +20,7 @@ namespace Smx.PDBSharp
 		}
 	}
 
-	public class SourceFileModuleReader : ReaderBase, IModule
+	public class SourceFileModuleReader : ReaderSpan, IModule
 	{
 		private readonly PDBFile pdb;
 
@@ -34,7 +34,7 @@ namespace Smx.PDBSharp
 
 		public IEnumerable<Symbol> Symbols => Enumerable.Empty<Symbol>();
 
-		public SourceFileModuleReader(IServiceContainer ctx, Stream stream) : base(stream) {
+		public SourceFileModuleReader(IServiceContainer ctx, ReaderSpan stream) : base(stream) {
 			this.pdb = ctx.GetService<PDBFile>();
 
 			// including .c file
@@ -83,7 +83,7 @@ namespace Smx.PDBSharp
 			// skip it for now, and go read child headers
 			Children = childFileOffsets.Select(offset => {
 				return PerformAt(offset, () => {
-					return new SourceFileModuleReader(ctx, this.Stream);
+					return new SourceFileModuleReader(ctx, this);
 				});
 			}).ToArray();
 		}

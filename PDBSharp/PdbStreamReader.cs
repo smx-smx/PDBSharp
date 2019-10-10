@@ -31,7 +31,7 @@ namespace Smx.PDBSharp
 		MinimalDebugInfo = 0x494E494D //MINI
 	}
 
-	public class PdbStreamReader : ReaderBase
+	public class PdbStreamReader : ReaderSpan
 	{
 		public readonly PDBVersion Version;
 		public readonly UInt32 Signature;
@@ -43,7 +43,7 @@ namespace Smx.PDBSharp
 
 		private readonly bool ContainsIdStream;
 
-		public PdbStreamReader(Stream stream) : base(stream) {
+		public PdbStreamReader(byte[] nameMapData) : base(nameMapData) {
 			Version = ReadEnum<PDBVersion>();
 			Signature = ReadUInt32();
 			NumberOfUpdates = ReadUInt32();
@@ -53,13 +53,13 @@ namespace Smx.PDBSharp
 			}
 
 			if (Version > PDBVersion.VC70Dep) {
-				NewSignature = ReadStruct<Guid>();
+				NewSignature = Read<Guid>();
 			}
 
 			NameTable = Deserializers.ReadNameIndexTable(this);
 
 			bool flagContinue = true;
-			while (flagContinue && stream.Position + sizeof(uint) < stream.Length) {
+			while (flagContinue && Position + sizeof(uint) < Length) {
 				UInt32 signature = ReadUInt32();
 				if (Enum.IsDefined(typeof(PDBVersion), signature)) {
 					PDBVersion version = (PDBVersion)signature;

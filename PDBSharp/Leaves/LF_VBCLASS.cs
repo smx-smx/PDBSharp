@@ -20,7 +20,7 @@ namespace Smx.PDBSharp.Leaves
 		public readonly ILeafContainer OffsetFromAddress;
 		public readonly ILeafContainer OffsetFromTable;
 
-		public LF_VBCLASS(IServiceContainer pdb, Stream stream) {
+		public LF_VBCLASS(IServiceContainer pdb, ReaderSpan stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			Attributes = new FieldAttributes(r.ReadUInt16());

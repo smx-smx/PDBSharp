@@ -25,7 +25,7 @@ namespace Smx.PDBSharp.Leaves
 
 		public readonly FunctionAttributes Attributes;
 
-		public LF_MFUNCTION(IServiceContainer pdb, Stream stream) {
+		public LF_MFUNCTION(IServiceContainer pdb, ReaderSpan stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			ReturnValueType = r.ReadIndexedTypeLazy();

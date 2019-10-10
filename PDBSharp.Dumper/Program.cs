@@ -64,6 +64,12 @@ namespace Smx.PDBSharp.Dumper
 				Environment.Exit(1);
 			}
 
+#if PERF
+			Console.WriteLine("Starting...");
+			Stopwatch sw = new Stopwatch();
+			sw.Start();
+#endif
+
 			PDBFile pdb = PDBFile.Open(PdbFilePath);
 			IServiceContainer sc = pdb.Services;
 
@@ -74,7 +80,9 @@ namespace Smx.PDBSharp.Dumper
 			if (OptPrintDecls) {
 				var tree = new GraphBuilder(sc).Build();
 				CodeWriter cw = new CodeWriter(tree);
+#if !PERF
 				cw.Write(Console.Out);
+#endif
 			}
 
 			if (OptDumpLeaves) {
@@ -106,19 +114,30 @@ namespace Smx.PDBSharp.Dumper
 				foreach (var pair in tpiHash.NameIndexToTypeIndex) {
 					string name = udtNameTable.GetString(pair.Key);
 					ILeafContainer leaf = resolver.GetTypeByIndex(pair.Value);
+#if !PERF
 					Console.WriteLine($"=> {name} [NI={pair.Key}] [TI={pair.Value}]");
 					Console.WriteLine(leaf.Data.GetType().Name);
+#endif
 				}
+			}
+
+			foreach(var contrib in dbi.SectionContribs.SectionContribs) {
+#if !PERF
+				ObjectDumper.Dump(contrib);
+#endif
 			}
 
 			DebugReader debug = dbi.DebugInfo;
 			if(debug != null && debug.FPO != null) {
 				foreach(var frame in debug.FPO.Frames) {
+#if !PERF
 					ObjectDumper.Dump(frame);
+#endif
 				}
 			}
 
-			foreach (var container in dbi.Modules) { 
+			foreach (var container in dbi.Modules) {
+#if !PERF
 				Console.WriteLine($"[MODULE => {container.Info.ModuleName}]");
 				Console.WriteLine($"[OBJECT => {container.Info.ObjectFileName}]");
 				Console.WriteLine($"[SRC    => {container.Info.SourceFileName}]");
@@ -126,28 +145,40 @@ namespace Smx.PDBSharp.Dumper
 					Console.WriteLine($"[TYPE   => {container.Module.GetType().Name}");
 				}
 				Console.WriteLine();
+#endif
 
 				IModule mod = container.Module;
 				if (mod != null) {
 					foreach (var sym in mod.Symbols) {
+#if !PERF
 						Console.WriteLine(sym);
+#endif
 					}
 				}
 			}
 
 			foreach(var type in tpi.Types) {
+#if !PERF
 				Console.WriteLine(type);
+#endif
 			}
 
-			/*Console.WriteLine("Press Enter to continue...");
-			Console.ReadLine();*/
+#if !PERF
+			Console.WriteLine("Press Enter to continue...");
+			Console.ReadLine();
+#else
+			sw.Stop();
+			Console.WriteLine($"Finished in {sw.Elapsed.TotalSeconds} seconds");
+#endif
 		}
 
 		private static void Pdb_OnDbiInit(DBIReader DBI) {
+#if !PERF
 			if (OptDumpModules) {
 				DBI.OnModuleData += DBI_OnModuleData;
 			}
 			DBI.OnModuleReaderInit += DBI_OnModuleReaderInit;
+#endif
 		}
 
 		private static void DBI_OnModuleReaderInit(IModule module) {

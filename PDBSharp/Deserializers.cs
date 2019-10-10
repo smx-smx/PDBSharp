@@ -14,21 +14,21 @@ namespace Smx.PDBSharp
 {
 	public class Deserializers
 	{
-		public static NameIndexTableReader ReadNameIndexTable(ReaderBase r) {
+		public static NameIndexTableReader ReadNameIndexTable(ReaderSpan r) {
 			return new NameIndexTableReader(r);
 		}
 
-		public static NameTableReader ReadNameTable(ReaderBase r) {
+		public static NameTableReader ReadNameTable(ReaderSpan r) {
 			return new NameTableReader(r);
 		}
 
 
-		public static byte[] ReadBuffer(ReaderBase r) {
+		public static byte[] ReadBuffer(ReaderSpan r) {
 			int numBytes = r.ReadInt32();
 			return r.ReadBytes(numBytes);
 		}
 
-		public static T[] ReadBuffer<T>(ReaderBase r) {
+		public static T[] ReadBuffer<T>(ReaderSpan r) {
 			byte[] buffer = ReadBuffer(r);
 
 			List<T> elements = new List<T>();
@@ -36,14 +36,14 @@ namespace Smx.PDBSharp
 			uint pos = 0;
 			while (pos < buffer.Length) {
 				//$TODO: interface
-				T elem = (T)Activator.CreateInstance(typeof(T), r.BaseStream);
+				T elem = (T)Activator.CreateInstance(typeof(T), r);
 				elements.Add(elem);
 			}
 
 			return elements.ToArray();
 		}
 
-		public static T[] ReadArray<T>(ReaderBase r) where T : unmanaged {
+		public static T[] ReadArray<T>(ReaderSpan r) where T : unmanaged {
 			uint numElements = r.ReadUInt32();
 			T[] arr = new T[numElements];
 
@@ -60,7 +60,7 @@ namespace Smx.PDBSharp
 			return arr;
 		}
 
-		public static Dictionary<Tkey, Tval> ReadMap<Tkey, Tval>(ReaderBase r)
+		public static Dictionary<Tkey, Tval> ReadMap<Tkey, Tval>(ReaderSpan r)
 			where Tkey : unmanaged
 			where Tval : unmanaged {
 			// sum of bitsizes of each member

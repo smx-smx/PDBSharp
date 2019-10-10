@@ -37,7 +37,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt16 Section;
 		public readonly UInt16 ParentSection;
 
-		public S_SEPCODE(IServiceContainer ctx, IModule mod, Stream stream) {
+		public S_SEPCODE(IServiceContainer ctx, IModule mod, ReaderSpan stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			ParentSymOffset = r.ReadUInt32();

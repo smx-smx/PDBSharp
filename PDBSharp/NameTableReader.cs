@@ -26,7 +26,7 @@ namespace Smx.PDBSharp
 
 		public readonly NameTableVersion Version;
 
-		private readonly ReaderBase rdr;
+		private readonly ReaderSpan rdr;
 
 		public readonly uint NumberOfElements;
 		public readonly uint[] Indices;
@@ -39,11 +39,11 @@ namespace Smx.PDBSharp
 		}
 
 		public string GetString(uint index) {
-			rdr.BaseStream.Position = index;
+			rdr.Position = index;
 			return rdr.ReadCString();
 		}
 
-		public NameTableReader(ReaderBase r) {
+		public NameTableReader(ReaderSpan r) {
 			UInt32 magic = r.ReadUInt32();
 			if (magic != MAGIC) {
 				throw new InvalidDataException($"Invalid verHdr magic 0x{magic:X}");
@@ -60,7 +60,7 @@ namespace Smx.PDBSharp
 			}
 
 			byte[] buf = Deserializers.ReadBuffer(r);
-			rdr = new ReaderBase(new MemoryStream(buf));
+			rdr = new ReaderSpan(buf);
 
 			Indices = Deserializers.ReadArray<UInt32>(r);
 			NumberOfElements = r.ReadUInt32();

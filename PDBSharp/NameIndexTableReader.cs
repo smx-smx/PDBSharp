@@ -18,7 +18,7 @@ namespace Smx.PDBSharp
 		private readonly Dictionary<uint, uint> Offset_Index;
 		private readonly Dictionary<uint, uint> Index_Offset;
 
-		private readonly ReaderBase rdr;
+		private readonly ReaderSpan rdr;
 
 		private readonly Dictionary<string, uint> String_Index = new Dictionary<string, uint>();
 		private readonly Dictionary<uint, string> Index_String = new Dictionary<uint, string>();
@@ -35,7 +35,7 @@ namespace Smx.PDBSharp
 			}
 
 			uint offset = Index_Offset[index];
-			rdr.BaseStream.Position = offset;
+			rdr.Position = offset;
 			string str = rdr.ReadCString();
 
 			Index_String.Add(index, str);
@@ -65,9 +65,9 @@ namespace Smx.PDBSharp
 			return true;
 		}
 
-		public NameIndexTableReader(ReaderBase r) {
+		public NameIndexTableReader(ReaderSpan r) {
 			byte[] stringTableData = Deserializers.ReadBuffer(r);
-			rdr = new ReaderBase(new MemoryStream(stringTableData));
+			rdr = new ReaderSpan(stringTableData);
 
 			Offset_Index = Deserializers.ReadMap<uint, uint>(r);
 

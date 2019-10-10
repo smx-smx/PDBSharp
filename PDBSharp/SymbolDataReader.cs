@@ -22,23 +22,23 @@ namespace Smx.PDBSharp
 		protected readonly long startOffset;
 		protected readonly long endOffset;
 
-		public int Remaining => (int)(endOffset - Stream.Position);
+		public new int Remaining => (int)(endOffset - startOffset + Position);
 
-		public SymbolDataReader(IServiceContainer ctx, SymbolHeader header, Stream stream) : base(ctx, stream) {
+		public SymbolDataReader(IServiceContainer ctx, SymbolHeader header, ReaderSpan stream) : base(ctx, stream) {
 			startOffset = stream.Position - Marshal.SizeOf<SymbolHeader>();
 			Header = header;
 			endOffset = startOffset + Header.Length;
 			CheckHeader();
 		}
 
-		public SymbolDataReader(IServiceContainer ctx, Stream stream) : base(ctx, stream) {
+		public SymbolDataReader(IServiceContainer ctx, ReaderSpan stream) : base(ctx, stream) {
 			startOffset = stream.Position;
 			Header = ReadHeader();
 			endOffset = startOffset + sizeof(UInt16) + Header.Length;
 			CheckHeader();
 		}
 
-		public bool HasMoreData => Stream.Position < (startOffset + Header.Length);
+		public bool HasMoreData => Position < (startOffset + Header.Length);
 
 		private void CheckHeader() {
 			if (!Enum.IsDefined(typeof(SymbolType), Header.Type)) {
@@ -56,12 +56,12 @@ namespace Smx.PDBSharp
 
 
 			return cv.PerformAt(offset, () => {
-				return new SymbolsReader(ctx, mod, cv.BaseStream).ReadSymbol();
+				return new SymbolsReader(ctx, mod, cv).ReadSymbol();
 			});
 		}
 
 		private SymbolHeader ReadHeader() {
-			return ReadStruct<SymbolHeader>();
+			return Read<SymbolHeader>();
 		}
 
 		public string ReadSymbolString() {
@@ -79,20 +79,20 @@ namespace Smx.PDBSharp
 
 			switch (type) {
 				case ThunkType.ADJUSTOR:
-					return new ADJUSTOR(ctx, Header, Stream);
+					return new ADJUSTOR(ctx, Header, this);
 				case ThunkType.NOTYPE:
-					return new NOTYPE(ctx, Header, Stream);
+					return new NOTYPE(ctx, Header, this);
 				case ThunkType.PCODE:
-					return new PCODE(ctx, Header, Stream);
+					return new PCODE(ctx, Header, this);
 				case ThunkType.VCALL:
-					return new VCALL(ctx, Header, Stream);
+					return new VCALL(ctx, Header, this);
 				default:
 					throw new NotImplementedException($"Thunk '{type}' not implemented yet");
 			}
 		}
 
 		public override byte[] ReadRemaining() {
-			return ReadBytes((int)(endOffset - Stream.Position));
+			return ReadBytes(Remaining);
 		}
 	}
 }

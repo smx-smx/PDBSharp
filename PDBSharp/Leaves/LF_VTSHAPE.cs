@@ -21,13 +21,13 @@ namespace Smx.PDBSharp.Leaves
 
 		public readonly VTableShapeDescriptor[] Descriptors;
 
-		public LF_VTSHAPE(IServiceContainer pdb, Stream stream) {
+		public LF_VTSHAPE(IServiceContainer pdb, ReaderSpan stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			NumberOfEntries = r.ReadUInt16();
 
 			//round up 4 bits (descriptor size)
-			int numberOfBytes = (int)Math.Ceiling((double)(4 * NumberOfEntries) / sizeof(byte));
+			int numberOfBytes = (int)Math.Ceiling((double)(4 * NumberOfEntries) / 8);
 			byte[] descriptorsData = r.ReadBytes(numberOfBytes);
 
 			Descriptors = new VTableShapeDescriptor[NumberOfEntries];
