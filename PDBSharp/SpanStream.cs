@@ -44,7 +44,7 @@ namespace Smx.PDBSharp
 		public string ReadString() {
 			int length = ReadInt32();
 			string str = Encoding.ASCII.GetString(ReadBytes(length));
-			pos += length + sizeof(int);
+			pos += length + sizeof(int) + 1;
 			return str;
 		}
 
