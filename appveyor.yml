@@ -17,4 +17,4 @@ environment:
   artifacts_dir: bin
 
 test_script:
-  - cmd: nunit3-console.exe ./PDBSharp.Tests/bin/%PLATFORM%/%CONFIGURATION%/PDBSharp.Tests.dll --result=myresults.xml;format=AppVeyor
+  - cmd: nunit3-console.exe ./PDBSharp.Tests/bin/%CONFIGURATION%/net472/PDBSharp.Tests.dll --result=myresults.xml;format=AppVeyor
