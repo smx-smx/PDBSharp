@@ -9,14 +9,14 @@
 using NUnit.Framework;
 using Smx.PDBSharp;
 using System.IO;
+using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 
 namespace Tests
 {
-	public class MSFTests
-	{
+	public class MSFTests {
 		[SetUp]
 		public void Setup() {
 		}
@@ -47,26 +47,18 @@ namespace Tests
 
 			File.Delete(filePath);
 		}
+#endif
 
 		[Test]
 		public void TestHeader() {
-			string filePath = Path.GetTempFileName();
-			using (Stream strm = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite)) {
-				MSFWriter wr = new MSFWriter(strm);
-				wr.PageSize = 4096;
-				wr.Commit();
+			MSFWriter wr = new MSFWriter();
+			wr.PageSize = 4096;
+			wr.Commit();
 
-				strm.Position = 0;
-				MSFReader rdr = new MSFReader(strm, PDBType.Big);
-
-				Assert.That(Encoding.ASCII
-					.GetString(rdr.Header.Magic)
-					.StartsWith(PDBFile.BIG_MAGIC));
-				Assert.AreEqual(rdr.Header.PageSize, 4096);
-			}
-
-			File.Delete(filePath);
+			MSFReader rdr = new MSFReader(wr.Memory);
+			string magic = rdr.Header.GetMagic();
+			Assert.AreEqual(magic, PDBFile.BIG_MAGIC);
+			Assert.AreEqual(rdr.Header.PageSize, 4096);
 		}
-#endif
 	}
 }

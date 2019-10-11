@@ -26,8 +26,8 @@ namespace Smx.PDBSharp
 			this.acc.SafeMemoryMappedViewHandle.AcquirePointer(ref dptr);
 		}
 
-		public ReadOnlySpan<byte> GetSpan() {
-			return new ReadOnlySpan<byte>((void*)dptr, (int)Length);
+		public Span<byte> GetSpan() {
+			return new Span<byte>((void*)dptr, (int)Length);
 		}
 		public void Dispose() {
 			acc.Dispose();

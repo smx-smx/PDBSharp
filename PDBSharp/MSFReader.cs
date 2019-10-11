@@ -12,6 +12,7 @@ using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Smx.PDBSharp
 {
@@ -25,11 +26,30 @@ namespace Smx.PDBSharp
 		public UInt32 NumPages;
 		public UInt32 DirectorySize;
 		public UInt32 PageMap; //should be 0 in the header
+
+		public string GetMagic() {
+			fixed(byte *ptr = Magic) {
+				if(*(ushort*)&ptr[PDBFile.DS_OFFSET] == 0x5344) { //DS (Little Endian)
+					return Encoding.ASCII.GetString(ptr, PDBFile.BIG_MAGIC.Length);
+				}
+				if(*(ushort*)&ptr[PDBFile.JG_OFFSET] == 0x474A) { //JG (Little Endian)
+					return Encoding.ASCII.GetString(ptr, PDBFile.SMALL_MAGIC.Length);
+				}
+
+				throw new InvalidDataException("Invalid magic");
+			}
+		}
+
+		public void SetMagic(string magic) {
+			byte[] data = Encoding.ASCII.GetBytes(magic);
+			fixed (byte* ptr = Magic) {
+				new Span<byte>((void*)ptr, MAGIC_SIZE).WriteBytes(0, data);
+			}
+		}
 	}
 
 	public unsafe class MSFReader : IDisposable
 	{
-		private readonly PDBType type;
 		private byte[] streamTableList;
 		private byte[] streamTable;
 
@@ -37,17 +57,33 @@ namespace Smx.PDBSharp
 
         private readonly long Length;
 
+		// used for memory based sources
+		private Memory<byte> memory;
+		
+		// used for file based sources
 		private readonly MemoryMappedSpan mf;
 
-		private unsafe DSHeader ReadHeader() {
-			var span = this.mf.GetSpan();
-			int size = sizeof(DSHeader);
-			return span.Read<DSHeader>(0);
+		public Span<byte> Span {
+			get {
+				if (mf != null) {
+					return mf.GetSpan();
+				}
+				return memory.Span;
+			}
 		}
 
-		public MSFReader(MemoryMappedFile mfile, long length, PDBType type) {
+		private unsafe DSHeader ReadHeader() {
+			int size = sizeof(DSHeader);
+			return Span.Read<DSHeader>(0);
+		}
+
+		public MSFReader(Memory<byte> mem) {
+			this.memory = mem;
+			this.Header = ReadHeader();
+		}
+
+		public MSFReader(MemoryMappedFile mfile, long length) {
 			this.mf = new MemoryMappedSpan(mfile, length);
-			this.type = type;
 			this.Header = ReadHeader();
 		}
 
@@ -65,7 +101,7 @@ namespace Smx.PDBSharp
 
 		public IEnumerable<byte[]> GetPages(long offset, uint numPages) {
 			int dataLength = (int)(numPages * sizeof(uint));	
-			uint[] pageNums = mf.GetSpan()
+			uint[] pageNums = Span
 				.Slice((int)offset, dataLength)
 				.Cast<uint>()
 				.ToArray();
@@ -121,12 +157,12 @@ namespace Smx.PDBSharp
 		public byte[] ReadPage(uint pageNumber) {
 			long offset = pageNumber * Header.PageSize;
 
-			byte[] data = mf.GetSpan().Slice((int)offset, (int)Header.PageSize).ToArray();
+			byte[] data = Span.Slice((int)offset, (int)Header.PageSize).ToArray();
 			return data;
 		}
 
 		public void Dispose() {
-			mf.Dispose();
+			mf?.Dispose();
 		}
 	}
 }

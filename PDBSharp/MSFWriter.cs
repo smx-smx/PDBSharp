@@ -15,73 +15,86 @@ using System.Text;
 
 namespace Smx.PDBSharp
 {
-	public class MSFWriter : WriterBase
+	public class MSFWriter
 	{
 		private readonly PDBType type;
 
 		private DSHeader hdr = new DSHeader();
 
-		private uint lastPage = 0;
+		private uint currentPage = 0;
 
 		public readonly StreamTableWriter StreamTable;
+
+		private SpanStream msf;
+
+		public Memory<byte> Memory => msf.Memory;
 
 		public uint PageSize {
 			get => hdr.PageSize;
 			set => hdr.PageSize = value;
 		}
 
-		private unsafe void WriteMagic(string magicStr) {
-			byte[] magic = Encoding.ASCII.GetBytes(magicStr);
-			fixed(byte *ptr = hdr.Magic) {
-				for(int i=0; i<magic.Length; i++) {
-					ptr[i] = magic[i];
-				}
-			}
+		public MSFWriter() {
+			hdr.SetMagic(PDBFile.BIG_MAGIC);
+			StreamTable = new StreamTableWriter(this);
 		}
 
-		public MSFWriter(Stream stream) : base(stream) {
-			WriteMagic(PDBFile.BIG_MAGIC);
-			StreamTable = new StreamTableWriter(this, this.Stream);
+		private void SeekPage(uint pageNum) {
+			msf.Position = pageNum * hdr.PageSize;
 		}
 
-		public void Commit() {
+		public unsafe long GetDataSize() {
 			uint directoryPages = GetNumPages(StreamTable.GetCurrentSize());
 			uint directoryPageListCount = GetNumPages(directoryPages);
 			uint directorySize = directoryPageListCount * PageSize;
+			uint maxDirectoryPages = directorySize / sizeof(UInt32);
+
+			long dataSize = 0;
+			dataSize += sizeof(DSHeader);
+			dataSize += directorySize;
+			dataSize += sizeof(uint) * maxDirectoryPages;
+
+			dataSize += StreamTable.GetDataSize();
+			return dataSize;
+		}
+
+		public void Commit() {
+			msf = new SpanStream((int)GetDataSize());
+
+			uint directoryPages = GetNumPages(StreamTable.GetCurrentSize());
+			uint directoryPageListCount = GetNumPages(directoryPages);
+			uint directorySize = directoryPageListCount * PageSize;
+			uint maxDirectoryPages = directorySize / sizeof(UInt32);
 
 			hdr.DirectorySize = directorySize;
 			WriteHeader();
+			SeekPage(1);
 
-			{
-				byte[] directoryData = new byte[directorySize];
-				uint maxDirectoryPages = directorySize / sizeof(UInt32);
+			for (int i = 0; i < directoryPageListCount; i++) {
+				msf.WriteUInt32(AllocPageNumber());
+			}
 
-				WriterBase directoryWriter = new WriterBase(new MemoryStream(directoryData));
-				for (int i = 0; i < directoryPageListCount; i++) {
-					uint pageNum = AllocPageNumber();
-					directoryWriter.WriteUInt32(pageNum);
-				}
-
-				for (uint i = directoryPageListCount; i < maxDirectoryPages; i++) {
-					directoryWriter.WriteInt32(-1);
-				}
-
-				WriteBytes(directoryData);
+			for (uint i = directoryPageListCount; i < maxDirectoryPages; i++) {
+				msf.WriteInt32(-1);
 			}
 
 			StreamTable.Commit();
 		}
 
-		private void WriteHeader() {
-			byte[] hdrPage = AllocPage(out uint hdrPageNumber);
-			WriterBase wr = new WriterBase(new MemoryStream(hdrPage));
-			wr.WriteStruct<DSHeader>(hdr);
+		private unsafe void WritePage<T>(uint pageNum, T data) where T : unmanaged {
+			if(sizeof(T) > hdr.PageSize) {
+				throw new ArgumentOutOfRangeException(typeof(T).Name + $" is bigger than PageSize {hdr.PageSize}");
+			}
+			long offset = hdr.PageSize * pageNum;
+			msf.WriteAt(offset, data);
+		}
 
-			WriteBytes(hdrPage);
+		private void WriteHeader() {
+			WritePage(AllocPageNumber(), hdr);
 		}
 
 		public uint AllocPageNumber() {
-			return lastPage++;
+			return currentPage++;
 		}
 
 		public byte[] AllocPage(out uint pageNum) {
@@ -91,7 +104,7 @@ namespace Smx.PDBSharp
 
 		public void WritePages(Dictionary<uint, byte[]> pages) {
 			foreach (var pageNum in pages.Keys) {
-				WriteUInt32(pageNum);
+				msf.WriteUInt32(pageNum);
 			}
 
 			foreach (var page in pages) {
@@ -102,9 +115,8 @@ namespace Smx.PDBSharp
 		public void WritePage(uint pageNumber, byte[] pageData) {
 			Debug.Assert(pageData.Length == hdr.PageSize);
 
-			PerformAt(pageNumber * hdr.PageSize, () => {
-				WriteBytes(pageData);
-			});
+			SeekPage(pageNumber);
+			msf.WriteBytes(pageData);
 		}
 
 		//public void WriteStreamTable()

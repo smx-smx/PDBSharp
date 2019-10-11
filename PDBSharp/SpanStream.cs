@@ -9,12 +9,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Smx.PDBSharp
 {
-	public class SpanStream : IReader
+	public class SpanStream
 	{
 		private int pos;
 
@@ -41,11 +42,36 @@ namespace Smx.PDBSharp
 			return ret;
 		}
 
+		public unsafe void Write<T>(T value) where T : unmanaged {
+			var start = Memory.Span.Slice(pos, sizeof(T));
+			MemoryMarshal.Cast<byte, T>(start)[0] = value;
+			pos += sizeof(T);
+		}
+
+		public unsafe void WriteAt<T>(long offset, T value) where T : unmanaged {
+			Memory.Span.Write<T>((int)offset, value);
+		}
+
+		public void WriteMemory<T>(Memory<T> data) where T : unmanaged {
+			data.CopyTo(Memory, pos);
+			pos += data.Length;
+		}
+
+		public void WriteSpan<T>(Span<T> data) where T : unmanaged {
+			data.CopyTo(Span, pos);
+			pos += data.Length;
+		}
+
 		public string ReadString() {
 			int length = ReadInt32();
 			string str = Encoding.ASCII.GetString(ReadBytes(length));
 			pos += length + sizeof(int) + 1;
 			return str;
+		}
+
+		public void WriteString(string value) {
+			byte[] data = Encoding.ASCII.GetBytes(value);
+			
 		}
 
 		public unsafe T ReadStruct<T>() where T : unmanaged {
@@ -70,11 +96,30 @@ namespace Smx.PDBSharp
 		}
 
 		public SpanStream(int sizeInBytes) {
-			byte[] data = new byte[sizeInBytes];
+			Replace(sizeInBytes);
+		}
+
+		public void Replace(int newSizeEmpty) {
+			byte[] data = new byte[newSizeEmpty];
 			this.Memory = new Memory<byte>(data);
 		}
 
-		public T ReadEnum<T>() where T : struct, IConvertible {
+		public void Replace(byte[] newData) {
+			this.Memory = new Memory<byte>(newData);
+		}
+
+		public void Extend(int newSize) {
+			if(newSize <= Memory.Length) {
+				throw new ArgumentOutOfRangeException($"New size {newSize} is shorter than current {Memory.Length}");
+			}
+			byte[] data = new byte[newSize];
+			var newMem = new Memory<byte>(data);
+			Memory.CopyTo(newMem);
+
+			this.Memory = newMem;
+		}
+
+		public unsafe T ReadEnum<T>() where T : unmanaged {
 			T value = ReadFlagsEnum<T>();
 
 			Type enumType = typeof(T);
@@ -94,12 +139,9 @@ namespace Smx.PDBSharp
 			return Encoding.ASCII.GetString(data);
 		}
 
-		public T ReadFlagsEnum<T>() where T : struct, IConvertible {
-			Type enumType = typeof(T);
-			int enumSize = Marshal.SizeOf(Enum.GetUnderlyingType(enumType));
-
+		public unsafe T ReadFlagsEnum<T>() where T : unmanaged {
 			object value;
-			switch (enumSize) {
+			switch (sizeof(T)) {
 				case 1:
 					value = ReadByte();
 					break;
@@ -116,9 +158,9 @@ namespace Smx.PDBSharp
 					throw new NotImplementedException();
 			}
 
+
 			return (T)value;
 		}
-
 		public int AlignStream(uint alignment) {
 			long position = (Position + alignment - 1) & ~(alignment - 1);
 			long skipped = position - Position;
@@ -160,13 +202,36 @@ namespace Smx.PDBSharp
 		}
 
 		public byte ReadByte() => Read<byte>();
-		public double ReadDouble() => Read<double>();
+		public void WriteByte(byte value) => Write(value);
+
+		public void WriteBytes(byte[] data) {
+			var start = Memory.Span.Slice(pos, data.Length);
+			var dspan = new Span<byte>(data);
+			dspan.CopyTo(start);
+		}
+
 		public short ReadInt16() => Read<short>();
+		public void WriteInt16(Int16 value) => Write(value);
+
 		public int ReadInt32() => Read<int>();
+		public void WriteInt32(Int32 value) => Write(value);
+
 		public long ReadInt64() => Read<long>();
+		public void WriteInt64(Int64 value) => Write(value);
+
 		public float ReadSingle() => Read<float>();
+		public void WriteSingle(float value) => Write(value);
+
+		public double ReadDouble() => Read<double>();
+		public void WriteDouble(double value) => Write(value);
+
 		public ushort ReadUInt16() => Read<ushort>();
+		public void WriteUint16(UInt16 value) => Write(value);
+
 		public uint ReadUInt32() => Read<uint>();
+		public void WriteUInt32(UInt32 value) => Write(value);
+
 		public ulong ReadUInt64() => Read<ulong>();
+		public void WriteUInt64(UInt64 value) => Write(value);
 	}
 }

@@ -13,16 +13,24 @@ using System.Linq;
 
 namespace Smx.PDBSharp
 {
-	public class StreamTableWriter : WriterBase
+	public class StreamTableWriter
 	{
 		private readonly MSFWriter msf;
 
-		public uint NumStreams => (uint)Stream.Length;
+		private readonly List<Memory<byte>> Streams = new List<Memory<byte>>();
 
-		private readonly List<byte[]> Streams = new List<byte[]>();
+		private SpanStream st;
 
-		public StreamTableWriter(MSFWriter msf, Stream stream) : base(stream) {
+		public StreamTableWriter(MSFWriter msf) {
 			this.msf = msf;
+		}
+
+		public long GetDataSize() {
+			long dataSize = 0;
+			dataSize += sizeof(uint); //stream count
+			dataSize += sizeof(uint) * Streams.Count; //stream sizes
+			dataSize += Streams.Sum(st => st.Length); //stream data size
+			return dataSize;
 		}
 
 		public void AddStream(byte[] streamData) {
@@ -30,34 +38,27 @@ namespace Smx.PDBSharp
 		}
 
 		private void WriteStreamSizes() {
-			Streams.ForEach(data => WriteUInt32((uint)data.Length));
+			Streams.ForEach(data => st.WriteUInt32((uint)data.Length));
 		}
 
-		private void WriteStream(byte[] data) {
+		private void WriteStream(Memory<byte> data) {
 			var numPages = msf.GetNumPages((uint)data.Length);
 
 			uint streamSize = numPages * msf.PageSize;
 
 			uint directorySize = sizeof(UInt32) * numPages;
-			long directoryOffset = Stream.Position;
+
+			for (int i = 0; i < numPages; i++) {
+				st.WriteUInt32(msf.AllocPageNumber());
+			}
 
 			// write stream first
-			Stream.Position += directorySize;
-			WriteBytes(data);
+			st.WriteMemory(data);
 
 			// pad to page size
 			uint paddingSize = streamSize - (uint)data.Length;
 			byte[] padding = new byte[paddingSize];
-			WriteBytes(padding);
-
-			// go back and write page numbers
-			Stream.Position -= streamSize;
-
-			for (int i = 0; i < numPages; i++) {
-				WriteUInt32(msf.AllocPageNumber());
-			}
-
-			Stream.Position += streamSize;
+			st.WriteBytes(padding);
 		}
 
 		public uint GetCurrentSize() {
@@ -69,7 +70,9 @@ namespace Smx.PDBSharp
 		}
 
 		public void Commit() {
-			WriteUInt32((uint)Streams.Count);
+			st = new SpanStream((int)GetDataSize());
+
+			st.WriteUInt32((uint)Streams.Count);
 			WriteStreamSizes();
 			Streams.ForEach(data => WriteStream(data));
 		}

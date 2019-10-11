@@ -31,8 +31,11 @@ namespace Smx.PDBSharp
 		public event OnTpiInitDelegate OnTpiInit;
 		public event OnDbiInitDelegate OnDbiInit;
 
+		public const int JG_OFFSET = 0x28;
+		public const int DS_OFFSET = 0x1B;
+
 		public const string SMALL_MAGIC = "Microsoft C/C++ program database 2.00\r\n\x1a" + "JG";
-		public const string BIG_MAGIC = "Microsoft C/C++ MSF 7.00\r\n\x1a" + "DS";
+		public const string BIG_MAGIC   = "Microsoft C/C++ MSF 7.00\r\n\x1a" + "DS";
 
 		private readonly MemoryMappedFile mf;
 		private readonly FileStream fs;
@@ -94,7 +97,7 @@ namespace Smx.PDBSharp
 			}
 
 
-			MSFReader msf = new MSFReader(mf, stream.Length, FileType);
+			MSFReader msf = new MSFReader(mf, stream.Length);
 			Services.AddService<MSFReader>(msf);
 
 			StreamTableReader streamTable;

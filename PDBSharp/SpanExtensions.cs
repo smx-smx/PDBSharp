@@ -25,6 +25,33 @@ namespace Smx.PDBSharp
 			return Cast<T>(data.Slice(offset, length))[0];
 		}
 
+		public unsafe static void Write<T>(this Span<byte> data, int offset, T value) where T : unmanaged {
+			int length = sizeof(T);
+			Cast<T>(data.Slice(offset, length))[0] = value;
+		}
+
+		public unsafe static void CopyTo<TFrom, TTo>(this Span<TFrom> data, Span<TTo> dest, int dstOffset)
+			where TFrom : unmanaged
+			where TTo : unmanaged
+		{
+			var srcBytes = MemoryMarshal.Cast<TFrom, byte>(data);
+			var dstBytes = MemoryMarshal.Cast<TTo, byte>(dest).Slice(dstOffset);
+			srcBytes.CopyTo(dstBytes);
+		}
+
+		public unsafe static void CopyTo<TFrom, TTo>(this Memory<TFrom> data, Memory<TTo> dest, int dstOffset)
+			where TFrom : unmanaged
+			where TTo : unmanaged
+		{
+			data.Span.CopyTo(dest.Span, dstOffset);
+		}
+
+		public unsafe static void WriteBytes(this Span<byte> data, int offset, byte[] bytes) {
+			var start = data.Slice(offset, bytes.Length);
+			var dspan = new Span<byte>(bytes);
+			dspan.CopyTo(start);
+		}
+
 		public static ReadOnlySpan<T> Cast<T>(this ReadOnlySpan<byte> data) where T : struct {
 			return MemoryMarshal.Cast<byte, T>(data);
 		}
