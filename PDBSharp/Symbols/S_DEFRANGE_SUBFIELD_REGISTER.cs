@@ -30,7 +30,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly CV_LVAR_ADDR_RANGE Range;
 		public readonly CV_LVAR_ADDR_GAP[] Gaps;
 
-		public S_DEFRANGE_SUBFIELD_REGISTER(IServiceContainer ctx, IModule mod, ReaderSpan stream) {
+		public S_DEFRANGE_SUBFIELD_REGISTER(IServiceContainer ctx, IModule mod, SpanReader stream) {
 			var r = new SymbolDataReader(ctx, stream);
 			Register = r.ReadUInt16();
 			Attributes = r.ReadFlagsEnum<RangeAttributes>();

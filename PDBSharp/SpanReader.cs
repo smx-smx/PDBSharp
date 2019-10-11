@@ -14,9 +14,9 @@ using System.Text;
 
 namespace Smx.PDBSharp
 {
-	public class ReaderSpan : IReader
+	public class SpanReader : IReader
 	{
-        public ReaderSpanImpl BaseReader { get; }
+        public SpanReaderImpl BaseReader { get; }
 
         public long Position {
 			get => BaseReader.Position;
@@ -26,13 +26,13 @@ namespace Smx.PDBSharp
 		public long Remaining => BaseReader.Remaining;
 		public long Length => BaseReader.Length;
 
-		public ReaderSpan(IReader reader) {
+		public SpanReader(IReader reader) {
 			switch (reader) {
-				case ReaderSpan otherBase:
-					BaseReader = new ReaderSpanImpl(otherBase.BaseReader);
+				case SpanReader otherBase:
+					BaseReader = new SpanReaderImpl(otherBase.BaseReader);
 					break;
-				case ReaderSpanImpl other:
-					BaseReader = new ReaderSpanImpl(other);
+				case SpanReaderImpl other:
+					BaseReader = new SpanReaderImpl(other);
 					break;
 				default:
 					throw new InvalidOperationException();
@@ -42,12 +42,12 @@ namespace Smx.PDBSharp
 		public ReadOnlyMemory<byte> Memory => BaseReader.Memory;
 		public ReadOnlySpan<byte> Span => BaseReader.Span;
 
-		public ReaderSpan(ReadOnlyMemory<byte> data) {
-			this.BaseReader = new ReaderSpanImpl(data);
+		public SpanReader(ReadOnlyMemory<byte> data) {
+			this.BaseReader = new SpanReaderImpl(data);
 		}
 
-		public ReaderSpan(byte[] data) {
-			this.BaseReader = new ReaderSpanImpl(data);
+		public SpanReader(byte[] data) {
+			this.BaseReader = new SpanReaderImpl(data);
 		}
 
 		public T ReadEnum<T>() where T : struct, IConvertible {

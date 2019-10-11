@@ -41,7 +41,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly string VersionString;
 		public readonly string[] OptionalData;
 
-		public S_COMPILE2(IServiceContainer ctx, IModule mod, ReaderSpan stream) {
+		public S_COMPILE2(IServiceContainer ctx, IModule mod, SpanReader stream) {
 			var r = new SymbolDataReader(ctx, stream);
 			Flags = new CompileSym2Flags(r.ReadUInt32());
 			Machine = r.ReadUInt16();

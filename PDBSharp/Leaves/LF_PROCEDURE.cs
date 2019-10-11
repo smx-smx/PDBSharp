@@ -19,7 +19,7 @@ namespace Smx.PDBSharp.Leaves
 		public readonly UInt16 NumberOfParameters;
 		public readonly ILeafContainer ArgumentListType;
 
-		public LF_PROCEDURE(IServiceContainer pdb, ReaderSpan stream) {
+		public LF_PROCEDURE(IServiceContainer pdb, SpanReader stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			ReturnValueType = r.ReadIndexedTypeLazy();

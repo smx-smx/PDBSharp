@@ -42,7 +42,7 @@ namespace Smx.PDBSharp.Symbols
 
 		public readonly IThunk Thunk;
 
-		public S_THUNK32(IServiceContainer ctx, IModule mod, ReaderSpan stream) {
+		public S_THUNK32(IServiceContainer ctx, IModule mod, SpanReader stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			ParentOffset = r.ReadUInt32();

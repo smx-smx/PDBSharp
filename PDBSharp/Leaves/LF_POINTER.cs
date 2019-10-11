@@ -43,7 +43,7 @@ namespace Smx.PDBSharp.Leaves
 		public readonly ILeafContainer UnderlyingType;
 		public readonly PointerAttributes Attributes;
 
-		public LF_POINTER(IServiceContainer pdb, ReaderSpan stream) {
+		public LF_POINTER(IServiceContainer pdb, SpanReader stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			UnderlyingType = r.ReadIndexedTypeLazy();

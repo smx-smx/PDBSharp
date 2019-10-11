@@ -41,7 +41,7 @@ namespace Smx.PDBSharp
 		public byte FrameSize => (byte)((flags >> 6) & 2);
 	}
 
-	public class _FPOData : ReaderSpan
+	public class _FPOData : SpanReader
 	{
 		public readonly UInt32 StartOffset;
 		public readonly UInt32 FunctionSize;
@@ -59,7 +59,7 @@ namespace Smx.PDBSharp
 		// bit 5 is reserved
 		public byte FrameSize => (byte)((flags >> 6) & 2);
 
-		public _FPOData(ReaderSpan stream) : base(stream) {
+		public _FPOData(SpanReader stream) : base(stream) {
 			StartOffset = ReadUInt32();
 			FunctionSize = ReadUInt32();
 			SizeLocalsDwords = ReadUInt32();
@@ -71,7 +71,7 @@ namespace Smx.PDBSharp
 		public const int SIZE = 16;
 	}
 
-	public unsafe class FPOReader : ReaderSpan
+	public unsafe class FPOReader : SpanReader
 	{
 		public IEnumerable<FPOData> Frames => lazyFrames.Value;
 		private readonly ILazy<IEnumerable<FPOData>> lazyFrames;

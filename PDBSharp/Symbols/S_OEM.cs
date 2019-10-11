@@ -25,7 +25,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly ILeafContainer Type;
 		public readonly byte[] UserData;
 
-		public S_OEM(IServiceContainer ctx, IModule mod, ReaderSpan stream) {
+		public S_OEM(IServiceContainer ctx, IModule mod, SpanReader stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			Id = new Guid(r.ReadBytes(16));

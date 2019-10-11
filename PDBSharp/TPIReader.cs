@@ -67,7 +67,7 @@ namespace Smx.PDBSharp
 
 	public delegate void OnLeafDataDelegate(byte[] data);
 
-	public class TPIReader : ReaderSpan
+	public class TPIReader : SpanReader
 	{
 		public readonly TPIHeader Header;
 
@@ -93,7 +93,7 @@ namespace Smx.PDBSharp
 			return TypeIndex <= ((uint)SpecialTypeMode.NearPointer128 | 0xFF);
 		}
 
-		public TPIReader(IServiceContainer ctx, ReaderSpan stream) : base(stream) {
+		public TPIReader(IServiceContainer ctx, SpanReader stream) : base(stream) {
 			this.ctx = ctx;
 
 			Header = Read<TPIHeader>();
@@ -142,7 +142,7 @@ namespace Smx.PDBSharp
 			//OnLeafData?.Invoke(leafDataBuf);
 
 			var typeSpan = Memory.Slice((int)Position, (int)dataSize);
-			TypeDataReader rdr = new TypeDataReader(ctx, new ReaderSpan(typeSpan));
+			TypeDataReader rdr = new TypeDataReader(ctx, new SpanReader(typeSpan));
 			Position += dataSize;
 
 			return rdr.ReadTypeLazy();

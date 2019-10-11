@@ -24,14 +24,14 @@ namespace Smx.PDBSharp
 
 		public new int Remaining => (int)(endOffset - startOffset + Position);
 
-		public SymbolDataReader(IServiceContainer ctx, SymbolHeader header, ReaderSpan stream) : base(ctx, stream) {
+		public SymbolDataReader(IServiceContainer ctx, SymbolHeader header, SpanReader stream) : base(ctx, stream) {
 			startOffset = stream.Position - Marshal.SizeOf<SymbolHeader>();
 			Header = header;
 			endOffset = startOffset + Header.Length;
 			CheckHeader();
 		}
 
-		public SymbolDataReader(IServiceContainer ctx, ReaderSpan stream) : base(ctx, stream) {
+		public SymbolDataReader(IServiceContainer ctx, SpanReader stream) : base(ctx, stream) {
 			startOffset = stream.Position;
 			Header = ReadHeader();
 			endOffset = startOffset + sizeof(UInt16) + Header.Length;

@@ -20,7 +20,7 @@ namespace Smx.PDBSharp
 	}
 
 
-	public class SectionContribsReader : ReaderSpan
+	public class SectionContribsReader : SpanReader
 	{
 
 		public readonly SCVersion Version;
@@ -54,7 +54,7 @@ namespace Smx.PDBSharp
 		}
 
 
-		public SectionContribsReader(uint sectionContribsSize, ReaderSpan stream) : base(stream) {
+		public SectionContribsReader(uint sectionContribsSize, SpanReader stream) : base(stream) {
 			this.SectionContribsSize = sectionContribsSize;
 
 			Version = ReadEnum<SCVersion>();

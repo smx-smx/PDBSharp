@@ -28,7 +28,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly CookieType Type;
 		public readonly byte Flags;
 
-		public S_FRAMECOOKIE(IServiceContainer ctx, IModule mod, ReaderSpan stream) {
+		public S_FRAMECOOKIE(IServiceContainer ctx, IModule mod, SpanReader stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			Offset = r.ReadUInt32();

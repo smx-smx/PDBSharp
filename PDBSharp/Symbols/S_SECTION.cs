@@ -37,7 +37,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt32 Characteristics;
 		public readonly string Name;
 
-		public S_SECTION(IServiceContainer ctx, IModule mod, ReaderSpan stream) {
+		public S_SECTION(IServiceContainer ctx, IModule mod, SpanReader stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			SectionNumber = r.ReadUInt16();

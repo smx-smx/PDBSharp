@@ -31,7 +31,7 @@ namespace Smx.PDBSharp
 		MinimalDebugInfo = 0x494E494D //MINI
 	}
 
-	public class PdbStreamReader : ReaderSpan
+	public class PdbStreamReader : SpanReader
 	{
 		public readonly PDBVersion Version;
 		public readonly UInt32 Signature;

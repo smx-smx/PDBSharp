@@ -14,7 +14,7 @@ namespace Smx.PDBSharp.Symbols
 {
 	public class S_MANCONSTANT : ConstSymBase, ISymbol
 	{
-		public S_MANCONSTANT(IServiceContainer ctx, IModule mod, ReaderSpan stream) : base(ctx, stream) {
+		public S_MANCONSTANT(IServiceContainer ctx, IModule mod, SpanReader stream) : base(ctx, stream) {
 		}
 
 		public S_MANCONSTANT(ConstSym data) : base(data) {

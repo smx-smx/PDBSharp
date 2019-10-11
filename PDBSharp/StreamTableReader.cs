@@ -14,7 +14,7 @@ using System.Linq;
 
 namespace Smx.PDBSharp
 {
-	public class StreamTableReader : ReaderSpan
+	public class StreamTableReader : SpanReader
 	{
 		public readonly UInt32[] StreamSizes;
 		private readonly MSFReader msf;

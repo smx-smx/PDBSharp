@@ -20,7 +20,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly ILeafContainer Inlinee;
 		public readonly byte[] BinaryAnnotations;
 
-		public S_INLINESITE(IServiceContainer ctx, IModule mod, ReaderSpan stream) {
+		public S_INLINESITE(IServiceContainer ctx, IModule mod, SpanReader stream) {
 			var r = new SymbolDataReader(ctx, stream);
 			InlinerParentOffset = r.ReadUInt32();
 			Inliner = r.ReadSymbol(mod, InlinerParentOffset);

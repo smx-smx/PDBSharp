@@ -28,7 +28,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly CV_LVARFLAGS Flags;
 		public readonly string Name;
 
-		public S_FILESTATIC(IServiceContainer ctx, IModule mod, ReaderSpan stream) {
+		public S_FILESTATIC(IServiceContainer ctx, IModule mod, SpanReader stream) {
 			var r = new SymbolDataReader(ctx, stream);
 			Type = r.ReadIndexedTypeLazy();
 			ModuleFilenameOffset = r.ReadUInt32();

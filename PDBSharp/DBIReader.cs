@@ -60,7 +60,7 @@ namespace Smx.PDBSharp
 		public UInt32 Reserved;
 	}
 
-	public class DBIReader : ReaderSpan
+	public class DBIReader : SpanReader
 	{
 		public readonly DBIHeader Header;
 

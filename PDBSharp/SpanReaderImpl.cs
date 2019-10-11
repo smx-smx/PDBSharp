@@ -14,7 +14,7 @@ using System.Text;
 
 namespace Smx.PDBSharp
 {
-	public class ReaderSpanImpl : IReader
+	public class SpanReaderImpl : IReader
 	{
 		private int pos;
 
@@ -70,15 +70,15 @@ namespace Smx.PDBSharp
 		public ulong ReadUInt64() => Read<ulong>();
 
 
-		public ReaderSpanImpl(ReadOnlyMemory<byte> data) {
+		public SpanReaderImpl(ReadOnlyMemory<byte> data) {
 			this.Memory = data;
 		}
 
-		public ReaderSpanImpl(byte[] data){
+		public SpanReaderImpl(byte[] data){
 			Memory = new ReadOnlyMemory<byte>(data);
 		}
 
-		public ReaderSpanImpl(ReaderSpanImpl other) {
+		public SpanReaderImpl(SpanReaderImpl other) {
 			this.Memory = other.Memory.Slice(other.pos);
 		}
 	}

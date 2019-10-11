@@ -21,10 +21,10 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public SymbolType Type;
 	}
 
-	public class SymbolHeaderReader : ReaderSpan
+	public class SymbolHeaderReader : SpanReader
 	{
 		public readonly SymbolHeader Data;
-		public SymbolHeaderReader(ReaderSpan stream) : base(stream) {
+		public SymbolHeaderReader(SpanReader stream) : base(stream) {
 			Data = Read<SymbolHeader>();
 		}
 	}

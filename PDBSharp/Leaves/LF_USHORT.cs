@@ -20,7 +20,7 @@ namespace Smx.PDBSharp.Leaves
 	{
 		public readonly UInt16 Value;
 
-		public LF_USHORT(IServiceContainer pdb, ReaderSpan stream) {
+		public LF_USHORT(IServiceContainer pdb, SpanReader stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			Value = r.ReadUInt16();

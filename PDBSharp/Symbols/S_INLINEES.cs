@@ -14,7 +14,7 @@ namespace Smx.PDBSharp.Symbols
 {
 	public class S_INLINEES : FUNCTIONLIST, ISymbol
 	{
-		public S_INLINEES(IServiceContainer ctx, IModule mod, ReaderSpan stream) : base(ctx, mod, stream) {
+		public S_INLINEES(IServiceContainer ctx, IModule mod, SpanReader stream) : base(ctx, mod, stream) {
 		}
 	}
 }

@@ -25,7 +25,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly ILeafContainer Type;
 		public readonly string Name;
 
-		public S_BPREL32(IServiceContainer ctx, IModule mod, ReaderSpan stream) {
+		public S_BPREL32(IServiceContainer ctx, IModule mod, SpanReader stream) {
 			SymbolDataReader r = new SymbolDataReader(ctx, stream);
 			Offset = r.ReadUInt32();
 			Type = r.ReadIndexedTypeLazy();
