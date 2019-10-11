@@ -52,7 +52,7 @@ namespace Smx.PDBSharp.Leaves
 			}
 		}
 
-		public LF_ENUM(IServiceContainer pdb, SpanReader stream) {
+		public LF_ENUM(IServiceContainer pdb, SpanStream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			NumElements = r.ReadUInt16();

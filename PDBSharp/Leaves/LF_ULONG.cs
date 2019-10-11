@@ -15,7 +15,7 @@ namespace Smx.PDBSharp.Leaves
 	public class LF_ULONG : ILeaf
 	{
 		public readonly UInt32 Value;
-		public LF_ULONG(IServiceContainer pdb, SpanReader stream) {
+		public LF_ULONG(IServiceContainer pdb, SpanStream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			Value = r.ReadUInt32();

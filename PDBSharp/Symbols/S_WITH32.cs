@@ -22,7 +22,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt16 Segment;
 		public readonly string Expression;
 
-		public S_WITH32(IServiceContainer ctx, IModule mod, SpanReader stream) {
+		public S_WITH32(IServiceContainer ctx, IModule mod, SpanStream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 			ParentOffset = r.ReadUInt32();
 			Parent = r.ReadSymbol(mod, ParentOffset);

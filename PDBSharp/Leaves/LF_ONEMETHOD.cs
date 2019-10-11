@@ -20,7 +20,7 @@ namespace Smx.PDBSharp.Leaves
 
 		public readonly string Name;
 
-		public LF_ONEMETHOD(IServiceContainer pdb, SpanReader stream) {
+		public LF_ONEMETHOD(IServiceContainer pdb, SpanStream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			Attributes = new FieldAttributes(r.ReadUInt16());

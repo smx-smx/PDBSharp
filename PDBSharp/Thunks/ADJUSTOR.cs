@@ -18,7 +18,7 @@ namespace Smx.PDBSharp.Thunks
 		public readonly UInt16 Delta;
 		public readonly string Name;
 
-		public ADJUSTOR(IServiceContainer ctx, SymbolHeader symHeader, SpanReader stream) : base(ctx, symHeader, stream) {
+		public ADJUSTOR(IServiceContainer ctx, SymbolHeader symHeader, SpanStream stream) : base(ctx, symHeader, stream) {
 			Delta = ReadUInt16();
 			Name = ReadSymbolString();
 		}

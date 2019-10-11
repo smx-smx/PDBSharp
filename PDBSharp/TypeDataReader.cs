@@ -15,7 +15,7 @@ using System.IO;
 
 namespace Smx.PDBSharp
 {
-	public class TypeDataReader : SpanReader
+	public class TypeDataReader : SpanStream
 	{
 
 		public static readonly ReadOnlyDictionary<LeafType, uint> PrimitiveDataSizes = new ReadOnlyDictionary<LeafType, uint>(new Dictionary<LeafType, uint>() {
@@ -32,7 +32,7 @@ namespace Smx.PDBSharp
 		});
 
 		protected readonly IServiceContainer ctx;
-		public TypeDataReader(IServiceContainer ctx, SpanReader data) : base(data) {
+		public TypeDataReader(IServiceContainer ctx, SpanStream data) : base(data) {
 			this.ctx = ctx;
 		}
 

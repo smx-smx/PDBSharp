@@ -15,7 +15,7 @@ namespace Smx.PDBSharp.Leaves
 	{
 		public readonly int Value;
 
-		public LF_LONG(IServiceContainer pdb, SpanReader stream) {
+		public LF_LONG(IServiceContainer pdb, SpanStream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 			Value = r.ReadInt32();
 		}

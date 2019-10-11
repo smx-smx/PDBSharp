@@ -28,7 +28,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly CV_LVAR_ATTR Attributes;
 		public readonly string Name;
 
-		public S_MANSLOT(IServiceContainer ctx, IModule mod, SpanReader stream) {
+		public S_MANSLOT(IServiceContainer ctx, IModule mod, SpanStream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			SlotIndex = r.ReadUInt32();

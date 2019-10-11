@@ -21,7 +21,7 @@ namespace Smx.PDBSharp
 		C13 = 4
 	}
 
-	public class CodeViewModuleReader : SpanReader, IModule
+	public class CodeViewModuleReader : SpanStream, IModule
 	{
 		private readonly IServiceContainer ctx;
 		private readonly ModuleInfo mod;
@@ -32,7 +32,7 @@ namespace Smx.PDBSharp
 
 		public IEnumerable<Symbol> Symbols => lazySymbols.Value;
 
-		public CodeViewModuleReader(IServiceContainer ctx, ModuleInfo mod, SpanReader stream) : base(stream) {
+		public CodeViewModuleReader(IServiceContainer ctx, ModuleInfo mod, SpanStream stream) : base(stream) {
 			this.ctx = ctx;
 			this.mod = mod;
 

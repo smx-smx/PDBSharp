@@ -118,7 +118,7 @@ namespace Smx.PDBSharp
 			// init TPI
 			{
 				byte[] tpiData = streamTable.GetStream(DefaultStreams.TPI);
-				tpi = new TPIReader(Services, new SpanReader(tpiData));
+				tpi = new TPIReader(Services, new SpanStream(tpiData));
 				OnTpiInit?.Invoke(tpi);
 			}
 			Services.AddService<TPIReader>(tpi);

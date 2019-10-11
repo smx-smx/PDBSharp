@@ -16,7 +16,7 @@ namespace Smx.PDBSharp.Leaves
 		public readonly ILeafContainer NestedTypeDef;
 		public readonly string Name;
 
-		public LF_NESTTYPE(IServiceContainer pdb, SpanReader stream) {
+		public LF_NESTTYPE(IServiceContainer pdb, SpanStream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			r.ReadUInt16(); //padding

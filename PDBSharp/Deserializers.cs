@@ -14,21 +14,21 @@ namespace Smx.PDBSharp
 {
 	public class Deserializers
 	{
-		public static NameIndexTableReader ReadNameIndexTable(SpanReader r) {
+		public static NameIndexTableReader ReadNameIndexTable(SpanStream r) {
 			return new NameIndexTableReader(r);
 		}
 
-		public static NameTableReader ReadNameTable(SpanReader r) {
+		public static NameTableReader ReadNameTable(SpanStream r) {
 			return new NameTableReader(r);
 		}
 
 
-		public static byte[] ReadBuffer(SpanReader r) {
+		public static byte[] ReadBuffer(SpanStream r) {
 			int numBytes = r.ReadInt32();
 			return r.ReadBytes(numBytes);
 		}
 
-		public static T[] ReadBuffer<T>(SpanReader r) {
+		public static T[] ReadBuffer<T>(SpanStream r) {
 			byte[] buffer = ReadBuffer(r);
 
 			List<T> elements = new List<T>();
@@ -43,7 +43,7 @@ namespace Smx.PDBSharp
 			return elements.ToArray();
 		}
 
-		public static T[] ReadArray<T>(SpanReader r) where T : unmanaged {
+		public static T[] ReadArray<T>(SpanStream r) where T : unmanaged {
 			uint numElements = r.ReadUInt32();
 			T[] arr = new T[numElements];
 
@@ -60,7 +60,7 @@ namespace Smx.PDBSharp
 			return arr;
 		}
 
-		public static Dictionary<Tkey, Tval> ReadMap<Tkey, Tval>(SpanReader r)
+		public static Dictionary<Tkey, Tval> ReadMap<Tkey, Tval>(SpanStream r)
 			where Tkey : unmanaged
 			where Tval : unmanaged {
 			// sum of bitsizes of each member

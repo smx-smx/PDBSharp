@@ -18,7 +18,7 @@ namespace Smx.PDBSharp.Leaves
 		public UInt16 NumberOfArguments;
 		public ILeafContainer[] ArgumentTypes;
 
-		public LF_ARGLIST(IServiceContainer pdb, SpanReader stream) {
+		public LF_ARGLIST(IServiceContainer pdb, SpanStream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			NumberOfArguments = r.ReadUInt16();

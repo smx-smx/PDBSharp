@@ -17,14 +17,14 @@ namespace Smx.PDBSharp
 {
 	public delegate void OnSymbolDataDelegate(byte[] data);
 
-	public class SymbolsReader : SpanReader
+	public class SymbolsReader : SpanStream
 	{
 		private readonly IServiceContainer ctx;
 		private readonly IModule mod;
 
 		public event OnSymbolDataDelegate OnSymbolData;
 
-		public SymbolsReader(IServiceContainer ctx, IModule mod, SpanReader data) : base(data) {
+		public SymbolsReader(IServiceContainer ctx, IModule mod, SpanStream data) : base(data) {
 			this.ctx = ctx;
 			this.mod = mod;
 		}

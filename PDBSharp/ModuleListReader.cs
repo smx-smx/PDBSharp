@@ -26,7 +26,7 @@ namespace Smx.PDBSharp
 
 		public new const int SIZE = SectionContrib40.SIZE + 8;
 
-		public SectionContrib(SpanReader stream) : base(stream) {
+		public SectionContrib(SpanStream stream) : base(stream) {
 			DataCrc = ReadUInt32();
 			RelocCrc = ReadUInt32();
 		}
@@ -38,12 +38,12 @@ namespace Smx.PDBSharp
 
 		public new const int SIZE = SectionContrib.SIZE + 4;
 
-		public SectionContrib2(SpanReader stream) : base(stream) {
+		public SectionContrib2(SpanStream stream) : base(stream) {
 			CoffSectionIndex = ReadUInt32();
 		}
 	}
 
-	public class SectionContrib40 : SpanReader
+	public class SectionContrib40 : SpanStream
 	{
 		public readonly UInt16 SectionIndex;
 		public readonly UInt32 Offset;
@@ -53,7 +53,7 @@ namespace Smx.PDBSharp
 
 		public const int SIZE = 20;
 
-		public SectionContrib40(SpanReader stream) : base(stream) {
+		public SectionContrib40(SpanStream stream) : base(stream) {
 			SectionIndex = ReadUInt16();
 			ReadUInt16();
 
@@ -84,7 +84,7 @@ namespace Smx.PDBSharp
 		public UInt32 PdbFileNameIndex;
 	}
 
-	public class ModuleInfo : SpanReader
+	public class ModuleInfo : SpanStream
 	{
 		public readonly UInt32 OpenModuleHandle;
 		public readonly SectionContrib SectionContribution;
@@ -115,7 +115,7 @@ namespace Smx.PDBSharp
 			return EC.NameTable.GetString(nameIndex);
 		}
 
-		public ModuleInfo(IServiceContainer ctx, SpanReader __stream) : base(__stream) {
+		public ModuleInfo(IServiceContainer ctx, SpanStream __stream) : base(__stream) {
 			DBIReader dbi = ctx.GetService<DBIReader>();
 			this.EC = dbi.EC;
 
@@ -143,7 +143,7 @@ namespace Smx.PDBSharp
 		}
 	}
 
-	public class ModuleListReader : SpanReader
+	public class ModuleListReader : SpanStream
 	{
 		private readonly long listStartOffset;
 		private readonly long listEndOffset;
@@ -152,7 +152,7 @@ namespace Smx.PDBSharp
 
 		private readonly IServiceContainer ctx;
 
-		public ModuleListReader(IServiceContainer ctx, SpanReader __stream, uint moduleListSize) : base(__stream) {
+		public ModuleListReader(IServiceContainer ctx, SpanStream __stream, uint moduleListSize) : base(__stream) {
 			this.ctx = ctx;
 
 			listStartOffset = Position;

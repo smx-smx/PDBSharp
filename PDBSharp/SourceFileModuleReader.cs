@@ -20,7 +20,7 @@ namespace Smx.PDBSharp
 		}
 	}
 
-	public class SourceFileModuleReader : SpanReader, IModule
+	public class SourceFileModuleReader : SpanStream, IModule
 	{
 		private readonly PDBFile pdb;
 
@@ -34,7 +34,7 @@ namespace Smx.PDBSharp
 
 		public IEnumerable<Symbol> Symbols => Enumerable.Empty<Symbol>();
 
-		public SourceFileModuleReader(IServiceContainer ctx, SpanReader stream) : base(stream) {
+		public SourceFileModuleReader(IServiceContainer ctx, SpanStream stream) : base(stream) {
 			this.pdb = ctx.GetService<PDBFile>();
 
 			// including .c file

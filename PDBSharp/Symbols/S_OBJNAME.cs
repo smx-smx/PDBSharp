@@ -23,7 +23,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly UInt32 Signature;
 		public readonly string Name;
 
-		public S_OBJNAME(IServiceContainer ctx, IModule mod, SpanReader stream) {
+		public S_OBJNAME(IServiceContainer ctx, IModule mod, SpanStream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			Signature = r.ReadUInt32();

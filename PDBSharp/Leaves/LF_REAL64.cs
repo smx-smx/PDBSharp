@@ -15,7 +15,7 @@ namespace Smx.PDBSharp.Leaves
 	{
 		public readonly double Value;
 
-		public LF_REAL64(IServiceContainer pdb, SpanReader stream) {
+		public LF_REAL64(IServiceContainer pdb, SpanStream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			Value = r.ReadDouble();

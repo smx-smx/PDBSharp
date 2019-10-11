@@ -23,7 +23,7 @@ namespace Smx.PDBSharp.Leaves
 			throw new NotImplementedException();
 		}
 
-		public LF_ALIAS(IServiceContainer ctx, SpanReader stream) {
+		public LF_ALIAS(IServiceContainer ctx, SpanStream stream) {
 			TypeDataReader r = new TypeDataReader(ctx, stream);
 			UnderlyingType = r.ReadIndexedTypeLazy();
 			Name = r.ReadCString();

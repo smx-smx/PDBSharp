@@ -17,7 +17,7 @@ namespace Smx.PDBSharp.Leaves
 		public readonly ILeafContainer TypeRecord;
 		public readonly string Name;
 
-		public LF_STMEMBER(IServiceContainer pdb, SpanReader stream) {
+		public LF_STMEMBER(IServiceContainer pdb, SpanStream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			Attributes = new FieldAttributes(r.ReadUInt16());

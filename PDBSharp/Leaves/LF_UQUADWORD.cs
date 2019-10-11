@@ -15,7 +15,7 @@ namespace Smx.PDBSharp.Leaves
 	{
 		public readonly ulong Value;
 
-		public LF_UQUADWORD(IServiceContainer pdb, SpanReader stream) {
+		public LF_UQUADWORD(IServiceContainer pdb, SpanStream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			Value = r.ReadUInt64();

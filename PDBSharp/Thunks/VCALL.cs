@@ -17,7 +17,7 @@ namespace Smx.PDBSharp.Thunks
 	{
 		public readonly UInt16 VTableOffset;
 
-		public VCALL(IServiceContainer ctx, SymbolHeader header, SpanReader stream) : base(ctx, header, stream) {
+		public VCALL(IServiceContainer ctx, SymbolHeader header, SpanStream stream) : base(ctx, header, stream) {
 			VTableOffset = ReadUInt16();
 		}
 

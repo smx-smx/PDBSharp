@@ -15,17 +15,21 @@ namespace Smx.PDBSharp
 {
 	public static class SpanExtensions
 	{
-		/*public unsafe static T ReadStruct<T>(this ReadOnlySpan<byte> data, int offset) where T : struct, IConvertible {
-			int length = sizeof(T);
-			return Cast<T>(data.Slice(offset, length))[0];
-		}*/
-
 		public unsafe static T Read<T>(this ReadOnlySpan<byte> data, int offset) where T : unmanaged {
 			int length = sizeof(T);
 			return Cast<T>(data.Slice(offset, length))[0];
 		}
 
+		public unsafe static T Read<T>(this Span<byte> data, int offset) where T : unmanaged {
+			int length = sizeof(T);
+			return Cast<T>(data.Slice(offset, length))[0];
+		}
+
 		public static ReadOnlySpan<T> Cast<T>(this ReadOnlySpan<byte> data) where T : struct {
+			return MemoryMarshal.Cast<byte, T>(data);
+		}
+
+		public static Span<T> Cast<T>(this Span<byte> data) where T : struct {
 			return MemoryMarshal.Cast<byte, T>(data);
 		}
 	}

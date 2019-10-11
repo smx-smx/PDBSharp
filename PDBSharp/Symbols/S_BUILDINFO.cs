@@ -15,7 +15,7 @@ namespace Smx.PDBSharp.Symbols
 	{
 		public readonly ILeafContainer ItemID;
 
-		public S_BUILDINFO(IServiceContainer ctx, IModule mod, SpanReader stream) {
+		public S_BUILDINFO(IServiceContainer ctx, IModule mod, SpanStream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 			ItemID = r.ReadIndexedTypeLazy();
 		}

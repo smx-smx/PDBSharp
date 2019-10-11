@@ -35,7 +35,7 @@ namespace Smx.PDBSharp
 			byte[] modData = StreamTable.GetStream(Info.StreamNumber);
 			OnModuleData?.Invoke(Info, modData);
 
-			SpanReader modStream = new SpanReader(modData);
+			SpanStream modStream = new SpanStream(modData);
 			UInt32 signature = modStream.ReadUInt32();
 			modStream.Position = 0;
 

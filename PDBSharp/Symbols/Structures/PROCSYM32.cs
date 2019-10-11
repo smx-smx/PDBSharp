@@ -44,7 +44,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 		public readonly Symbol ParentSymbol;
 		public readonly Symbol NextSymbol;
 
-		public ProcSym32Base(IServiceContainer ctx, IModule mod, SpanReader stream) {
+		public ProcSym32Base(IServiceContainer ctx, IModule mod, SpanStream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			ParentOffset = r.ReadUInt32();

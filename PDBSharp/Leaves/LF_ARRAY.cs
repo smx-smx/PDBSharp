@@ -20,7 +20,7 @@ namespace Smx.PDBSharp.Leaves
 
 		public readonly string Name;
 
-		public LF_ARRAY(IServiceContainer pdb, SpanReader stream) {
+		public LF_ARRAY(IServiceContainer pdb, SpanStream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			ElementType = r.ReadIndexedTypeLazy();

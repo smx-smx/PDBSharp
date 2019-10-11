@@ -25,7 +25,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly CV_LVARFLAGS Flags;
 		public readonly string Name;
 
-		public S_LOCAL(IServiceContainer ctx, IModule mod, SpanReader stream) {
+		public S_LOCAL(IServiceContainer ctx, IModule mod, SpanStream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 			Type = r.ReadIndexedTypeLazy();
 			Flags = r.ReadFlagsEnum<CV_LVARFLAGS>();

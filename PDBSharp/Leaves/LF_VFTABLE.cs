@@ -24,7 +24,7 @@ namespace Smx.PDBSharp.Leaves
 		public readonly UInt32 NamesSize;
 		public readonly string[] Names;
 
-		public LF_VFTABLE(IServiceContainer pdb, SpanReader stream) {
+		public LF_VFTABLE(IServiceContainer pdb, SpanStream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			Type = r.ReadIndexedTypeLazy();

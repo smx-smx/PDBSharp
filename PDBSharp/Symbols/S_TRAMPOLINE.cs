@@ -68,7 +68,7 @@ namespace Smx.PDBSharp.Symbols
 		/// </summary>
 		public readonly UInt16 TargetSection;
 
-		public S_TRAMPOLINE(IServiceContainer ctx, IModule mod, SpanReader stream) {
+		public S_TRAMPOLINE(IServiceContainer ctx, IModule mod, SpanStream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			TrampolineType = r.ReadEnum<TrampolineType>();

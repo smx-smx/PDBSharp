@@ -14,7 +14,7 @@ namespace Smx.PDBSharp.Symbols
 {
 	public class S_COBOLUDT : UdtSym, ISymbol
 	{
-		public S_COBOLUDT(IServiceContainer ctx, IModule mod, SpanReader stream) : base(ctx, stream) {
+		public S_COBOLUDT(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, stream) {
 		}
 
 		public S_COBOLUDT(UdtSymData data) : base(data) {

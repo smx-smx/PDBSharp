@@ -26,7 +26,7 @@ namespace Smx.PDBSharp.Symbols
 		public CV_LVAR_ADDR_RANGE Range;
 		public CV_LVAR_ADDR_GAP[] Gaps;
 
-		public S_DEFRANGE_FRAMEPOINTER_REL(IServiceContainer ctx, IModule mod, SpanReader stream) {
+		public S_DEFRANGE_FRAMEPOINTER_REL(IServiceContainer ctx, IModule mod, SpanStream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 			FramePointerOffset = r.ReadUInt32();
 			Range = new CV_LVAR_ADDR_RANGE(stream);

@@ -55,7 +55,7 @@ namespace Smx.PDBSharp.Leaves
 			}
 		}
 
-		public LF_CLASS_STRUCTURE_INTERFACE(IServiceContainer pdb, SpanReader stream) {
+		public LF_CLASS_STRUCTURE_INTERFACE(IServiceContainer pdb, SpanStream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			NumberOfElements = r.ReadUInt16();

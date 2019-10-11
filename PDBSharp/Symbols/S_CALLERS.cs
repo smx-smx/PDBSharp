@@ -14,7 +14,7 @@ namespace Smx.PDBSharp.Symbols
 {
 	public class S_CALLERS : FUNCTIONLIST, ISymbol
 	{
-		public S_CALLERS(IServiceContainer ctx, IModule mod, SpanReader stream) : base(ctx, mod, stream) {
+		public S_CALLERS(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 
 		}
 	}

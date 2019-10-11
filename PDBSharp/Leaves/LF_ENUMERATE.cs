@@ -18,7 +18,7 @@ namespace Smx.PDBSharp.Leaves
 		public readonly ILeafContainer Length;
 		public readonly string FieldName;
 
-		public LF_ENUMERATE(IServiceContainer pdb, SpanReader stream) {
+		public LF_ENUMERATE(IServiceContainer pdb, SpanStream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			Attributes = new FieldAttributes(r.ReadUInt16());

@@ -18,7 +18,7 @@ namespace Smx.PDBSharp
 		private readonly Dictionary<uint, uint> Offset_Index;
 		private readonly Dictionary<uint, uint> Index_Offset;
 
-		private readonly SpanReader rdr;
+		private readonly SpanStream rdr;
 
 		private readonly Dictionary<string, uint> String_Index = new Dictionary<string, uint>();
 		private readonly Dictionary<uint, string> Index_String = new Dictionary<uint, string>();
@@ -65,9 +65,9 @@ namespace Smx.PDBSharp
 			return true;
 		}
 
-		public NameIndexTableReader(SpanReader r) {
+		public NameIndexTableReader(SpanStream r) {
 			byte[] stringTableData = Deserializers.ReadBuffer(r);
-			rdr = new SpanReader(stringTableData);
+			rdr = new SpanStream(stringTableData);
 
 			Offset_Index = Deserializers.ReadMap<uint, uint>(r);
 

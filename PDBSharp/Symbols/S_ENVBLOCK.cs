@@ -17,7 +17,7 @@ namespace Smx.PDBSharp.Symbols
 		public readonly string[] Data;
 		public readonly byte Flags;
 
-		public S_ENVBLOCK(IServiceContainer ctx, IModule mod, SpanReader stream) {
+		public S_ENVBLOCK(IServiceContainer ctx, IModule mod, SpanStream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 
 			Flags = r.ReadByte(); //fEC -> reserved (1 bit)

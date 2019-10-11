@@ -17,7 +17,7 @@ namespace Smx.PDBSharp.Leaves
 		public readonly byte Length;
 		public readonly byte Position;
 
-		public LF_BITFIELD(IServiceContainer pdb, SpanReader stream) {
+		public LF_BITFIELD(IServiceContainer pdb, SpanStream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 			Type = r.ReadIndexedTypeLazy();
 			Length = r.ReadByte();

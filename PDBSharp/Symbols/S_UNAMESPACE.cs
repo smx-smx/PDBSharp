@@ -15,7 +15,7 @@ namespace Smx.PDBSharp.Symbols
 	{
 		public readonly string NamespaceName;
 
-		public S_UNAMESPACE(IServiceContainer ctx, IModule mod, SpanReader stream) {
+		public S_UNAMESPACE(IServiceContainer ctx, IModule mod, SpanStream stream) {
 			var r = new SymbolDataReader(ctx, stream);
 			NamespaceName = r.ReadSymbolString();
 		}

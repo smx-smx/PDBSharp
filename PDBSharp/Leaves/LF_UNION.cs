@@ -51,7 +51,7 @@ namespace Smx.PDBSharp.Leaves
 
 		public override string UdtName => Name;
 
-		public LF_UNION(IServiceContainer pdb, SpanReader stream) {
+		public LF_UNION(IServiceContainer pdb, SpanStream stream) {
 			TypeDataReader r = new TypeDataReader(pdb, stream);
 
 			NumberOfElements = r.ReadUInt16();

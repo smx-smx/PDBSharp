@@ -21,7 +21,7 @@ namespace Smx.PDBSharp
 		LongHashV2 = 2
 	}
 
-	public class UdtNameTableReader : SpanReader
+	public class UdtNameTableReader : SpanStream
 	{
 		const UInt32 MAGIC = 0xEFFEEFFE;
 
@@ -32,7 +32,7 @@ namespace Smx.PDBSharp
 		public readonly uint[] NameIndices;
 		private readonly uint NumberOfNameIndices;
 
-		private readonly SpanReader rdr;
+		private readonly SpanStream rdr;
 
 		private readonly Dictionary<string, uint> String_NameIndex = new Dictionary<string, uint>();
 		private readonly Dictionary<uint, string> NameIndex_String = new Dictionary<uint, string>();
@@ -141,7 +141,7 @@ namespace Smx.PDBSharp
 			Version = ReadEnum<UdtNameTableVersion>();
 
 			data = Deserializers.ReadBuffer(this);
-			rdr = new SpanReader(data);
+			rdr = new SpanStream(data);
 
 			NameIndices = Deserializers.ReadArray<uint>(this);
 			NumberOfNameIndices = ReadUInt32();

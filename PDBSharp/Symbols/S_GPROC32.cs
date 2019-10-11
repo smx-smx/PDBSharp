@@ -14,7 +14,7 @@ namespace Smx.PDBSharp.Symbols
 {
 	public class S_GPROC32 : ProcSym32Base, ISymbol
 	{
-		public S_GPROC32(IServiceContainer ctx, IModule mod, SpanReader stream) : base(ctx, mod, stream) {
+		public S_GPROC32(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 		}
 
 		public S_GPROC32(ProcSym32 data) : base(data) {

@@ -11,13 +11,13 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols.Structures
 {
-	public class CV_LVAR_ATTR : SpanReader
+	public class CV_LVAR_ATTR : SpanStream
 	{
 		public readonly UInt32 Offset;
 		public readonly UInt16 Segment;
 		public readonly CV_LVARFLAGS Flags;
 
-		public CV_LVAR_ATTR(SpanReader stream) : base(stream) {
+		public CV_LVAR_ATTR(SpanStream stream) : base(stream) {
 			Offset = ReadUInt32();
 			Segment = ReadUInt16();
 			Flags = ReadFlagsEnum<CV_LVARFLAGS>();

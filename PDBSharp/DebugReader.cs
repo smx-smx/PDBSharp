@@ -29,7 +29,7 @@ namespace Smx.PDBSharp
 		DebugTypeMax
 	}
 
-	public class DebugReader : SpanReader
+	public class DebugReader : SpanStream
 	{
 		public readonly Int16[] DebugStreams = new short[(int)DebugType.DebugTypeMax];
 
@@ -58,7 +58,7 @@ namespace Smx.PDBSharp
 			return new FPOReader(fpo);
 		}
 
-		public DebugReader(IServiceContainer ctx, SpanReader stream) : base(stream) {
+		public DebugReader(IServiceContainer ctx, SpanStream stream) : base(stream) {
 			this.StreamTable = ctx.GetService<StreamTableReader>();
 
 			for (int i = 0; i < (int)DebugType.DebugTypeMax; i++) {
