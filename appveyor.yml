@@ -6,7 +6,7 @@ platform: Any CPU
 configuration: Debug
 
 before_build:
-- nuget restore PDBSharp.sln
+  - nuget restore PDBSharp.sln
 
 # If you want more build spew, change the verbosity below
 build:
@@ -15,3 +15,6 @@ build:
 
 environment:
   artifacts_dir: bin
+
+test_script:
+  - cmd: nunit3-console.exe ./PDBSharp.Tests/bin/%PLATFORM%/%CONFIGURATION%/PDBSharp.Tests.dll --result=myresults.xml;format=AppVeyor
