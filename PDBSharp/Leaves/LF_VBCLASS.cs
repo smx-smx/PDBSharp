@@ -11,17 +11,17 @@ using System.IO;
 
 namespace Smx.PDBSharp.Leaves
 {
-	public class LF_VBCLASS : ILeaf
+	public class LF_VBCLASS : LeafBase
 	{
-		public readonly FieldAttributes Attributes;
-		public readonly ILeafContainer VirtualBaseClassType;
-		public readonly ILeafContainer VirtualBasePointerType;
+		public FieldAttributes Attributes { get; set; }
+		public ILeafContainer VirtualBaseClassType { get; set; }
+		public ILeafContainer VirtualBasePointerType { get; set; }
 
-		public readonly ILeafContainer OffsetFromAddress;
-		public readonly ILeafContainer OffsetFromTable;
+		public ILeafContainer OffsetFromAddress { get; set; }
+		public ILeafContainer OffsetFromTable { get; set; }
 
-		public LF_VBCLASS(IServiceContainer pdb, SpanStream stream) {
-			TypeDataReader r = new TypeDataReader(pdb, stream);
+		public override void Read() {
+			TypeDataReader r = CreateReader();
 
 			Attributes = new FieldAttributes(r.ReadUInt16());
 			VirtualBaseClassType = r.ReadIndexedTypeLazy();
@@ -34,14 +34,20 @@ namespace Smx.PDBSharp.Leaves
 			OffsetFromTable = r.ReadVaryingType(out uint dynSize2);
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
-			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_IVBCLASS);
+		public override void Write() {
+			TypeDataWriter w = CreateWriter(LeafType.LF_IVBCLASS);
 			w.WriteUInt16((ushort)Attributes);
 			w.WriteIndexedType(VirtualBaseClassType);
 			w.WriteIndexedType(VirtualBasePointerType);
 			w.WriteVaryingType(OffsetFromAddress);
 			w.WriteVaryingType(OffsetFromTable);
-			w.WriteLeafHeader();
+			w.WriteHeader();
 		}
+
+		public LF_VBCLASS(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+			
+		}
+
+		
 	}
 }

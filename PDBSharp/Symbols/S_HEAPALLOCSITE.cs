@@ -20,15 +20,18 @@ namespace Smx.PDBSharp.Symbols
 		public LeafContainerBase FunctionSignature { get; set; }
 	}
 
-	public class S_HEAPALLOCSITE : ISymbol
+	public class S_HEAPALLOCSITE : SymbolBase
 	{
-		public readonly UInt32 CallSiteOffset;
-		public readonly UInt16 SectionIndex;
-		public readonly UInt16 HeapAllocationInstructionSize;
-		public readonly ILeafContainer FunctionSignature;
+		public UInt32 CallSiteOffset { get; set; }
+		public UInt16 SectionIndex { get; set; }
+		public UInt16 HeapAllocationInstructionSize { get; set; }
+		public ILeafContainer FunctionSignature { get; set; }
 
-		public S_HEAPALLOCSITE(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public S_HEAPALLOCSITE(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		}
+
+		public override void Read() {
+			var r = CreateReader();
 
 			CallSiteOffset = r.ReadUInt32();
 
@@ -38,21 +41,14 @@ namespace Smx.PDBSharp.Symbols
 			FunctionSignature = r.ReadIndexedTypeLazy();
 		}
 
-		public S_HEAPALLOCSITE(HeapAllocSite data) {
-			CallSiteOffset = data.CallSiteOffset;
-			SectionIndex = data.SectionIndex;
-			HeapAllocationInstructionSize = data.HeapAllocationInstructionSize;
-			FunctionSignature = data.FunctionSignature;
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_HEAPALLOCSITE);
+		public override void Write() {
+			var w = CreateWriter(SymbolType.S_HEAPALLOCSITE);
 			w.WriteUInt32(CallSiteOffset);
 			w.WriteUInt16(SectionIndex);
 			w.WriteUInt16(HeapAllocationInstructionSize);
 			w.WriteIndexedType(FunctionSignature);
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 	}
 }

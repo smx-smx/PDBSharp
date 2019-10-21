@@ -13,13 +13,17 @@ using System.Linq;
 
 namespace Smx.PDBSharp.Leaves
 {
-	public class LF_ARGLIST : ILeaf
+	public class LF_ARGLIST : LeafBase
 	{
-		public UInt16 NumberOfArguments;
-		public ILeafContainer[] ArgumentTypes;
+		public UInt16 NumberOfArguments { get; set; }
+		public ILeafContainer[] ArgumentTypes { get; set; }
 
-		public LF_ARGLIST(IServiceContainer pdb, SpanStream stream) {
-			TypeDataReader r = new TypeDataReader(pdb, stream);
+		public LF_ARGLIST(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+			
+		}
+
+		public override void Read() {
+			TypeDataReader r = CreateReader();
 
 			NumberOfArguments = r.ReadUInt16();
 			r.ReadUInt16(); //padding
@@ -28,8 +32,8 @@ namespace Smx.PDBSharp.Leaves
 											.ToArray();
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
-			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_ARGLIST);
+		public override void Write() {
+			TypeDataWriter w = CreateWriter(LeafType.LF_ARGLIST);
 			w.WriteUInt16(NumberOfArguments);
 			w.WriteUInt16(0x00);
 
@@ -37,7 +41,7 @@ namespace Smx.PDBSharp.Leaves
 				w.WriteIndexedType(leaf);
 			}
 
-			w.WriteLeafHeader();
+			w.WriteHeader();
 		}
 
 		public override string ToString() {

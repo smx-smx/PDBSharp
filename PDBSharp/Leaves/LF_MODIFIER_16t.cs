@@ -11,23 +11,26 @@ using System.IO;
 
 namespace Smx.PDBSharp.Leaves
 {
-	public class LF_MODIFIER_16t : ILeaf
+	public class LF_MODIFIER_16t : LeafBase
 	{
-		public readonly CVModifier Attributes;
-		public readonly ILeafContainer ModifiedType;
+		public CVModifier Attributes { get; set; }
+		public ILeafContainer ModifiedType { get; set; }
 
-		public LF_MODIFIER_16t(IServiceContainer pdb, SpanStream stream) {
-			TypeDataReader r = new TypeDataReader(pdb, stream);
+		public LF_MODIFIER_16t(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
+		}
+
+		public override void Read() {
+			TypeDataReader r = CreateReader();
 
 			Attributes = r.ReadFlagsEnum<CVModifier>();
 			ModifiedType = r.ReadIndexedType16Lazy();
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
-			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_MODIFIER_16t);
-			w.WriteEnum<CVModifier>(Attributes);
+		public override void Write() {
+			TypeDataWriter w = CreateWriter(LeafType.LF_MODIFIER_16t);
+			w.Write<CVModifier>(Attributes);
 			w.WriteIndexedType16(ModifiedType);
-			w.WriteLeafHeader();
+			w.WriteHeader();
 		}
 	}
 }

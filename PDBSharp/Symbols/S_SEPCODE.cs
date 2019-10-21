@@ -13,35 +13,26 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class SepCodeSym
+	public class S_SEPCODE : SymbolBase
 	{
-		public UInt32 Parent { get; set; }
-		public UInt32 End { get; set; }
-		public UInt32 Size { get; set; }
-		public CV_SEPCODEFLAGS Flags { get; set; }
-		public UInt32 Offset { get; set; }
-		public UInt32 ParentOffset { get; set; }
-		public UInt16 Section { get; set; }
-		public UInt16 ParentSection { get; set; }
-	}
+		private UInt32 ParentSymOffset;
+		public Symbol Parent;
+		public UInt32 End;
+		public UInt32 Size;
+		public CV_SEPCODEFLAGS Flags;
+		public UInt32 Offset;
+		public UInt32 ParentOffset;
+		public UInt16 Section;
+		public UInt16 ParentSection;
 
-	public class S_SEPCODE : ISymbol
-	{
-		private readonly UInt32 ParentSymOffset;
-		public readonly Symbol Parent;
-		public readonly UInt32 End;
-		public readonly UInt32 Size;
-		public readonly CV_SEPCODEFLAGS Flags;
-		public readonly UInt32 Offset;
-		public readonly UInt32 ParentOffset;
-		public readonly UInt16 Section;
-		public readonly UInt16 ParentSection;
+		public S_SEPCODE(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		}
 
-		public S_SEPCODE(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public override void Read() {
+			var r = CreateReader();
 
 			ParentSymOffset = r.ReadUInt32();
-			Parent = r.ReadSymbol(mod, ParentSymOffset);
+			Parent = r.ReadSymbol(Module, ParentSymOffset);
 
 			End = r.ReadUInt32();
 
@@ -55,29 +46,18 @@ namespace Smx.PDBSharp.Symbols
 			ParentSection = r.ReadUInt16();
 		}
 
-		public S_SEPCODE(SepCodeSym data) {
-			ParentSymOffset = data.Parent;
-			End = data.End;
-			Size = data.Size;
-			Flags = data.Flags;
-			Offset = data.Offset;
-			ParentOffset = data.ParentOffset;
-			Section = data.Section;
-			ParentSection = data.ParentSection;
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_SEPCODE);
+		public override void Write() {
+			var w = CreateWriter(SymbolType.S_SEPCODE);
 			w.WriteUInt32(ParentSymOffset);
 			w.WriteUInt32(End);
 			w.WriteUInt32(Size);
-			w.WriteEnum<CV_SEPCODEFLAGS>(Flags);
+			w.Write<CV_SEPCODEFLAGS>(Flags);
 			w.WriteUInt32(Offset);
 			w.WriteUInt32(ParentOffset);
 			w.WriteUInt16(Section);
 			w.WriteUInt16(ParentSection);
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 	}
 }

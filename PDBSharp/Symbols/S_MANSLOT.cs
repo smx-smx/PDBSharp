@@ -13,23 +13,18 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class AttrSlotSym
+	public class S_MANSLOT : SymbolBase
 	{
 		public UInt32 SlotIndex { get; set; }
-		public LeafContainerBase Type { get; set; }
+		public ILeafContainer Type { get; set; }
 		public CV_LVAR_ATTR Attributes { get; set; }
 		public string Name { get; set; }
-	}
 
-	public class S_MANSLOT : ISymbol
-	{
-		public readonly UInt32 SlotIndex;
-		public readonly ILeafContainer Type;
-		public readonly CV_LVAR_ATTR Attributes;
-		public readonly string Name;
+		public S_MANSLOT(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		}
 
-		public S_MANSLOT(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public override void Read() {
+			var r = CreateReader();
 
 			SlotIndex = r.ReadUInt32();
 			Type = r.ReadIndexedTypeLazy();
@@ -37,21 +32,14 @@ namespace Smx.PDBSharp.Symbols
 			Name = r.ReadSymbolString();
 		}
 
-		public S_MANSLOT(AttrSlotSym data) {
-			SlotIndex = data.SlotIndex;
-			Type = data.Type;
-			Attributes = data.Attributes;
-			Name = data.Name;
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_MANSLOT);
+		public override void Write() {
+			var w = CreateWriter(SymbolType.S_MANSLOT);
 			w.WriteUInt32(SlotIndex);
 			w.WriteIndexedType(Type);
 			Attributes.Write(w);
 			w.WriteSymbolString(Name);
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 	}
 }

@@ -6,7 +6,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
+using Smx.PDBSharp.Leaves;
 using Smx.PDBSharp.Symbols.Structures;
+using System.ComponentModel.Design;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -16,20 +18,26 @@ namespace Smx.PDBSharp
 	{
 		protected readonly SymbolType symbolType;
 
-		public SymbolDataWriter(PDBFile pdb, Stream stream, SymbolType type) : base(pdb, stream, Leaves.LeafType.SPECIAL_BUILTIN) {
+		public SymbolDataWriter(
+			IServiceContainer ctx, SpanStream stream,
+			SymbolType type
+		) : base(ctx, stream) {
 			this.symbolType = type;
-			Stream.Position = Marshal.SizeOf<SymbolHeader>();
+			Init();
 		}
 
-		public void WriteSymbolHeader() {
-			long dataSize = Stream.Position;
-			PerformAt(0, () => {
-				SymbolHeader hdr = new SymbolHeader() {
-					Type = symbolType,
-					Length = (ushort)dataSize
-				};
-				WriteStruct<SymbolHeader>(hdr);
-			});
+		private unsafe void Init() {
+			Position = sizeof(SymbolHeader);
+		}
+
+		public new void WriteHeader() {
+			long dataSize = Position;
+			Position = 0;
+			SymbolHeader hdr = new SymbolHeader() {
+				Type = symbolType,
+				Length = (ushort)dataSize
+			};
+			Write<SymbolHeader>(hdr);
 		}
 
 		public void WriteSymbolString(string value) {

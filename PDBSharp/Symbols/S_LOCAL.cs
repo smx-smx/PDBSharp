@@ -12,39 +12,29 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class LocalSym
+	public class S_LOCAL : SymbolBase
 	{
-		public LeafContainerBase Type { get; set; }
+		public ILeafContainer Type { get; set; }
 		public CV_LVARFLAGS Flags { get; set; }
 		public string Name { get; set; }
-	}
 
-	public class S_LOCAL : ISymbol
-	{
-		public readonly ILeafContainer Type;
-		public readonly CV_LVARFLAGS Flags;
-		public readonly string Name;
+		public S_LOCAL(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) { 
+		}
 
-		public S_LOCAL(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public override void Read() {
+			var r = CreateReader();
 			Type = r.ReadIndexedTypeLazy();
 			Flags = r.ReadFlagsEnum<CV_LVARFLAGS>();
 			Name = r.ReadSymbolString();
 		}
 
-		public S_LOCAL(LocalSym data) {
-			Type = data.Type;
-			Flags = data.Flags;
-			Name = data.Name;
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_LOCAL);
+		public override void Write() {
+			var w = CreateWriter(SymbolType.S_LOCAL);
 			w.WriteIndexedType(Type);
-			w.WriteEnum<CV_LVARFLAGS>(Flags);
+			w.Write<CV_LVARFLAGS>(Flags);
 			w.WriteSymbolString(Name);
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 	}
 }

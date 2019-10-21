@@ -14,35 +14,24 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class CompileSym
+	public class S_COMPILE2 : SymbolBase
 	{
 		public CompileSym2Flags Flags { get; set; }
 		public UInt16 Machine { get; set; }
 		public UInt16 FrontendVersionMajor { get; set; }
-		public UInt16 FrontentVersionMinor { get; set; }
+		public UInt16 FrontendVersionMinor { get; set; }
 		public UInt16 FrontendVersionBuild { get; set; }
 		public UInt16 BackendVersionMajor { get; set; }
 		public UInt16 BackendVersionMinor { get; set; }
 		public UInt16 BackendVersionBuild { get; set; }
 		public string VersionString { get; set; }
 		public string[] OptionalData { get; set; }
-	}
 
-	public class S_COMPILE2 : ISymbol
-	{
-		public readonly CompileSym2Flags Flags;
-		public readonly UInt16 Machine;
-		public readonly UInt16 FrontendVersionMajor;
-		public readonly UInt16 FrontendVersionMinor;
-		public readonly UInt16 FrontendVersionBuild;
-		public readonly UInt16 BackendVersionMajor;
-		public readonly UInt16 BackendVersionMinor;
-		public readonly UInt16 BackendVersionBuild;
-		public readonly string VersionString;
-		public readonly string[] OptionalData;
+		public S_COMPILE2(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		}
 
-		public S_COMPILE2(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public override void Read() {
+			var r = CreateReader();
 			Flags = new CompileSym2Flags(r.ReadUInt32());
 			Machine = r.ReadUInt16();
 			FrontendVersionMajor = r.ReadUInt16();
@@ -63,22 +52,9 @@ namespace Smx.PDBSharp.Symbols
 			OptionalData = optionalData.ToArray();
 		}
 
-		public S_COMPILE2(CompileSym data) {
-			Flags = data.Flags;
-			Machine = data.Machine;
-			FrontendVersionMajor = data.FrontendVersionMajor;
-			FrontendVersionMinor = data.FrontentVersionMinor;
-			FrontendVersionBuild = data.FrontendVersionBuild;
-			BackendVersionMajor = data.BackendVersionMajor;
-			BackendVersionMinor = data.BackendVersionMinor;
-			BackendVersionBuild = data.BackendVersionBuild;
-			VersionString = data.VersionString;
-			OptionalData = data.OptionalData;
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_COMPILE2);
-			w.WriteEnum<CompileSym2FlagsEnum>((CompileSym2FlagsEnum)Flags);
+		public override void Write() {
+			var w = CreateWriter(SymbolType.S_COMPILE2);
+			w.Write<CompileSym2FlagsEnum>((CompileSym2FlagsEnum)Flags);
 			w.WriteUInt16(Machine);
 			w.WriteUInt16(FrontendVersionMajor);
 			w.WriteUInt16(FrontendVersionMinor);
@@ -92,7 +68,7 @@ namespace Smx.PDBSharp.Symbols
 				w.WriteSymbolString(str);
 			}
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 
 		public override string ToString() {

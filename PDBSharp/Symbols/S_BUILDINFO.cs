@@ -11,24 +11,23 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class S_BUILDINFO : ISymbol
+	public class S_BUILDINFO : SymbolBase
 	{
-		public readonly ILeafContainer ItemID;
+		public ILeafContainer ItemID { get; set; }
 
-		public S_BUILDINFO(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public S_BUILDINFO(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		}
+
+		public override void Read() {
+			var r = CreateReader();
 			ItemID = r.ReadIndexedTypeLazy();
 		}
 
-		public S_BUILDINFO(LeafContainerBase itemId) {
-			ItemID = itemId;
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_BUILDINFO);
+		public override void Write() {
+			var w = CreateWriter(SymbolType.S_BUILDINFO);
 			w.WriteIndexedType(ItemID);
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 
 		public override string ToString() {

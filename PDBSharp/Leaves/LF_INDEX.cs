@@ -11,19 +11,22 @@ using System.IO;
 
 namespace Smx.PDBSharp.Leaves
 {
-	class LF_INDEX : ILeaf
+	class LF_INDEX : LeafBase
 	{
-		public readonly ILeafContainer Referenced;
+		public ILeafContainer Referenced { get; set; }
 
-		public LF_INDEX(IServiceContainer pdb, SpanStream stream) {
-			TypeDataReader r = new TypeDataReader(pdb, stream);
+		public LF_INDEX(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
+		}
+
+		public override void Read() {
+			TypeDataReader r = CreateReader();
 			Referenced = r.ReadIndexedTypeLazy();
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
-			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_INDEX);
+		public override void Write() {
+			TypeDataWriter w = CreateWriter(LeafType.LF_INDEX);
 			w.WriteIndexedType(Referenced);
-			w.WriteLeafHeader();
+			w.WriteHeader();
 		}
 	}
 }

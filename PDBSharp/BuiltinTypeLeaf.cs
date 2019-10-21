@@ -8,6 +8,7 @@
 #endregion
 using System;
 using System.IO;
+using Smx.PDBSharp.Leaves;
 
 namespace Smx.PDBSharp
 {
@@ -41,7 +42,11 @@ namespace Smx.PDBSharp
 			return $"{typeName} [{typeMode}]";
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
+		public void Read() {
+			throw new NotImplementedException();
+		}
+
+		public void Write() {
 			throw new NotImplementedException();
 		}
 	}

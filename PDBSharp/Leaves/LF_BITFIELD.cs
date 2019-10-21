@@ -11,25 +11,28 @@ using System.IO;
 
 namespace Smx.PDBSharp.Leaves
 {
-	public class LF_BITFIELD : ILeaf
+	public class LF_BITFIELD : LeafBase
 	{
-		public readonly ILeafContainer Type;
-		public readonly byte Length;
-		public readonly byte Position;
+		public ILeafContainer Type { get; set; }
+		public byte Length { get; set; }
+		public byte Position { get; set; }
 
-		public LF_BITFIELD(IServiceContainer pdb, SpanStream stream) {
-			TypeDataReader r = new TypeDataReader(pdb, stream);
+		public LF_BITFIELD(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
+		}
+
+		public override void Read() {
+			TypeDataReader r = CreateReader();
 			Type = r.ReadIndexedTypeLazy();
 			Length = r.ReadByte();
 			Position = r.ReadByte();
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
-			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_BITFIELD);
+		public override void Write() {
+			TypeDataWriter w = CreateWriter(LeafType.LF_BITFIELD);
 			w.WriteIndexedType(Type);
 			w.WriteByte(Length);
 			w.WriteByte(Position);
-			w.WriteLeafHeader();
+			w.WriteHeader();
 		}
 	}
 }

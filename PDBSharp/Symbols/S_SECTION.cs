@@ -12,7 +12,7 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class SectionSym
+	public class S_SECTION : SymbolBase
 	{
 		public UInt16 SectionNumber { get; set; }
 		/// <summary>
@@ -23,22 +23,12 @@ namespace Smx.PDBSharp.Symbols
 		public UInt32 Length { get; set; }
 		public UInt32 Characteristics { get; set; }
 		public string Name { get; set; }
-	}
 
-	public class S_SECTION : ISymbol
-	{
-		public readonly UInt16 SectionNumber;
-		/// <summary>
-		/// Alignment of this section (power of 2)
-		/// </summary>
-		public readonly byte Alignment;
-		public readonly UInt32 Rva;
-		public readonly UInt32 Length;
-		public readonly UInt32 Characteristics;
-		public readonly string Name;
+		public S_SECTION(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		}
 
-		public S_SECTION(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public override void Read() {
+			var r = CreateReader();
 
 			SectionNumber = r.ReadUInt16();
 			Alignment = r.ReadByte();
@@ -46,20 +36,11 @@ namespace Smx.PDBSharp.Symbols
 			Rva = r.ReadUInt32();
 			Length = r.ReadUInt32();
 			Characteristics = r.ReadUInt32();
-			Name = r.ReadSymbolString();
+			Name = r.ReadSymbolString(); 
 		}
 
-		public S_SECTION(SectionSym data) {
-			SectionNumber = data.SectionNumber;
-			Alignment = data.Alignment;
-			Rva = data.Rva;
-			Length = data.Length;
-			Characteristics = data.Characteristics;
-			Name = data.Name;
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_SECTION);
+		public override void Write() {
+			var w = CreateWriter(SymbolType.S_SECTION);
 			w.WriteUInt16(SectionNumber);
 			w.WriteByte(Alignment);
 			w.WriteByte(0x00);
@@ -68,7 +49,7 @@ namespace Smx.PDBSharp.Symbols
 			w.WriteUInt32(Characteristics);
 			w.WriteSymbolString(Name);
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 	}
 }

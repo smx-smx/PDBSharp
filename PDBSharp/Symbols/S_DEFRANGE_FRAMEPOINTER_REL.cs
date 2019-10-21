@@ -13,34 +13,24 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class DefrangeFramePointerRel
+	public class S_DEFRANGE_FRAMEPOINTER_REL : SymbolBase
 	{
 		public UInt32 FramePointerOffset { get; set; }
 		public CV_LVAR_ADDR_RANGE Range { get; set; }
 		public CV_LVAR_ADDR_GAP[] Gaps { get; set; }
-	}
 
-	public class S_DEFRANGE_FRAMEPOINTER_REL : ISymbol
-	{
-		public readonly UInt32 FramePointerOffset;
-		public CV_LVAR_ADDR_RANGE Range;
-		public CV_LVAR_ADDR_GAP[] Gaps;
+		public S_DEFRANGE_FRAMEPOINTER_REL(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		}
 
-		public S_DEFRANGE_FRAMEPOINTER_REL(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public override void Read() {
+			var r = CreateReader();
 			FramePointerOffset = r.ReadUInt32();
 			Range = new CV_LVAR_ADDR_RANGE(stream);
 			Gaps = CV_LVAR_ADDR_GAP.ReadGaps(r);
 		}
 
-		public S_DEFRANGE_FRAMEPOINTER_REL(DefrangeFramePointerRel data) {
-			FramePointerOffset = data.FramePointerOffset;
-			Range = data.Range;
-			Gaps = data.Gaps;
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_DEFRANGE_FRAMEPOINTER_REL);
+		public override void Write() {
+			var w = CreateWriter(SymbolType.S_DEFRANGE_FRAMEPOINTER_REL);
 			w.WriteUInt32(FramePointerOffset);
 			Range.Write(w);
 
@@ -48,7 +38,7 @@ namespace Smx.PDBSharp.Symbols
 				gap.Write(w);
 			}
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 	}
 }

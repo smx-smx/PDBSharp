@@ -11,15 +11,19 @@ using System.IO;
 
 namespace Smx.PDBSharp.Leaves
 {
-	public class LF_BCLASS : ILeaf
+	public class LF_BCLASS : LeafBase
 	{
-		public readonly FieldAttributes Attributes;
-		public readonly ILeafContainer BaseClassType;
+		public FieldAttributes Attributes { get; set; }
+		public ILeafContainer BaseClassType { get; set; }
 
-		public readonly ILeafContainer Offset;
+		public ILeafContainer Offset { get; set; }
 
-		public LF_BCLASS(IServiceContainer pdb, SpanStream stream) {
-			TypeDataReader r = new TypeDataReader(pdb, stream);
+		public LF_BCLASS(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+			
+		}
+
+		public override void Read() {
+			TypeDataReader r = CreateReader();
 
 			Attributes = new FieldAttributes(r.ReadUInt16());
 			BaseClassType = r.ReadIndexedTypeLazy();
@@ -27,12 +31,12 @@ namespace Smx.PDBSharp.Leaves
 			Offset = r.ReadVaryingType(out uint dataSize);
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
-			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_BCLASS);
+		public override void Write() {
+			TypeDataWriter w = CreateWriter(LeafType.LF_BCLASS);
 			w.WriteUInt16((ushort)Attributes);
 			w.WriteIndexedType(BaseClassType);
 			w.WriteIndexedType(Offset);
-			w.WriteLeafHeader();
+			w.WriteHeader();
 		}
 	}
 }

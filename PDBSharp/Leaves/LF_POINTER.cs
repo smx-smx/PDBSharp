@@ -38,23 +38,26 @@ namespace Smx.PDBSharp.Leaves
 		public bool IsRestricted => ((attrs >> 12) & 1) == 1;
 	}
 
-	public class LF_POINTER : ILeaf
+	public class LF_POINTER : LeafBase
 	{
-		public readonly ILeafContainer UnderlyingType;
-		public readonly PointerAttributes Attributes;
+		public ILeafContainer UnderlyingType { get; set; }
+		public PointerAttributes Attributes { get; set; }
 
-		public LF_POINTER(IServiceContainer pdb, SpanStream stream) {
-			TypeDataReader r = new TypeDataReader(pdb, stream);
+		public LF_POINTER(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
+		}
+
+		public override void Read() {
+			TypeDataReader r = CreateReader();
 
 			UnderlyingType = r.ReadIndexedTypeLazy();
 			Attributes = new PointerAttributes(r.ReadUInt32());
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
-			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_POINTER);
+		public override void Write() {
+			TypeDataWriter w = CreateWriter(LeafType.LF_POINTER);
 			w.WriteIndexedType(UnderlyingType);
 			w.WriteUInt32((uint)Attributes);
-			w.WriteLeafHeader();
+			w.WriteHeader();
 		}
 
 		public override string ToString() {

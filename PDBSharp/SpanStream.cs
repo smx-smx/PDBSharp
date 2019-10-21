@@ -69,9 +69,15 @@ namespace Smx.PDBSharp
 			return str;
 		}
 
-		public void WriteString(string value) {
-			byte[] data = Encoding.ASCII.GetBytes(value);
-			
+		public void WriteString(string str) {
+			WriteUInt32((uint)str.Length);
+			WriteBytes(Encoding.ASCII.GetBytes(str));
+			WriteByte(0x00);
+		}
+
+		public void WriteCString(string str) {
+			WriteBytes(Encoding.ASCII.GetBytes(str));
+			WriteByte(0x00);
 		}
 
 		public unsafe T ReadStruct<T>() where T : unmanaged {
@@ -226,7 +232,7 @@ namespace Smx.PDBSharp
 		public void WriteDouble(double value) => Write(value);
 
 		public ushort ReadUInt16() => Read<ushort>();
-		public void WriteUint16(UInt16 value) => Write(value);
+		public void WriteUInt16(UInt16 value) => Write(value);
 
 		public uint ReadUInt32() => Read<uint>();
 		public void WriteUInt32(UInt32 value) => Write(value);

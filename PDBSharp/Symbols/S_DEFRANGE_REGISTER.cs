@@ -14,22 +14,17 @@ using System.IO;
 namespace Smx.PDBSharp.Symbols
 {
 
-	public class DefrangeSymRegister
+	public class S_DEFRANGE_REGISTER : SymbolBase
 	{
-		public UInt16 Register { get; set; }
-		public RangeAttributes Attributes { get; set; }
-		public CV_LVAR_ADDR_RANGE Range { get; set; }
-		public CV_LVAR_ADDR_GAP[] Gaps { get; set; }
-	}
+		public UInt16 Register;
+		public RangeAttributes Attributes;
+		public CV_LVAR_ADDR_RANGE Range;
+		public CV_LVAR_ADDR_GAP[] Gaps;
 
-	public class S_DEFRANGE_REGISTER : ISymbol
-	{
-		public readonly UInt16 Register;
-		public readonly RangeAttributes Attributes;
-		public readonly CV_LVAR_ADDR_RANGE Range;
-		public readonly CV_LVAR_ADDR_GAP[] Gaps;
+		public S_DEFRANGE_REGISTER(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		}
 
-		public S_DEFRANGE_REGISTER(IServiceContainer ctx, IModule mod, SpanStream stream) {
+		public override void Read() {
 			var r = new SymbolDataReader(ctx, stream);
 			Register = r.ReadUInt16();
 			Attributes = r.ReadFlagsEnum<RangeAttributes>();
@@ -37,23 +32,16 @@ namespace Smx.PDBSharp.Symbols
 			Gaps = CV_LVAR_ADDR_GAP.ReadGaps(r);
 		}
 
-		public S_DEFRANGE_REGISTER(DefrangeSymRegister data) {
-			Register = data.Register;
-			Attributes = data.Attributes;
-			Range = data.Range;
-			Gaps = data.Gaps;
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_DEFRANGE_REGISTER);
+		public override void Write() {
+			var w = CreateWriter(SymbolType.S_DEFRANGE_REGISTER);
 			w.WriteUInt16(Register);
-			w.WriteEnum<RangeAttributes>(Attributes);
+			w.Write<RangeAttributes>(Attributes);
 			Range.Write(w);
 			foreach (CV_LVAR_ADDR_GAP gap in Gaps) {
 				gap.Write(w);
 			}
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 	}
 }

@@ -11,21 +11,17 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols.Structures
 {
-	public class ConstSym
+	public abstract class ConstSymBase : SymbolBase
 	{
-		public LeafContainerBase Type { get; set; }
-		public LeafContainerBase Value { get; set; }
+		public ILeafContainer Type { get; set; }
+		public ILeafContainer Value { get; set; }
 		public string Name { get; set; }
-	}
 
-	public abstract class ConstSymBase
-	{
-		public readonly ILeafContainer Type;
-		public readonly ILeafContainer Value;
-		public readonly string Name;
+		public ConstSymBase(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		}
 
-		public ConstSymBase(IServiceContainer ctx, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public override void Read() {
+			var r = CreateReader();
 
 			Type = r.ReadIndexedTypeLazy();
 
@@ -33,20 +29,14 @@ namespace Smx.PDBSharp.Symbols.Structures
 			Name = r.ReadSymbolString();
 		}
 
-		public ConstSymBase(ConstSym data) {
-			Type = data.Type;
-			Value = data.Value;
-			Name = data.Name;
-		}
-
-		public void Write(PDBFile pdb, Stream stream, SymbolType symbolType) {
-			var w = new SymbolDataWriter(pdb, stream, symbolType);
+		public void Write(SymbolType symbolType) {
+			var w = CreateWriter(symbolType);
 
 			w.WriteIndexedType(Type);
 			w.WriteVaryingType(Value);
 			w.WriteSymbolString(Name);
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 	}
 }

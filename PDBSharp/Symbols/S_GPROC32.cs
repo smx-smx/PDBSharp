@@ -12,16 +12,13 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class S_GPROC32 : ProcSym32Base, ISymbol
+	public class S_GPROC32 : ProcSym32Base
 	{
 		public S_GPROC32(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 		}
 
-		public S_GPROC32(ProcSym32 data) : base(data) {
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			base.Write(pdb, stream, SymbolType.S_GPROC32);
+		public override void Write() {
+			base.Write(SymbolType.S_GPROC32);
 		}
 	}
 }

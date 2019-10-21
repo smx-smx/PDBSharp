@@ -8,10 +8,37 @@
 #endregion
 
 
+using System;
+using System.ComponentModel.Design;
+
 namespace Smx.PDBSharp.Leaves
 {
-	public abstract class LeafBase
+	public abstract class LeafBase : ILeaf
 	{
+		protected readonly IServiceContainer ctx;
+		protected readonly SpanStream stream;
+		
+		public LeafBase(IServiceContainer ctx, SpanStream stream) {
+			this.ctx = ctx;
+			this.stream = stream;
+		}
+
+		protected TypeDataReader CreateReader() {
+			return new TypeDataReader(ctx, stream);
+		}
+
+		protected TypeDataWriter CreateWriter(LeafType type, bool hasSize = true) {
+			return new TypeDataWriter(ctx, stream, type, hasSize);
+		}
+
+		public virtual void Read() {
+			throw new NotImplementedException();
+		}
+
+		public virtual void Write() {
+			throw new NotImplementedException();
+		}
+
 		public bool IsUdtAnon {
 			get {
 				string[] utag = new string[] {

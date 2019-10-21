@@ -13,15 +13,18 @@ using System.Linq;
 
 namespace Smx.PDBSharp.Symbols
 {
-	internal class S_ANNOTATION : ISymbol
+	internal class S_ANNOTATION : SymbolBase
 	{
-		public readonly UInt32 Offset;
-		public readonly UInt16 Segment;
-		public readonly UInt16 NumberOfStrings;
-		public readonly string[] Annotations;
+		public UInt32 Offset { get; set; }
+		public UInt16 Segment { get; set; }
+		public UInt16 NumberOfStrings { get; set; }
+		public string[] Annotations { get; set; }
 
-		public S_ANNOTATION(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public S_ANNOTATION(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		}
+
+		public override void Read() {
+			var r = CreateReader();
 			Offset = r.ReadUInt32();
 			Segment = r.ReadUInt16();
 			NumberOfStrings = r.ReadUInt16();
@@ -29,10 +32,6 @@ namespace Smx.PDBSharp.Symbols
 			Annotations = Enumerable.Range(1, NumberOfStrings)
 				.Select(_ => r.ReadCString())
 				.ToArray();
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			throw new System.NotImplementedException();
 		}
 	}
 }

@@ -12,39 +12,29 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class BpRelSym32
+	public class S_BPREL32 : SymbolBase
 	{
 		public UInt32 Offset { get; set; }
-		public LeafContainerBase Type { get; set; }
+		public ILeafContainer Type { get; set; }
 		public string Name { get; set; }
-	}
 
-	public class S_BPREL32 : ISymbol
-	{
-		public readonly UInt32 Offset;
-		public readonly ILeafContainer Type;
-		public readonly string Name;
+		public S_BPREL32(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		}
 
-		public S_BPREL32(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			SymbolDataReader r = new SymbolDataReader(ctx, stream);
+		public override void Read() {
+			SymbolDataReader r = CreateReader();
 			Offset = r.ReadUInt32();
 			Type = r.ReadIndexedTypeLazy();
-			Name = r.ReadSymbolString();
-		}
+			Name = r.ReadSymbolString(); 
+		}		
 
-		public S_BPREL32(BpRelSym32 data) {
-			Offset = data.Offset;
-			Type = data.Type;
-			Name = data.Name;
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			SymbolDataWriter w = new SymbolDataWriter(pdb, stream, SymbolType.S_BPREL32);
+		public override void Write() {
+			SymbolDataWriter w = CreateWriter(SymbolType.S_BPREL32);
 			w.WriteUInt32(Offset);
 			w.WriteIndexedType(Type);
 			w.WriteSymbolString(Name);
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 	}
 }

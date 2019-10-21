@@ -8,29 +8,42 @@
 #endregion
 using Smx.PDBSharp.Leaves;
 using System;
+using System.ComponentModel.Design;
 using System.IO;
+using System.Text;
 
 namespace Smx.PDBSharp
 {
-	public class TypeDataWriter : WriterBase
+	public class TypeDataWriter : SpanStream
 	{
-		protected readonly PDBFile PDB;
+		protected readonly IServiceContainer ctx;
 
 		private readonly LeafType type;
+		private readonly bool hasSize;
 
-		public TypeDataWriter(PDBFile pdb, Stream stream, LeafType type) : base(stream) {
-			this.PDB = pdb;
+		protected TypeDataWriter(
+			IServiceContainer ctx, SpanStream stream
+		) : base(stream){
+			this.ctx = ctx;
+		}
+
+		public TypeDataWriter(
+			IServiceContainer ctx, SpanStream stream,
+			LeafType type, bool hasSize = true
+		) : base(stream) {
+			this.ctx = ctx;
 			this.type = type;
+			this.hasSize = hasSize;
 		}
 
 		public void WriteIndexedType(ILeafContainer leaf) {
 			WriteUInt32(leaf.TypeIndex);
-			leaf.Data.Write(PDB, Stream);
+			leaf.Data.Write();
 		}
 
 		public void WriteIndexedType16(ILeafContainer leaf) {
 			WriteUInt16((ushort)leaf.TypeIndex);
-			leaf.Data.Write(PDB, Stream);
+			leaf.Data.Write();
 		}
 
 		public void WriteVaryingType(ILeafContainer leaf) {
@@ -38,14 +51,19 @@ namespace Smx.PDBSharp
 				throw new NotImplementedException();
 			}
 
-			leaf.Data.Write(PDB, Stream);
+			leaf.Data.Write();
 		}
 
-		public void WriteLeafHeader(bool hasSize = true) {
+		public void WriteHeader() {
 			if (hasSize) {
-				WriteUInt16((ushort)Stream.Position);
+				WriteUInt16((ushort)this.Length);
 			}
-			WriteEnum<LeafType>(this.type);
+			Write<LeafType>(this.type);
+		}
+
+		public void WriteShortString(string str) {
+			WriteUInt16((ushort)str.Length);
+			WriteBytes(Encoding.ASCII.GetBytes(str));
 		}
 	}
 }

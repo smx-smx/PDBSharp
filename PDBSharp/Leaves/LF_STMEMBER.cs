@@ -11,26 +11,29 @@ using System.IO;
 
 namespace Smx.PDBSharp.Leaves
 {
-	public class LF_STMEMBER : ILeaf
+	public class LF_STMEMBER : LeafBase
 	{
-		public readonly FieldAttributes Attributes;
-		public readonly ILeafContainer TypeRecord;
-		public readonly string Name;
+		public FieldAttributes Attributes { get; set; }
+		public ILeafContainer TypeRecord { get; set; }
+		public string Name { get; set; }
 
-		public LF_STMEMBER(IServiceContainer pdb, SpanStream stream) {
-			TypeDataReader r = new TypeDataReader(pdb, stream);
+		public LF_STMEMBER(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+		}
+
+		public override void Read() {
+			TypeDataReader r = CreateReader();
 
 			Attributes = new FieldAttributes(r.ReadUInt16());
 			TypeRecord = r.ReadIndexedTypeLazy();
 			Name = r.ReadCString();
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
-			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_STMEMBER);
+		public override void Write() {
+			TypeDataWriter w = CreateWriter(LeafType.LF_STMEMBER);
 			w.WriteUInt16((ushort)Attributes);
 			w.WriteIndexedType(TypeRecord);
 			w.WriteCString(Name);
-			w.WriteLeafHeader();
+			w.WriteHeader();
 		}
 	}
 }

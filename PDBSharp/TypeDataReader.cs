@@ -88,7 +88,7 @@ namespace Smx.PDBSharp
 			}
 		}
 
-		private ILeaf ReadLeaf(LeafType leafType) {
+		private ILeaf CreateLeafStream(LeafType leafType) {
 			switch (leafType) {
 				case LeafType.LF_ALIAS:
 					return new LF_ALIAS(ctx, this);
@@ -191,11 +191,13 @@ namespace Smx.PDBSharp
 				size = ReadUInt16();
 			}
 			LeafType leafType = ReadEnum<LeafType>();
-			ILeaf typeSym = ReadLeaf(leafType);
+			
+			ILeaf typeSym = CreateLeafStream(leafType);
+			typeSym.Read();
 
 			ConsumePadding();
 
-#if DEBUG
+#if !PEFF
 			long typeDataSize = size + sizeof(UInt16);
 			UInt32 typeHash = PerformAt(typeStartOffset, () => {
 				byte[] typeData = ReadBytes((int)typeDataSize);

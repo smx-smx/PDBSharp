@@ -12,35 +12,30 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class CallSiteInfo
+	public class S_CALLSITEINFO : SymbolBase
 	{
 		public UInt32 Offset { get; set; }
 		public UInt16 SectionIndex { get; set; }
-		public LeafContainerBase Type { get; set; }
-	}
+		public ILeafContainer Type { get; set; }
 
-	public class S_CALLSITEINFO : ISymbol
-	{
-		public readonly UInt32 Offset;
-		public readonly UInt16 SectionIndex;
-		public readonly ILeafContainer Type;
-
-		public S_CALLSITEINFO(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public S_CALLSITEINFO(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) { 			
+		}
+		public override void Read() {
+			var r = CreateReader();
 			Offset = r.ReadUInt32();
 			SectionIndex = r.ReadUInt16();
 			r.ReadUInt16(); //padding
 			Type = r.ReadIndexedTypeLazy();
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
-			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_CALLSITEINFO);
+		public override void Write() {
+			var w = CreateWriter(SymbolType.S_CALLSITEINFO);
 			w.WriteUInt32(Offset);
 			w.WriteUInt16(SectionIndex);
 			w.WriteUInt16(0x00); //padding
 			w.WriteIndexedType(Type);
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 	}
 }

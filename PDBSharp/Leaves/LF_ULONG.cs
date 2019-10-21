@@ -12,19 +12,21 @@ using System.IO;
 
 namespace Smx.PDBSharp.Leaves
 {
-	public class LF_ULONG : ILeaf
+	public class LF_ULONG : LeafBase
 	{
-		public readonly UInt32 Value;
-		public LF_ULONG(IServiceContainer pdb, SpanStream stream) {
-			TypeDataReader r = new TypeDataReader(pdb, stream);
+		public UInt32 Value { get; set; }
+		public LF_ULONG(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
+		}
 
+		public override void Read() {
+			TypeDataReader r = CreateReader();
 			Value = r.ReadUInt32();
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
-			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_ULONG);
+		public override void Write() {
+			TypeDataWriter w = CreateWriter(LeafType.LF_ULONG);
 			w.WriteUInt32(Value);
-			w.WriteLeafHeader();
+			w.WriteHeader();
 		}
 	}
 }

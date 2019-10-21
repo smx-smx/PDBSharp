@@ -13,45 +13,34 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class ThunkSym32
+	public class S_THUNK32 : SymbolBase
 	{
-		public UInt32 Parent { get; set; }
-		public UInt32 End { get; set; }
-		public UInt32 Next { get; set; }
-		public UInt32 Offset { get; set; }
-		public UInt16 Segment { get; set; }
-		public UInt16 ThunkLength { get; set; }
-		public ThunkType ThunkType { get; set; }
-		public string Name { get; set; }
+		private UInt32 ParentOffset;
+		public Symbol Parent;
+		public UInt32 End;
+		private UInt32 NextOffset;
+		public Symbol Next;
+		public UInt32 Offset;
+		public UInt16 Segment;
+		public UInt16 ThunkLength;
+		public ThunkType ThunkType;
+		public string Name;
 
-		public IThunk Thunk { get; set; }
-	}
+		public IThunk Thunk;
 
-	public class S_THUNK32 : ISymbol
-	{
-		private readonly UInt32 ParentOffset;
-		public readonly Symbol Parent;
-		public readonly UInt32 End;
-		private readonly UInt32 NextOffset;
-		public readonly Symbol Next;
-		public readonly UInt32 Offset;
-		public readonly UInt16 Segment;
-		public readonly UInt16 ThunkLength;
-		public readonly ThunkType ThunkType;
-		public readonly string Name;
+		public S_THUNK32(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		}
 
-		public readonly IThunk Thunk;
-
-		public S_THUNK32(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public override void Read() {
+			var r = CreateReader();
 
 			ParentOffset = r.ReadUInt32();
-			Parent = r.ReadSymbol(mod, ParentOffset);
+			Parent = r.ReadSymbol(Module, ParentOffset);
 
 			End = r.ReadUInt32();
 
 			NextOffset = r.ReadUInt32();
-			Next = r.ReadSymbol(mod, NextOffset);
+			Next = r.ReadSymbol(Module, NextOffset);
 
 			Offset = r.ReadUInt32();
 			Segment = r.ReadUInt16();
@@ -61,31 +50,19 @@ namespace Smx.PDBSharp.Symbols
 			Thunk = r.ReadThunk(ThunkType);
 		}
 
-		public S_THUNK32(ThunkSym32 data) {
-			ParentOffset = data.Parent;
-			End = data.End;
-			NextOffset = data.Next;
-			Offset = data.Offset;
-			Segment = data.Segment;
-			ThunkLength = data.ThunkLength;
-			ThunkType = data.ThunkType;
-			Name = data.Name;
-			Thunk = data.Thunk;
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_THUNK32);
+		public override void Write() {
+			var w = CreateWriter(SymbolType.S_THUNK32);
 			w.WriteUInt32(ParentOffset);
 			w.WriteUInt32(End);
 			w.WriteUInt32(NextOffset);
 			w.WriteUInt32(Offset);
 			w.WriteUInt16(Segment);
 			w.WriteUInt16(ThunkLength);
-			w.WriteEnum<ThunkType>(ThunkType);
+			w.Write<ThunkType>(ThunkType);
 			w.WriteSymbolString(Name);
 			Thunk.Write(w);
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 	}
 }

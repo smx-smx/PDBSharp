@@ -11,20 +11,22 @@ using System.IO;
 
 namespace Smx.PDBSharp.Leaves
 {
-	public class LF_REAL64 : ILeaf
+	public class LF_REAL64 : LeafBase
 	{
-		public readonly double Value;
+		public double Value { get; set; }
 
-		public LF_REAL64(IServiceContainer pdb, SpanStream stream) {
-			TypeDataReader r = new TypeDataReader(pdb, stream);
+		public LF_REAL64(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+		}
 
+		public override void Read() {
+			TypeDataReader r = CreateReader();
 			Value = r.ReadDouble();
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
-			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_REAL64);
+		public override void Write() {
+			TypeDataWriter w = CreateWriter(LeafType.LF_REAL64);
 			w.WriteDouble(Value);
-			w.WriteLeafHeader();
+			w.WriteHeader();
 		}
 	}
 }

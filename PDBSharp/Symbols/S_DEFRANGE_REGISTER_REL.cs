@@ -13,28 +13,21 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class DefrangeSymRegisterRel
+	public class S_DEFRANGE_REGISTER_REL : SymbolBase
 	{
-		public UInt16 BaseRegister { get; set; }
-		public bool SpilledUdtMember { get; set; }
-		public UInt16 ParentVariableOffset { get; set; }
-		public UInt32 BaseRegisterOffset { get; set; }
-		public CV_LVAR_ADDR_RANGE Range { get; set; }
-		public CV_LVAR_ADDR_GAP[] Gaps { get; set; }
-	}
-
-	public class S_DEFRANGE_REGISTER_REL : ISymbol
-	{
-		public readonly UInt16 BaseRegister;
-		public readonly bool SpilledUdtMember;
-		public readonly UInt16 ParentVariableOffset;
-		public readonly UInt32 BaseRegisterOffset;
-		public readonly CV_LVAR_ADDR_RANGE Range;
-		public readonly CV_LVAR_ADDR_GAP[] Gaps;
+		public UInt16 BaseRegister;
+		public bool SpilledUdtMember;
+		public UInt16 ParentVariableOffset;
+		public UInt32 BaseRegisterOffset;
+		public CV_LVAR_ADDR_RANGE Range;
+		public CV_LVAR_ADDR_GAP[] Gaps;
 
 
-		public S_DEFRANGE_REGISTER_REL(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public S_DEFRANGE_REGISTER_REL(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		}
+
+		public override void Read() {
+			var r = CreateReader();
 			BaseRegister = r.ReadUInt16();
 
 			UInt16 flags = r.ReadUInt16();
@@ -46,17 +39,8 @@ namespace Smx.PDBSharp.Symbols
 			Gaps = CV_LVAR_ADDR_GAP.ReadGaps(r);
 		}
 
-		public S_DEFRANGE_REGISTER_REL(DefrangeSymRegisterRel data) {
-			BaseRegister = data.BaseRegister;
-			SpilledUdtMember = data.SpilledUdtMember;
-			ParentVariableOffset = data.ParentVariableOffset;
-			BaseRegisterOffset = data.BaseRegisterOffset;
-			Range = data.Range;
-			Gaps = data.Gaps;
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_DEFRANGE_REGISTER_REL);
+		public override void Write() {
+			var w = CreateWriter(SymbolType.S_DEFRANGE_REGISTER_REL);
 			w.WriteUInt16(BaseRegister);
 
 			UInt16 flags = (ushort)(
@@ -71,7 +55,7 @@ namespace Smx.PDBSharp.Symbols
 				gap.Write(w);
 			}
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 	}
 }

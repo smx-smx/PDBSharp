@@ -12,40 +12,30 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class OemSym
+	public class S_OEM : SymbolBase
 	{
 		public Guid Id { get; set; }
-		public LeafContainerBase Type { get; set; }
+		public ILeafContainer Type { get; set; }
 		public byte[] UserData { get; set; }
-	}
 
-	public class S_OEM : ISymbol
-	{
-		public readonly Guid Id;
-		public readonly ILeafContainer Type;
-		public readonly byte[] UserData;
+		public S_OEM(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		}
 
-		public S_OEM(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public override void Read() {
+			var r = CreateReader();
 
 			Id = new Guid(r.ReadBytes(16));
 			Type = r.ReadIndexedTypeLazy();
 			UserData = r.ReadRemaining();
 		}
 
-		public S_OEM(OemSym data) {
-			Id = data.Id;
-			Type = data.Type;
-			UserData = data.UserData;
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_OEM);
+		public override void Write() {
+			var w = CreateWriter(SymbolType.S_OEM);
 			w.WriteBytes(Id.ToByteArray());
 			w.WriteIndexedType(Type);
 			w.WriteBytes(UserData);
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 	}
 }

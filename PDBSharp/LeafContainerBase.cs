@@ -17,6 +17,7 @@ namespace Smx.PDBSharp
 		public abstract LeafType Type { get; }
 		public abstract ILeaf Data { get; }
 
-		public abstract void Write(PDBFile pdb, Stream stream);
+		public abstract void Read();
+		public abstract void Write();
 	}
 }

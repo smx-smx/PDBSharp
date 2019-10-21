@@ -11,66 +11,43 @@ using System.ComponentModel.Design;
 using System.IO;
 
 namespace Smx.PDBSharp.Symbols.Structures
-{
-	public class ManProcSym
+{	public abstract class ManProcSymBase : SymbolBase
 	{
 		/// <summary>
 		/// Parent Symbol
 		/// </summary>
-		public UInt32 Parent { get; set; }
+		public Symbol Parent;
+		private UInt32 ParentOffset;
 		/// <summary>
 		/// End of block
 		/// </summary>
-		public UInt32 End { get; set; }
+		public UInt32 End;
 		/// <summary>
 		/// Next Symbol
 		/// </summary>
-		public UInt32 Next { get; set; }
-		public UInt32 ProcLength { get; set; }
-		public UInt32 DebugStartOffset { get; set; }
-		public UInt32 DebugEndOffset { get; set; }
-		public UInt32 ComToken { get; set; }
-		public UInt32 Offset { get; set; }
-		public UInt16 Segment { get; set; }
-		public CV_PROCFLAGS Flags { get; set; }
-		public UInt16 ReturnRegister { get; set; }
-		public string Name { get; set; }
-	}
+		public Symbol Next;
+		private UInt32 NextOffset;
+		public UInt32 ProcLength;
+		public UInt32 DebugStartOffset;
+		public UInt32 DebugEndOffset;
+		public UInt32 ComToken;
+		public UInt32 Offset;
+		public UInt16 Segment;
+		public CV_PROCFLAGS Flags;
+		public UInt16 ReturnRegister;
+		public string Name;
 
-	public abstract class ManProcSymBase
-	{
-		/// <summary>
-		/// Parent Symbol
-		/// </summary>
-		public readonly Symbol Parent;
-		private readonly UInt32 ParentOffset;
-		/// <summary>
-		/// End of block
-		/// </summary>
-		public readonly UInt32 End;
-		/// <summary>
-		/// Next Symbol
-		/// </summary>
-		public readonly Symbol Next;
-		private readonly UInt32 NextOffset;
-		public readonly UInt32 ProcLength;
-		public readonly UInt32 DebugStartOffset;
-		public readonly UInt32 DebugEndOffset;
-		public readonly UInt32 ComToken;
-		public readonly UInt32 Offset;
-		public readonly UInt16 Segment;
-		public readonly CV_PROCFLAGS Flags;
-		public readonly UInt16 ReturnRegister;
-		public readonly string Name;
+		public ManProcSymBase(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		}
 
-		public ManProcSymBase(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public override void Read() {
+			var r = CreateReader();
 
 			ParentOffset = r.ReadUInt32();
-			Parent = r.ReadSymbol(mod, ParentOffset);
+			Parent = r.ReadSymbol(Module, ParentOffset);
 			End = r.ReadUInt32();
 			NextOffset = r.ReadUInt32();
-			Next = r.ReadSymbol(mod, NextOffset);
+			Next = r.ReadSymbol(Module, NextOffset);
 			ProcLength = r.ReadUInt32();
 			DebugStartOffset = r.ReadUInt32();
 			DebugEndOffset = r.ReadUInt32();
@@ -82,23 +59,8 @@ namespace Smx.PDBSharp.Symbols.Structures
 			Name = r.ReadSymbolString();
 		}
 
-		public ManProcSymBase(ManProcSym data) {
-			ParentOffset = data.Parent;
-			End = data.End;
-			NextOffset = data.Next;
-			ProcLength = data.ProcLength;
-			DebugStartOffset = data.DebugStartOffset;
-			DebugEndOffset = data.DebugEndOffset;
-			ComToken = data.ComToken;
-			Offset = data.Offset;
-			Segment = data.Segment;
-			Flags = data.Flags;
-			ReturnRegister = data.ReturnRegister;
-			Name = data.Name;
-		}
-
-		public void Write(PDBFile pdb, Stream stream, SymbolType symbolType) {
-			var w = new SymbolDataWriter(pdb, stream, symbolType);
+		public void Write(SymbolType symbolType) {
+			var w = CreateWriter(symbolType);
 			w.WriteUInt32(ParentOffset);
 			w.WriteUInt32(End);
 			w.WriteUInt32(NextOffset);
@@ -108,11 +70,11 @@ namespace Smx.PDBSharp.Symbols.Structures
 			w.WriteUInt32(ComToken);
 			w.WriteUInt32(Offset);
 			w.WriteUInt16(Segment);
-			w.WriteEnum<CV_PROCFLAGS>(Flags);
+			w.Write<CV_PROCFLAGS>(Flags);
 			w.WriteUInt16(ReturnRegister);
 			w.WriteSymbolString(Name);
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 	}
 }

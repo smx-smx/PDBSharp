@@ -29,8 +29,12 @@ namespace Smx.PDBSharp
 
 		public override ILeaf Data => data;
 
-		public override void Write(PDBFile pdb, Stream stream) {
-			data.Write(pdb, stream);
+		public override void Read() {
+			data.Read();
+		}
+
+		public override void Write() {
+			data.Write();
 		}
 	}
 }

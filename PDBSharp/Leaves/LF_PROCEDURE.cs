@@ -12,15 +12,18 @@ using System.IO;
 
 namespace Smx.PDBSharp.Leaves
 {
-	public class LF_PROCEDURE : ILeaf
+	public class LF_PROCEDURE : LeafBase
 	{
-		public readonly ILeafContainer ReturnValueType;
-		public readonly CallingConvention CallingConvention;
-		public readonly UInt16 NumberOfParameters;
-		public readonly ILeafContainer ArgumentListType;
+		public ILeafContainer ReturnValueType { get; set; }
+		public CallingConvention CallingConvention { get; set; }
+		public UInt16 NumberOfParameters { get; set; }
+		public ILeafContainer ArgumentListType { get; set; }
 
-		public LF_PROCEDURE(IServiceContainer pdb, SpanStream stream) {
-			TypeDataReader r = new TypeDataReader(pdb, stream);
+		public LF_PROCEDURE(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
+		}
+
+		public override void Read() {
+			TypeDataReader r = CreateReader();
 
 			ReturnValueType = r.ReadIndexedTypeLazy();
 			CallingConvention = r.ReadEnum<CallingConvention>();
@@ -29,14 +32,14 @@ namespace Smx.PDBSharp.Leaves
 			ArgumentListType = r.ReadIndexedTypeLazy();
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
-			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_PROCEDURE);
+		public override void Write() {
+			TypeDataWriter w = CreateWriter(LeafType.LF_PROCEDURE);
 			w.WriteIndexedType(ReturnValueType);
-			w.WriteEnum<CallingConvention>(CallingConvention);
+			w.Write<CallingConvention>(CallingConvention);
 			w.WriteByte(0x00);
 			w.WriteUInt16(NumberOfParameters);
 			w.WriteIndexedType(ArgumentListType);
-			w.WriteLeafHeader();
+			w.WriteHeader();
 		}
 	}
 }

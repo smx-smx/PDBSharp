@@ -12,17 +12,21 @@ using System.IO;
 
 namespace Smx.PDBSharp.Leaves
 {
-	public class LF_VTSHAPE : ILeaf
+	public class LF_VTSHAPE : LeafBase
 	{
 		/// <summary>
 		/// number of entries in vfunctable
 		/// </summary>
-		public readonly UInt16 NumberOfEntries;
+		public UInt16 NumberOfEntries { get; set; }
 
-		public readonly VTableShapeDescriptor[] Descriptors;
+		public VTableShapeDescriptor[] Descriptors { get; set; }
 
-		public LF_VTSHAPE(IServiceContainer pdb, SpanStream stream) {
-			TypeDataReader r = new TypeDataReader(pdb, stream);
+		public LF_VTSHAPE(IServiceContainer pdb, SpanStream stream) : base(pdb, stream) {
+		}
+
+
+		public override void Read() {
+			TypeDataReader r = CreateReader();
 
 			NumberOfEntries = r.ReadUInt16();
 
@@ -47,8 +51,8 @@ namespace Smx.PDBSharp.Leaves
 			}
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
-			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_VTSHAPE);
+		public override void Write() {
+			TypeDataWriter w = CreateWriter(LeafType.LF_VTSHAPE);
 			w.WriteUInt16(NumberOfEntries);
 
 			byte data = 0x00;
@@ -67,7 +71,7 @@ namespace Smx.PDBSharp.Leaves
 				}
 			}
 
-			w.WriteLeafHeader();
+			w.WriteHeader();
 		}
 	}
 }

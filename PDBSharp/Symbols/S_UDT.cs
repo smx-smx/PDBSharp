@@ -12,16 +12,13 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class S_UDT : UdtSym, ISymbol
+	public class S_UDT : UdtSym
 	{
-		public S_UDT(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, stream) {
+		public S_UDT(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 		}
 
-		public S_UDT(UdtSymData data) : base(data) {
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			base.Write(pdb, stream, SymbolType.S_UDT);
+		public void Write() {
+			base.Write(SymbolType.S_UDT);
 		}
 	}
 }

@@ -13,15 +13,15 @@ using System.IO;
 namespace Smx.PDBSharp.Leaves
 {
 
-	public class LF_ENUM : LeafBase, ILeaf
+	public class LF_ENUM : LeafBase
 	{
-		public readonly UInt16 NumElements;
-		public readonly TypeProperties Properties;
+		public UInt16 NumElements { get; set; }
+		public TypeProperties Properties { get; set; }
 
-		public readonly ILeafContainer UnderlyingType;
-		public readonly ILeafContainer FieldType;
+		public ILeafContainer UnderlyingType { get; set; }
+		public ILeafContainer FieldType { get; set; }
 
-		public readonly string Name;
+		public string Name { get; set; }
 
 		public override string UdtName => Name;
 
@@ -52,25 +52,27 @@ namespace Smx.PDBSharp.Leaves
 			}
 		}
 
-		public LF_ENUM(IServiceContainer pdb, SpanStream stream) {
-			TypeDataReader r = new TypeDataReader(pdb, stream);
+		public LF_ENUM(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+		}
+
+		public override void Read() {
+			TypeDataReader r = CreateReader();
 
 			NumElements = r.ReadUInt16();
 			Properties = r.ReadFlagsEnum<TypeProperties>();
 			UnderlyingType = r.ReadIndexedTypeLazy();
 			FieldType = r.ReadIndexedTypeLazy();
 			Name = r.ReadCString();
-
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
-			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_ENUM);
+		public override void Write() {
+			TypeDataWriter w = CreateWriter(LeafType.LF_ENUM);
 			w.WriteUInt16(NumElements);
-			w.WriteEnum<TypeProperties>(Properties);
+			w.Write<TypeProperties>(Properties);
 			w.WriteIndexedType(UnderlyingType);
 			w.WriteIndexedType(FieldType);
 			w.WriteCString(Name);
-			w.WriteLeafHeader();
+			w.WriteHeader();
 		}
 
 		public override string ToString() {
