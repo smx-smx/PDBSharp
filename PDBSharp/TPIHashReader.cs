@@ -43,23 +43,29 @@ namespace Smx.PDBSharp
 					throw new InvalidDataException();
 			}
 
-			Position = hash.TypeOffsets.Offset;
-			uint NumTiPairs = (uint)(hash.TypeOffsets.Size / Marshal.SizeOf<TIOffset>());
-			for (int i = 1; i < NumTiPairs; i++) {
-				TIOffset tiOff = Read<TIOffset>();
-				TypeIndexToOffset.Add(tiOff.TypeIndex, tiOff.Offset);
+			if(hash.TypeOffsets.Size > 0) {
+				Position = hash.TypeOffsets.Offset;
+				uint NumTiPairs = (uint)(hash.TypeOffsets.Size / Marshal.SizeOf<TIOffset>());
+				for (int i = 1; i < NumTiPairs; i++) {
+					TIOffset tiOff = Read<TIOffset>();
+					TypeIndexToOffset.Add(tiOff.TypeIndex, tiOff.Offset);
+				}
 			}
 
-			Position = hash.HashValues.Offset;
-			uint NumHashValues = hash.HashValues.Size / sizeof(UInt32);
-			RecordHashValues = PerformAt(hash.HashValues.Offset, () => {
-				return Enumerable.Range(1, (int)NumHashValues)
-					.Select(_ => ReadUInt32())
-					.ToArray();
-			});
+			if(hash.HashValues.Size > 0) {
+				Position = hash.HashValues.Offset;
+				uint NumHashValues = hash.HashValues.Size / sizeof(UInt32);
+				RecordHashValues = PerformAt(hash.HashValues.Offset, () => {
+					return Enumerable.Range(1, (int)NumHashValues)
+						.Select(_ => ReadUInt32())
+						.ToArray();
+				});
+			}
 
-			Position = hash.HashHeadList.Offset;
-			NameIndexToTypeIndex = Deserializers.ReadMap<UInt32, UInt32>(this);
+			if (hash.HashHeadList.Size > 0) {
+				Position = hash.HashHeadList.Offset;
+				NameIndexToTypeIndex = Deserializers.ReadMap<UInt32, UInt32>(this);
+			}
 		}
 	}
 }
