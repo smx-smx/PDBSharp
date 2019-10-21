@@ -60,7 +60,13 @@ namespace Smx.PDBSharp.Dumper
 			ParseArguments(args);
 
 			if (PdbFilePath == null) {
-				Console.Error.WriteLine("Usage: [-dump][-verbose] <file.pdb>");
+				Console.Error.WriteLine(@"PDBSharp.Dumper
+  Usage: PDBSharp.Dumper <options> <file.pdb>
+    [-dump]            Save individual PDB Streams to files
+    [-dump-modules]    Verbose output for DBI Modules
+    [-dump-leaves]     Verbose output for TPI Leaves
+    [-dump-syms]       Verbose output for DBI Symbols
+    [-print]           Extract and print type definitions");
 				Environment.Exit(1);
 			}
 
