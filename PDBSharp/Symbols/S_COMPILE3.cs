@@ -13,7 +13,7 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class CompileSym3
+	public class S_COMPILE3 : SymbolBase
 	{
 		public CompileSym3Flags Flags { get; set; }
 		public UInt16 Machine { get; set; }
@@ -26,24 +26,12 @@ namespace Smx.PDBSharp.Symbols
 		public UInt16 BackendVersionBuild { get; set; }
 		public UInt16 BackendQFEVersion { get; set; }
 		public string VersionString { get; set; }
-	}
 
-	public class S_COMPILE3 : ISymbol
-	{
-		public readonly CompileSym3Flags Flags;
-		public readonly UInt16 Machine;
-		public readonly UInt16 FrontendVersionMajor;
-		public readonly UInt16 FrontendVersionMinor;
-		public readonly UInt16 FrontendVersionBuild;
-		public readonly UInt16 FrontendQFEVersion;
-		public readonly UInt16 BackendVersionMajor;
-		public readonly UInt16 BackendVersionMinor;
-		public readonly UInt16 BackendVersionBuild;
-		public readonly UInt16 BackendQFEVersion;
-		public readonly string VersionString;
+		public S_COMPILE3(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		}
 
-		public S_COMPILE3(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public override void Read() {
+			var r = CreateReader();
 			Flags = new CompileSym3Flags(r.ReadUInt32());
 			Machine = r.ReadUInt16();
 			FrontendVersionMajor = r.ReadUInt16();
@@ -57,22 +45,9 @@ namespace Smx.PDBSharp.Symbols
 			VersionString = r.ReadSymbolString();
 		}
 
-		public S_COMPILE3(CompileSym3 data) {
-			Flags = data.Flags;
-			Machine = data.Machine;
-			FrontendVersionMajor = data.FrontendVersionMajor;
-			FrontendVersionMinor = data.FrontendVersionMinor;
-			FrontendVersionBuild = data.FrontendVersionBuild;
-			FrontendQFEVersion = data.FrontendQFEVersion;
-			BackendVersionMajor = data.BackendVersionMajor;
-			BackendVersionMinor = data.BackendVersionMinor;
-			BackendQFEVersion = data.BackendQFEVersion;
-			VersionString = data.VersionString;
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_COMPILE3);
-			w.WriteEnum<CompileSym3FlagsEnum>((CompileSym3FlagsEnum)Flags);
+		public override void Write() {
+			var w = CreateWriter(SymbolType.S_COMPILE3);
+			w.Write<CompileSym3FlagsEnum>((CompileSym3FlagsEnum)Flags);
 			w.WriteUInt16(Machine);
 			w.WriteUInt16(FrontendVersionMajor);
 			w.WriteUInt16(FrontendVersionMinor);
@@ -84,7 +59,7 @@ namespace Smx.PDBSharp.Symbols
 			w.WriteUInt16(BackendQFEVersion);
 			w.WriteSymbolString(VersionString);
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 
 		public override string ToString() {

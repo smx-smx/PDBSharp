@@ -13,23 +13,25 @@ using System.Text;
 
 namespace Smx.PDBSharp.Leaves
 {
-	public class LF_VARSTRING : ILeaf
+	public class LF_VARSTRING : LeafBase
 	{
-		public readonly string Value;
+		public string Value { get; set; }
 
-		public LF_VARSTRING(IServiceContainer pdb, SpanStream stream) {
-			TypeDataReader r = new TypeDataReader(pdb, stream);
+		public LF_VARSTRING(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {			
+		}
+
+		public override void Read() {
+			TypeDataReader r = CreateReader();
 
 			UInt16 length = r.ReadUInt16();
 			byte[] data = r.ReadBytes((int)length);
 			Value = Encoding.ASCII.GetString(data);
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
-			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_VARSTRING);
-			w.WriteUInt16((ushort)Value.Length);
-			w.WriteBytes(Encoding.ASCII.GetBytes(Value));
-			w.WriteLeafHeader();
+		public override void Write() {
+			TypeDataWriter w = CreateWriter(LeafType.LF_VARSTRING);
+			w.WriteShortString(Value);
+			w.WriteHeader();
 		}
 	}
 }

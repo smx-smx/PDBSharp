@@ -12,16 +12,19 @@ using System.IO;
 
 namespace Smx.PDBSharp.Leaves
 {
-	public class LF_ONEMETHOD : ILeaf
+	public class LF_ONEMETHOD : LeafBase
 	{
-		public readonly FieldAttributes Attributes;
-		public readonly ILeafContainer ProcedureType;
-		public readonly UInt32 VBaseOffset;
+		public FieldAttributes Attributes { get; set; }
+		public ILeafContainer ProcedureType { get; set; }
+		public UInt32 VBaseOffset { get; set; }
 
-		public readonly string Name;
+		public string Name { get; set; }
 
-		public LF_ONEMETHOD(IServiceContainer pdb, SpanStream stream) {
-			TypeDataReader r = new TypeDataReader(pdb, stream);
+		public LF_ONEMETHOD(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
+		}
+
+		public override void Read() {
+			TypeDataReader r = CreateReader();
 
 			Attributes = new FieldAttributes(r.ReadUInt16());
 			ProcedureType = r.ReadIndexedTypeLazy();
@@ -36,11 +39,11 @@ namespace Smx.PDBSharp.Leaves
 					break;
 			}
 
-			Name = r.ReadCString();
+			Name = r.ReadCString(); 
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
-			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_ONEMETHOD);
+		public override void Write() {
+			TypeDataWriter w = CreateWriter(LeafType.LF_ONEMETHOD);
 			w.WriteUInt16((ushort)Attributes);
 			w.WriteIndexedType(ProcedureType);
 			switch (Attributes.MethodProperties) {
@@ -50,7 +53,7 @@ namespace Smx.PDBSharp.Leaves
 					break;
 			}
 			w.WriteCString(Name);
-			w.WriteLeafHeader();
+			w.WriteHeader();
 		}
 	}
 }

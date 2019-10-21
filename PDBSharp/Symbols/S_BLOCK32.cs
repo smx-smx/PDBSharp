@@ -12,31 +12,23 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class BlockSym32
+	public class S_BLOCK32 : SymbolBase
 	{
-		public UInt32 Parent { get; set; }
+		public UInt32 ParentOffset { get; set; }
+		public Symbol Parent { get; set; }
 		public UInt32 End { get; set; }
 		public UInt32 Length { get; set; }
 		public UInt32 Offset { get; set; }
 		public UInt16 Segment { get; set; }
 		public string Name { get; set; }
 
-	}
+		public S_BLOCK32(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		}
 
-	public class S_BLOCK32 : ISymbol
-	{
-		private readonly UInt32 ParentOffset;
-		public readonly Symbol Parent;
-		public readonly UInt32 End;
-		public readonly UInt32 Length;
-		public readonly UInt32 Offset;
-		public readonly UInt16 Segment;
-		public readonly string Name;
-
-		public S_BLOCK32(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			SymbolDataReader r = new SymbolDataReader(ctx, stream);
+		public override void Read() {
+			SymbolDataReader r = CreateReader();
 			ParentOffset = r.ReadUInt32();
-			Parent = r.ReadSymbol(mod, ParentOffset);
+			Parent = r.ReadSymbol(Module, ParentOffset);
 
 			End = r.ReadUInt32();
 			Length = r.ReadUInt32();
@@ -45,17 +37,8 @@ namespace Smx.PDBSharp.Symbols
 			Name = r.ReadSymbolString();
 		}
 
-		public S_BLOCK32(BlockSym32 data) {
-			ParentOffset = data.Parent;
-			End = data.End;
-			Length = data.Length;
-			Offset = data.Offset;
-			Segment = data.Segment;
-			Name = data.Name;
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			SymbolDataWriter w = new SymbolDataWriter(pdb, stream, SymbolType.S_BLOCK32);
+		public override void Write() {
+			SymbolDataWriter w = CreateWriter(SymbolType.S_BLOCK32);
 			w.WriteUInt32(ParentOffset);
 			w.WriteUInt32(End);
 			w.WriteUInt32(Length);
@@ -63,7 +46,7 @@ namespace Smx.PDBSharp.Symbols
 			w.WriteUInt16(Segment);
 			w.WriteSymbolString(Name);
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 	}
 }

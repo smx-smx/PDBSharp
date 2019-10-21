@@ -12,40 +12,30 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class RegSym
+	public class S_REGISTER : SymbolBase
 	{
-		public LeafContainerBase Type { get; set; }
+		public ILeafContainer Type { get; set; }
 		public UInt16 Register { get; set; }
 		public string Name { get; set; }
-	}
 
-	public class S_REGISTER : ISymbol
-	{
-		public readonly ILeafContainer Type;
-		public readonly UInt16 Register;
-		public readonly string Name;
+		public S_REGISTER(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		}
 
-		public S_REGISTER(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public override void Read() {
+			var r = CreateReader();
 
 			Type = r.ReadIndexedTypeLazy();
 			Register = r.ReadUInt16();
 			Name = r.ReadSymbolString();
-		}
+		}		
 
-		public S_REGISTER(RegSym data) {
-			Type = data.Type;
-			Register = data.Register;
-			Name = data.Name;
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_REGISTER);
+		public override void Write() {
+			var w = CreateWriter(SymbolType.S_REGISTER);
 			w.WriteIndexedType(Type);
 			w.WriteUInt16(Register);
 			w.WriteSymbolString(Name);
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 	}
 }

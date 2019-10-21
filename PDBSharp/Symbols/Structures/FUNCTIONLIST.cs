@@ -14,13 +14,16 @@ using System.Linq;
 
 namespace Smx.PDBSharp.Symbols.Structures
 {
-	public class FUNCTIONLIST
+	public class FUNCTIONLIST : SymbolBase
 	{
-		public readonly UInt32 NumberOfFunctions;
-		public readonly ILeafContainer[] Functions;
+		public UInt32 NumberOfFunctions { get; set; }
+		public ILeafContainer[] Functions { get; set; }
 
-		public FUNCTIONLIST(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public FUNCTIONLIST(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) { 			
+		}
+
+		public override void Read() {
+			var r = CreateReader();
 
 			NumberOfFunctions = r.ReadUInt32();
 			Functions = Enumerable
@@ -29,19 +32,14 @@ namespace Smx.PDBSharp.Symbols.Structures
 				.ToArray();
 		}
 
-		public FUNCTIONLIST(IEnumerable<LeafContainerBase> functionsList) {
-			Functions = functionsList.ToArray();
-			NumberOfFunctions = (uint)Functions.Length;
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_CALLEES);
+		public override void Write() {
+			var w = CreateWriter(SymbolType.S_CALLEES);
 			w.WriteUInt32(NumberOfFunctions);
 			foreach (LeafContainerBase fn in Functions) {
 				w.WriteIndexedType(fn);
 			}
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 	}
 }

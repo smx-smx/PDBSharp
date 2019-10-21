@@ -11,25 +11,28 @@ using System.IO;
 
 namespace Smx.PDBSharp.Leaves
 {
-	public class LF_NESTTYPE : ILeaf
+	public class LF_NESTTYPE : LeafBase
 	{
-		public readonly ILeafContainer NestedTypeDef;
-		public readonly string Name;
+		public ILeafContainer NestedTypeDef { get; set; }
+		public string Name { get; set; }
 
-		public LF_NESTTYPE(IServiceContainer pdb, SpanStream stream) {
-			TypeDataReader r = new TypeDataReader(pdb, stream);
+		public LF_NESTTYPE(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+		}
+
+		public override void Read() {
+			TypeDataReader r = CreateReader();
 
 			r.ReadUInt16(); //padding
 			NestedTypeDef = r.ReadIndexedTypeLazy();
 			Name = r.ReadCString();
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
-			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_NESTTYPE);
+		public override void Write() {
+			TypeDataWriter w = CreateWriter(LeafType.LF_NESTTYPE);
 			w.WriteUInt16(0x00);
 			w.WriteIndexedType(NestedTypeDef);
 			w.WriteCString(Name);
-			w.WriteLeafHeader();
+			w.WriteHeader();
 		}
 	}
 }

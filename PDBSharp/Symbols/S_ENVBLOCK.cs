@@ -12,13 +12,17 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class S_ENVBLOCK : ISymbol
+	public class S_ENVBLOCK : SymbolBase
 	{
-		public readonly string[] Data;
-		public readonly byte Flags;
+		public string[] Data { get; set; }
+		//Reserved according to PDB docs, first bit is fEC tho
+		public byte Flags { get; set; }
 
-		public S_ENVBLOCK(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public S_ENVBLOCK(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) { 
+		}
+
+		public override void Read() {
+			var r = CreateReader();
 
 			Flags = r.ReadByte(); //fEC -> reserved (1 bit)
 
@@ -33,19 +37,14 @@ namespace Smx.PDBSharp.Symbols
 			Data = strLst.ToArray();
 		}
 
-		public S_ENVBLOCK(string[] data) {
-			Flags = 0x00; //Reserved according to PDB docs, first bit is fEC tho
-			Data = data;
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_ENVBLOCK);
+		public override void Write() {
+			var w = CreateWriter(SymbolType.S_ENVBLOCK);
 			w.WriteByte(Flags);
 			foreach (string str in Data) {
 				w.WriteSymbolString(str);
 			}
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 	}
 }

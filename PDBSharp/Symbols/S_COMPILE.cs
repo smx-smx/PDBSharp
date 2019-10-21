@@ -13,22 +13,21 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class S_COMPILE : ISymbol
+	public class S_COMPILE : SymbolBase
 	{
-		public readonly CompileSymFlags Flags;
-		public readonly byte Machine;
-		public readonly string VersionString;
+		public CompileSymFlags Flags { get; set; }
+		public byte Machine { get; set; }
+		public string VersionString { get; set; }
 
-		public S_COMPILE(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public S_COMPILE(IServiceContainer ctx, IModule mod, SpanStream stream): base(ctx, mod, stream) {
+		}
+
+		public override void Read() {
+			var r = CreateReader();
 			Machine = r.ReadByte();
 			uint flags = (uint)(r.ReadByte() | (r.ReadByte() << 8) | (r.ReadByte() << 16));
 			Flags = new CompileSymFlags(flags);
 			VersionString = r.ReadSymbolString();
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			throw new NotImplementedException();
 		}
 
 		public override string ToString() {

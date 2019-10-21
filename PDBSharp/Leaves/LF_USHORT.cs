@@ -16,20 +16,22 @@ using System.Threading.Tasks;
 
 namespace Smx.PDBSharp.Leaves
 {
-	public class LF_USHORT : ILeaf
+	public class LF_USHORT : LeafBase
 	{
-		public readonly UInt16 Value;
+		public UInt16 Value { get; set; }
 
-		public LF_USHORT(IServiceContainer pdb, SpanStream stream) {
-			TypeDataReader r = new TypeDataReader(pdb, stream);
+		public LF_USHORT(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+		}
 
+		public override void Read() {
+			TypeDataReader r = CreateReader();
 			Value = r.ReadUInt16();
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
-			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_USHORT);
+		public override void Write() {
+			TypeDataWriter w = CreateWriter(LeafType.LF_USHORT);
 			w.WriteUInt16(Value);
-			w.WriteLeafHeader();
+			w.WriteHeader();
 		}
 	}
 }

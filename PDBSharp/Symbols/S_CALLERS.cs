@@ -12,7 +12,7 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class S_CALLERS : FUNCTIONLIST, ISymbol
+	public class S_CALLERS : FUNCTIONLIST
 	{
 		public S_CALLERS(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 

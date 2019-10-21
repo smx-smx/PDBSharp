@@ -12,15 +12,18 @@ using System.IO;
 
 namespace Smx.PDBSharp.Leaves
 {
-	public class LF_METHODLIST : ILeaf
+	public class LF_METHODLIST : LeafBase
 	{
-		public readonly FieldAttributes Attributes;
-		public readonly ILeafContainer ProcedureTypeRecord;
+		public FieldAttributes Attributes { get; set; }
+		public ILeafContainer ProcedureTypeRecord { get; set; }
 
-		public readonly UInt32 VBaseOffset;
+		public UInt32 VBaseOffset { get; set; }
 
-		public LF_METHODLIST(IServiceContainer pdb, SpanStream stream) {
-			TypeDataReader r = new TypeDataReader(pdb, stream);
+		public LF_METHODLIST(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+		}
+
+		public override void Read() {
+			TypeDataReader r = CreateReader();
 
 			Attributes = new FieldAttributes(r.ReadUInt16());
 			ProcedureTypeRecord = r.ReadIndexedTypeLazy();
@@ -34,11 +37,10 @@ namespace Smx.PDBSharp.Leaves
 					VBaseOffset = 0;
 					break;
 			}
-
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
-			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_METHODLIST);
+		public override void Write() {
+			TypeDataWriter w = CreateWriter(LeafType.LF_METHODLIST);
 			w.WriteUInt16((ushort)Attributes);
 			w.WriteIndexedType(ProcedureTypeRecord);
 			switch (Attributes.MethodProperties) {
@@ -47,7 +49,7 @@ namespace Smx.PDBSharp.Leaves
 					w.WriteUInt32(VBaseOffset);
 					break;
 			}
-			w.WriteLeafHeader();
+			w.WriteHeader();
 		}
 
 		public override string ToString() {

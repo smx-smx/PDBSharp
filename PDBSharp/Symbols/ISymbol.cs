@@ -12,6 +12,7 @@ namespace Smx.PDBSharp.Symbols
 {
 	public interface ISymbol
 	{
-		void Write(PDBFile pdb, Stream stream);
+		void Read();
+		void Write();
 	}
 }

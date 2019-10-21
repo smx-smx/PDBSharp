@@ -12,47 +12,35 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols.Structures
 {
-	public class ProcSym32
+	public abstract class ProcSym32Base : SymbolBase
 	{
-		public UInt32 Parent { get; set; }
-		public UInt32 End { get; set; }
-		public UInt32 Next { get; set; }
-		public UInt32 Length { get; set; }
-		public UInt32 DebugStartOffset { get; set; }
-		public UInt32 DebugEndOffset { get; set; }
-		public LeafContainerBase Type { get; set; }
-		public UInt32 Offset { get; set; }
-		public UInt16 Segment { get; set; }
-		public CV_PROCFLAGS Flags { get; set; }
-		public string Name { get; set; }
-	}
+		private UInt32 ParentOffset;
+		public UInt32 End;
+		private UInt32 NextOffset;
+		public UInt32 Length;
+		public UInt32 DebugStartOffset;
+		public UInt32 DebugEndOffset;
+		public ILeafContainer Type;
+		public UInt32 Offset;
+		public UInt16 Segment;
+		public CV_PROCFLAGS Flags;
+		public string Name;
 
-	public abstract class ProcSym32Base
-	{
-		private readonly UInt32 ParentOffset;
-		public readonly UInt32 End;
-		private readonly UInt32 NextOffset;
-		public readonly UInt32 Length;
-		public readonly UInt32 DebugStartOffset;
-		public readonly UInt32 DebugEndOffset;
-		public readonly ILeafContainer Type;
-		public readonly UInt32 Offset;
-		public readonly UInt16 Segment;
-		public readonly CV_PROCFLAGS Flags;
-		public readonly string Name;
+		public Symbol ParentSymbol;
+		public Symbol NextSymbol;
 
-		public readonly Symbol ParentSymbol;
-		public readonly Symbol NextSymbol;
+		public ProcSym32Base(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		}
 
-		public ProcSym32Base(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public override void Read() {
+			var r = CreateReader();
 
 			ParentOffset = r.ReadUInt32();
-			ParentSymbol = r.ReadSymbol(mod, ParentOffset);
+			ParentSymbol = r.ReadSymbol(Module, ParentOffset);
 
 			End = r.ReadUInt32();
 			NextOffset = r.ReadUInt32();
-			NextSymbol = r.ReadSymbol(mod, NextOffset);
+			NextSymbol = r.ReadSymbol(Module, NextOffset);
 
 			Length = r.ReadUInt32();
 			DebugStartOffset = r.ReadUInt32();
@@ -64,22 +52,8 @@ namespace Smx.PDBSharp.Symbols.Structures
 			Name = r.ReadSymbolString();
 		}
 
-		public ProcSym32Base(ProcSym32 data) {
-			ParentOffset = data.Parent;
-			End = data.End;
-			NextOffset = data.Next;
-			Length = data.Length;
-			DebugStartOffset = data.DebugStartOffset;
-			DebugEndOffset = data.DebugEndOffset;
-			Type = data.Type;
-			Offset = data.Offset;
-			Segment = data.Segment;
-			Flags = data.Flags;
-			Name = data.Name;
-		}
-
-		public void Write(PDBFile pdb, Stream stream, SymbolType symbolType) {
-			var w = new SymbolDataWriter(pdb, stream, symbolType);
+		public void Write(SymbolType symbolType) {
+			var w = CreateWriter(symbolType);
 			w.WriteUInt32(ParentOffset);
 			w.WriteUInt32(End);
 			w.WriteUInt32(NextOffset);
@@ -89,10 +63,10 @@ namespace Smx.PDBSharp.Symbols.Structures
 			w.WriteIndexedType(Type);
 			w.WriteUInt32(Offset);
 			w.WriteUInt16(Segment);
-			w.WriteEnum<CV_PROCFLAGS>(Flags);
+			w.Write<CV_PROCFLAGS>(Flags);
 			w.WriteSymbolString(Name);
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 	}
 }

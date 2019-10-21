@@ -12,16 +12,13 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class S_CONSTANT : ConstSymBase, ISymbol
+	public class S_CONSTANT : ConstSymBase
 	{
-		public S_CONSTANT(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, stream) {
+		public S_CONSTANT(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 		}
 
-		public S_CONSTANT(ConstSym data) : base(data) {
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			base.Write(pdb, stream, SymbolType.S_CONSTANT);
+		public override void Write() {
+			base.Write(SymbolType.S_CONSTANT);
 		}
 	}
 }

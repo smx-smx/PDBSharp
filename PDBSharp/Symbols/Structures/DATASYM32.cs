@@ -12,44 +12,33 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols.Structures
 {
-	public class DataSym32
+	public abstract class DataSym32Base : SymbolBase
 	{
-		public LeafContainerBase Type { get; set; }
+		public ILeafContainer Type { get; set; }
 		public UInt32 Offset { get; set; }
 		public UInt16 Segment { get; set; }
 		public string Name { get; set; }
-	}
-	public abstract class DataSym32Base
-	{
-		public readonly ILeafContainer Type;
-		public readonly UInt32 Offset;
-		public readonly UInt16 Segment;
-		public readonly string Name;
 
-		public DataSym32Base(IServiceContainer ctx, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public DataSym32Base(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		}
+
+		public override void Read() {
+			var r = CreateReader();
 
 			Type = r.ReadIndexedTypeLazy();
 			Offset = r.ReadUInt32();
 			Segment = r.ReadUInt16();
-			Name = r.ReadSymbolString();
+			Name = r.ReadSymbolString(); 
 		}
 
-		public DataSym32Base(DataSym32 data) {
-			Type = data.Type;
-			Offset = data.Offset;
-			Segment = data.Segment;
-			Name = data.Name;
-		}
-
-		public void Write(PDBFile pdb, Stream stream, SymbolType symbolType) {
-			var w = new SymbolDataWriter(pdb, stream, symbolType);
+		public void Write(SymbolType symbolType) {
+			var w = CreateWriter(symbolType);
 			w.WriteIndexedType(Type);
 			w.WriteUInt32(Offset);
 			w.WriteUInt16(Segment);
 			w.WriteSymbolString(Name);
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 	}
 }

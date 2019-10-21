@@ -12,21 +12,21 @@ using System.IO;
 
 namespace Smx.PDBSharp.Leaves
 {
-	public class LF_ALIAS : LeafBase, ILeaf
+	public class LF_ALIAS : LeafBase
 	{
-		public readonly ILeafContainer UnderlyingType;
-		public readonly string Name;
+		public ILeafContainer UnderlyingType { get; set; }
+		public string Name { get; set; }
 
 		public override string UdtName => Name;
 
-		public void Write(PDBFile pdb, Stream stream) {
-			throw new NotImplementedException();
-		}
-
-		public LF_ALIAS(IServiceContainer ctx, SpanStream stream) {
-			TypeDataReader r = new TypeDataReader(ctx, stream);
+		public override void Read() {
+			TypeDataReader r = CreateReader();
 			UnderlyingType = r.ReadIndexedTypeLazy();
 			Name = r.ReadCString();
+		}
+
+		public LF_ALIAS(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+			
 		}
 	}
 }

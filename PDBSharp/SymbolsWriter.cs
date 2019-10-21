@@ -11,9 +11,9 @@ using System.IO;
 
 namespace Smx.PDBSharp
 {
-	public class SymbolsWriter : WriterBase
+	public class SymbolsWriter
 	{
-		public SymbolsWriter(Stream stream) : base(stream) {
+		public SymbolsWriter(Stream stream) {
 		}
 
 		public void WriteSymbols(IEnumerable<Symbol> symbols) {

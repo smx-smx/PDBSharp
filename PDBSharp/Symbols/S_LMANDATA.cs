@@ -14,14 +14,11 @@ namespace Smx.PDBSharp.Symbols
 {
 	public class S_LMANDATA : DataSym32Base, ISymbol
 	{
-		public S_LMANDATA(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, stream) {
+		public S_LMANDATA(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 		}
 
-		public S_LMANDATA(DataSym32 data) : base(data) {
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			base.Write(pdb, stream, SymbolType.S_LMANDATA);
+		public override void Write() {
+			base.Write(SymbolType.S_LMANDATA);
 		}
 	}
 }

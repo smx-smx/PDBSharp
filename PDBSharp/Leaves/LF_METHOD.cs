@@ -12,27 +12,30 @@ using System.IO;
 
 namespace Smx.PDBSharp.Leaves
 {
-	public class LF_METHOD : ILeaf
+	public class LF_METHOD : LeafBase
 	{
-		public readonly UInt16 NumberOfOccurrences;
-		public readonly ILeafContainer MethodListRecord;
+		public UInt16 NumberOfOccurrences { get; set; }
+		public ILeafContainer MethodListRecord { get; set; }
 
-		public readonly string Name;
+		public string Name { get; set; }
 
-		public LF_METHOD(IServiceContainer pdb, SpanStream stream) {
-			TypeDataReader r = new TypeDataReader(pdb, stream);
+		public LF_METHOD(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
+		}
+
+		public override void Read() {
+			TypeDataReader r = CreateReader();
 
 			NumberOfOccurrences = r.ReadUInt16();
 			MethodListRecord = r.ReadIndexedTypeLazy();
 			Name = r.ReadCString();
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
-			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_METHOD);
+		public override void Write() {
+			TypeDataWriter w = CreateWriter(LeafType.LF_METHOD);
 			w.WriteUInt16(NumberOfOccurrences);
 			w.WriteIndexedType(MethodListRecord);
 			w.WriteCString(Name);
-			w.WriteLeafHeader();
+			w.WriteHeader();
 		}
 	}
 }

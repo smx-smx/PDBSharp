@@ -14,13 +14,13 @@ namespace Smx.PDBSharp.Leaves
 {
 	public class LF_UNION : LeafBase, ILeaf
 	{
-		public readonly UInt16 NumberOfElements;
-		public readonly TypeProperties Properties;
-		public readonly ILeafContainer FieldType;
+		public UInt16 NumberOfElements { get; set; }
+		public TypeProperties Properties { get; set; }
+		public ILeafContainer FieldType { get; set; }
 
-		public readonly ILeafContainer StructSize;
+		public ILeafContainer StructSize { get; set; }
 
-		public readonly string Name;
+		public string Name { get; set; }
 
 		public override bool IsDefnUdt {
 			get {
@@ -51,8 +51,11 @@ namespace Smx.PDBSharp.Leaves
 
 		public override string UdtName => Name;
 
-		public LF_UNION(IServiceContainer pdb, SpanStream stream) {
-			TypeDataReader r = new TypeDataReader(pdb, stream);
+		public LF_UNION(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+		}
+
+		public override void Read() {
+			TypeDataReader r = CreateReader();
 
 			NumberOfElements = r.ReadUInt16();
 			Properties = r.ReadFlagsEnum<TypeProperties>();
@@ -63,9 +66,9 @@ namespace Smx.PDBSharp.Leaves
 		}
 
 		public void Write(PDBFile pdb, Stream stream) {
-			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_UNION);
+			TypeDataWriter w = CreateWriter(LeafType.LF_UNION);
 			w.WriteUInt16(NumberOfElements);
-			w.WriteEnum<TypeProperties>(Properties);
+			w.Write<TypeProperties>(Properties);
 			w.WriteIndexedType(FieldType);
 			w.WriteVaryingType(StructSize);
 			w.WriteCString(Name);

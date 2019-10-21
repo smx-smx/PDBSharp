@@ -12,6 +12,7 @@ namespace Smx.PDBSharp
 {
 	public interface ILeaf
 	{
-		void Write(PDBFile pdb, Stream stream);
+		void Read();
+		void Write();
 	}
 }

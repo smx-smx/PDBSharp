@@ -12,23 +12,25 @@ using System.IO;
 
 namespace Smx.PDBSharp.Leaves
 {
-	public class LF_VFTPATH_16t : ILeaf
+	public class LF_VFTPATH_16t : LeafBase
 	{
-		public readonly UInt16 NumElements;
-		public readonly ILeafContainer Bases;
+		public UInt16 NumElements { get; set; }
+		public ILeafContainer Bases { get; set; }
 
-		public LF_VFTPATH_16t(IServiceContainer pdb, SpanStream stream) {
-			TypeDataReader r = new TypeDataReader(pdb, stream);
+		public LF_VFTPATH_16t(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
+		}
 
+		public override void Read() {
+			TypeDataReader r = CreateReader();
 			NumElements = r.ReadUInt16();
 			Bases = r.ReadIndexedType16Lazy();
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
-			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_VFTPATH_16t);
+		public override void Write() {
+			TypeDataWriter w = CreateWriter(LeafType.LF_VFTPATH_16t);
 			w.WriteUInt16(NumElements);
 			w.WriteIndexedType16(Bases);
-			w.WriteLeafHeader();
+			w.WriteHeader();
 		}
 	}
 }

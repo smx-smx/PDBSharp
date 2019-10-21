@@ -13,19 +13,22 @@ using System.IO;
 
 namespace Smx.PDBSharp.Leaves
 {
-	public class LF_VFTABLE : ILeaf
+	public class LF_VFTABLE : LeafBase
 	{
-		public readonly ILeafContainer Type;
-		public readonly ILeafContainer BaseVfTable;
-		public readonly UInt32 OffsetInObjectLayout;
+		public ILeafContainer Type { get; set; }
+		public ILeafContainer BaseVfTable { get; set; }
+		public UInt32 OffsetInObjectLayout { get; set; }
 		/// <summary>
 		/// Size in Bytes
 		/// </summary>
-		public readonly UInt32 NamesSize;
-		public readonly string[] Names;
+		public UInt32 NamesSize { get; set; }
+		public string[] Names { get; set; }
 
-		public LF_VFTABLE(IServiceContainer pdb, SpanStream stream) {
-			TypeDataReader r = new TypeDataReader(pdb, stream);
+		public LF_VFTABLE(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
+		}
+
+		public override void Read() {
+			TypeDataReader r = CreateReader();
 
 			Type = r.ReadIndexedTypeLazy();
 			BaseVfTable = r.ReadIndexedTypeLazy();
@@ -44,8 +47,8 @@ namespace Smx.PDBSharp.Leaves
 			Names = lstNames.ToArray();
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
-			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_VFTABLE);
+		public override void Write() {
+			TypeDataWriter w = CreateWriter(LeafType.LF_VFTABLE);
 			w.WriteIndexedType(Type);
 			w.WriteIndexedType(BaseVfTable);
 			w.WriteUInt32(OffsetInObjectLayout);
@@ -53,7 +56,7 @@ namespace Smx.PDBSharp.Leaves
 			foreach (string name in Names) {
 				w.WriteCString(name);
 			}
-			w.WriteLeafHeader();
+			w.WriteHeader();
 		}
 	}
 }

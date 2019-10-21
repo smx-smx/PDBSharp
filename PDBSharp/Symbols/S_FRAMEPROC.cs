@@ -13,7 +13,7 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class FrameProcSym
+	public class S_FRAMEPROC : SymbolBase
 	{
 		public UInt32 FrameSize { get; set; }
 		public UInt32 PaddingSize { get; set; }
@@ -22,19 +22,12 @@ namespace Smx.PDBSharp.Symbols
 		public UInt32 ExceptionHandlerOffset { get; set; }
 		public UInt16 ExceptionHandlerSection { get; set; }
 		public FrameProcSymFlags Flags { get; set; }
-	}
+		
+		public S_FRAMEPROC(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		}
 
-	public class S_FRAMEPROC : ISymbol
-	{
-		public readonly UInt32 FrameSize;
-		public readonly UInt32 PaddingSize;
-		public readonly UInt32 PaddingOffset;
-		public readonly UInt32 SavedRegistersSize;
-		public readonly UInt32 ExceptionHandlerOffset;
-		public readonly UInt16 ExceptionHandlerSection;
-		public readonly FrameProcSymFlags Flags;
-		public S_FRAMEPROC(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public override void Read() {
+			var r = CreateReader();
 			FrameSize = r.ReadUInt32();
 			PaddingSize = r.ReadUInt32();
 			PaddingOffset = r.ReadUInt32();
@@ -44,27 +37,17 @@ namespace Smx.PDBSharp.Symbols
 			Flags = new FrameProcSymFlags(r.ReadUInt16());
 		}
 
-		public S_FRAMEPROC(FrameProcSym data) {
-			FrameSize = data.FrameSize;
-			PaddingSize = data.PaddingSize;
-			PaddingOffset = data.PaddingOffset;
-			SavedRegistersSize = data.SavedRegistersSize;
-			ExceptionHandlerOffset = data.ExceptionHandlerOffset;
-			ExceptionHandlerSection = data.ExceptionHandlerSection;
-			Flags = data.Flags;
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_FRAMEPROC);
+		public override void Write() {
+			var w = CreateWriter(SymbolType.S_FRAMEPROC);
 			w.WriteUInt32(FrameSize);
 			w.WriteUInt32(PaddingSize);
 			w.WriteUInt32(PaddingOffset);
 			w.WriteUInt32(SavedRegistersSize);
 			w.WriteUInt32(ExceptionHandlerOffset);
 			w.WriteUInt16(ExceptionHandlerSection);
-			w.WriteEnum<FrameProcSymFlagsEnum>((FrameProcSymFlagsEnum)Flags);
+			w.Write<FrameProcSymFlagsEnum>((FrameProcSymFlagsEnum)Flags);
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 	}
 }

@@ -12,35 +12,28 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class ObjNameSym
+
+	public class S_OBJNAME : SymbolBase
 	{
 		public UInt32 Signature { get; set; }
 		public string Name { get; set; }
-	}
 
-	public class S_OBJNAME : ISymbol
-	{
-		public readonly UInt32 Signature;
-		public readonly string Name;
+		public S_OBJNAME(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		}
 
-		public S_OBJNAME(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public override void Read() {
+			var r = CreateReader();
 
 			Signature = r.ReadUInt32();
 			Name = r.ReadSymbolString();
 		}
 
-		public S_OBJNAME(ObjNameSym data) {
-			Signature = data.Signature;
-			Name = data.Name;
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_OBJNAME);
+		public void Write() {
+			var w = CreateWriter(SymbolType.S_OBJNAME);
 			w.WriteUInt32(Signature);
 			w.WriteSymbolString(Name);
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 	}
 }

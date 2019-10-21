@@ -11,24 +11,23 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class S_UNAMESPACE : ISymbol
+	public class S_UNAMESPACE : SymbolBase
 	{
-		public readonly string NamespaceName;
+		public string NamespaceName { get; set; }
 
-		public S_UNAMESPACE(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public S_UNAMESPACE(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){			
+		}
+
+		public override void Read() {
+			var r = CreateReader();
 			NamespaceName = r.ReadSymbolString();
 		}
 
-		public S_UNAMESPACE(string namespaceName) {
-			this.NamespaceName = namespaceName;
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_UNAMESPACE);
+		public override void Write() {
+			var w = CreateWriter(SymbolType.S_UNAMESPACE);
 			w.WriteSymbolString(NamespaceName);
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 	}
 }

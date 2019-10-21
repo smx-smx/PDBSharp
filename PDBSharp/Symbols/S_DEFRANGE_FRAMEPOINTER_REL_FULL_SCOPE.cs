@@ -11,15 +11,15 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE : ISymbol
+	public class S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE : SymbolBase
 	{
-		public S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE(IServiceContainer ctx, IModule mod, SpanStream stream) {
+		public S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
 
 		}
 
 		public void Write(PDBFile pdb, Stream stream) {
-			SymbolDataWriter w = new SymbolDataWriter(pdb, stream, SymbolType.S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE);
-			w.WriteSymbolHeader();
+			SymbolDataWriter w = CreateWriter(SymbolType.S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE);
+			w.WriteHeader();
 		}
 	}
 }

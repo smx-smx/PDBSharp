@@ -10,11 +10,11 @@ using System.IO;
 
 namespace Smx.PDBSharp
 {
-	public class DBIWriter : WriterBase
+	public class DBIWriter
 	{
 		private readonly PDBFile pdb;
 
-		public DBIWriter(PDBFile pdb, StreamTableWriter stWr, Stream stream) : base(stream) {
+		public DBIWriter(PDBFile pdb, StreamTableWriter stWr, Stream stream) {
 		}
 
 		public void WriteModule(ModuleInfo mod) {

@@ -12,16 +12,13 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class S_LMANPROC : ManProcSymBase, ISymbol
+	public class S_LMANPROC : ManProcSymBase
 	{
 		public S_LMANPROC(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 		}
 
-		public S_LMANPROC(ManProcSym data) : base(data) {
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			base.Write(pdb, stream, SymbolType.S_LMANPROC);
+		public override void Write() {
+			base.Write(SymbolType.S_LMANPROC);
 		}
 	}
 }

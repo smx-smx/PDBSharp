@@ -13,25 +13,19 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class DefrangeSymSubfieldRegister
+	public class S_DEFRANGE_SUBFIELD_REGISTER : SymbolBase
 	{
 		public UInt16 Register { get; set; }
 		public RangeAttributes Attributes { get; set; }
 		public UInt32 ParentVariableOffset { get; set; }
 		public CV_LVAR_ADDR_RANGE Range { get; set; }
 		public CV_LVAR_ADDR_GAP[] Gaps { get; set; }
-	}
 
-	public class S_DEFRANGE_SUBFIELD_REGISTER : ISymbol
-	{
-		public readonly UInt16 Register;
-		public readonly RangeAttributes Attributes;
-		public readonly UInt32 ParentVariableOffset;
-		public readonly CV_LVAR_ADDR_RANGE Range;
-		public readonly CV_LVAR_ADDR_GAP[] Gaps;
+		public S_DEFRANGE_SUBFIELD_REGISTER(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) { 
+		}
 
-		public S_DEFRANGE_SUBFIELD_REGISTER(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public override void Read() {
+			var r = CreateReader();
 			Register = r.ReadUInt16();
 			Attributes = r.ReadFlagsEnum<RangeAttributes>();
 			ParentVariableOffset = r.ReadUInt32() & 0xFFF; //CV_OFFSET_PARENT_LENGTH_LIMIT
@@ -39,25 +33,17 @@ namespace Smx.PDBSharp.Symbols
 			Gaps = CV_LVAR_ADDR_GAP.ReadGaps(r);
 		}
 
-		public S_DEFRANGE_SUBFIELD_REGISTER(DefrangeSymSubfieldRegister data) {
-			Register = data.Register;
-			Attributes = data.Attributes;
-			ParentVariableOffset = data.ParentVariableOffset;
-			Range = data.Range;
-			Gaps = data.Gaps;
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_DEFRANGE_SUBFIELD_REGISTER);
+		public override void Write() {
+			var w = CreateWriter(SymbolType.S_DEFRANGE_SUBFIELD_REGISTER);
 			w.WriteUInt16(Register);
-			w.WriteEnum<RangeAttributes>(Attributes);
+			w.Write<RangeAttributes>(Attributes);
 			w.WriteUInt32(ParentVariableOffset & 0xFFF);
 			Range.Write(w);
 			foreach (CV_LVAR_ADDR_GAP gap in Gaps) {
 				gap.Write(w);
 			}
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 	}
 }

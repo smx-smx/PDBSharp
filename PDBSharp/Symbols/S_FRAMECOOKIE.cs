@@ -13,45 +13,32 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class FrameCookie
+	public class S_FRAMECOOKIE : SymbolBase
 	{
-		public UInt32 Offset;
-		public UInt16 RegisterIndex;
-		public CookieType Type;
-		public byte Flags;
-	}
+		public UInt32 Offset { get; set; }
+		public UInt16 RegisterIndex { get; set; }
+		public CookieType Type { get; set; }
+		public byte Flags { get; set; }
 
-	public class S_FRAMECOOKIE : ISymbol
-	{
-		public readonly UInt32 Offset;
-		public readonly UInt16 RegisterIndex;
-		public readonly CookieType Type;
-		public readonly byte Flags;
+		public S_FRAMECOOKIE(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		}
 
-		public S_FRAMECOOKIE(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public override void Read() {
+			var r = CreateReader();
 
 			Offset = r.ReadUInt32();
 			RegisterIndex = r.ReadUInt16();
 			Type = r.ReadEnum<CookieType>();
 			Flags = r.ReadByte();
 		}
-
-		public S_FRAMECOOKIE(FrameCookie data) {
-			Offset = data.Offset;
-			RegisterIndex = data.RegisterIndex;
-			Type = data.Type;
-			Flags = data.Flags;
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_FRAMECOOKIE);
+		public override void Write() {
+			var w = CreateWriter(SymbolType.S_FRAMECOOKIE);
 			w.WriteUInt32(Offset);
 			w.WriteUInt16(RegisterIndex);
-			w.WriteEnum<CookieType>(Type);
+			w.Write<CookieType>(Type);
 			w.WriteByte(Flags);
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 	}
 }

@@ -11,22 +11,25 @@ using System.IO;
 
 namespace Smx.PDBSharp.Leaves
 {
-	public class LF_VFUNCTAB : ILeaf
+	public class LF_VFUNCTAB : LeafBase
 	{
-		public readonly ILeafContainer PointerType;
+		public ILeafContainer PointerType { get; set; }
 
-		public LF_VFUNCTAB(IServiceContainer pdb, SpanStream stream) {
-			TypeDataReader r = new TypeDataReader(pdb, stream);
+		public LF_VFUNCTAB(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
+		}
+
+		public override void Read() {
+			TypeDataReader r = CreateReader();
 
 			r.ReadUInt16(); //padding
 			PointerType = r.ReadIndexedTypeLazy();
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
-			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_VFUNCTAB);
+		public override void Write() {
+			TypeDataWriter w = CreateWriter(LeafType.LF_VFUNCTAB);
 			w.WriteUInt16(0x00);
 			w.WriteIndexedType(PointerType);
-			w.WriteLeafHeader();
+			w.WriteHeader();
 		}
 	}
 }

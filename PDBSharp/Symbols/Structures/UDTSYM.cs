@@ -11,34 +11,26 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols.Structures
 {
-	public class UdtSymData
+	public class UdtSym : SymbolBase
 	{
-		public LeafContainerBase Type { get; set; }
+		public ILeafContainer Type { get; set; }
 		public string Name { get; set; }
-	}
 
-	public class UdtSym
-	{
-		public readonly ILeafContainer Type;
-		public readonly string Name;
+		public UdtSym(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		}
 
-		public UdtSym(IServiceContainer ctx, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public override void Read() {
+			var r = CreateReader();
 			Type = r.ReadIndexedTypeLazy();
 			Name = r.ReadSymbolString();
 		}
 
-		public UdtSym(UdtSymData data) {
-			Type = data.Type;
-			Name = data.Name;
-		}
-
-		public void Write(PDBFile pdb, Stream stream, SymbolType symbolType) {
-			var w = new SymbolDataWriter(pdb, stream, symbolType);
+		public void Write(SymbolType symbolType) {
+			var w = CreateWriter(symbolType);
 			w.WriteIndexedType(Type);
 			w.WriteSymbolString(Name);
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 	}
 }

@@ -21,8 +21,8 @@ namespace Smx.PDBSharp
 			return resolver.GetTypeByIndex(typeIndex);
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
-			Leaf.Data.Write(pdb, stream);
+		public void Write() {
+			Leaf.Data.Write();
 		}
 
 		private readonly ILazy<ILeafContainer> lazy;

@@ -12,25 +12,24 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class S_INLINESITE : ISymbol
+	public class S_INLINESITE : SymbolBase
 	{
-		private readonly UInt32 InlinerParentOffset;
-		public readonly Symbol Inliner;
-		public readonly UInt32 End;
-		public readonly ILeafContainer Inlinee;
-		public readonly byte[] BinaryAnnotations;
+		private UInt32 InlinerParentOffset;
+		public Symbol Inliner;
+		public UInt32 End;
+		public ILeafContainer Inlinee;
+		public byte[] BinaryAnnotations;
 
-		public S_INLINESITE(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public S_INLINESITE(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		}
+
+		public override void Read() {
+			var r = CreateReader();
 			InlinerParentOffset = r.ReadUInt32();
-			Inliner = r.ReadSymbol(mod, InlinerParentOffset);
+			Inliner = r.ReadSymbol(Module, InlinerParentOffset);
 			End = r.ReadUInt32();
 			Inlinee = r.ReadIndexedTypeLazy();
 			BinaryAnnotations = r.ReadRemaining();
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			throw new NotImplementedException();
 		}
 	}
 }

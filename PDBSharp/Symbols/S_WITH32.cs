@@ -12,20 +12,23 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class S_WITH32 : ISymbol
+	public class S_WITH32 : SymbolBase
 	{
-		private readonly UInt32 ParentOffset;
-		public readonly Symbol Parent;
-		private readonly UInt32 EndOffset;
-		public readonly UInt32 Length;
-		public readonly UInt32 SegmentOffset;
-		public readonly UInt16 Segment;
-		public readonly string Expression;
+		private UInt32 ParentOffset;
+		public Symbol Parent;
+		private UInt32 EndOffset;
+		public UInt32 Length;
+		public UInt32 SegmentOffset;
+		public UInt16 Segment;
+		public string Expression;
 
-		public S_WITH32(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public S_WITH32(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) { 
+		}
+
+		public override void Read() {
+			var r = CreateReader();
 			ParentOffset = r.ReadUInt32();
-			Parent = r.ReadSymbol(mod, ParentOffset);
+			Parent = r.ReadSymbol(Module, ParentOffset);
 			EndOffset = r.ReadUInt32();
 			Length = r.ReadUInt32();
 			SegmentOffset = r.ReadUInt32();
@@ -33,9 +36,9 @@ namespace Smx.PDBSharp.Symbols
 			Expression = r.ReadSymbolString();
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
-			SymbolDataWriter w = new SymbolDataWriter(pdb, stream, SymbolType.S_WITH32);
-			w.WriteSymbolHeader();
+		public override void Write() {
+			SymbolDataWriter w = CreateWriter(SymbolType.S_WITH32);
+			w.WriteHeader();
 			throw new NotImplementedException();
 		}
 	}

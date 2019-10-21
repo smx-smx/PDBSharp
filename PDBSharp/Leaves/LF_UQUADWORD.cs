@@ -11,20 +11,22 @@ using System.IO;
 
 namespace Smx.PDBSharp.Leaves
 {
-	public class LF_UQUADWORD : ILeaf
+	public class LF_UQUADWORD : LeafBase
 	{
-		public readonly ulong Value;
+		public ulong Value { get; set; }
 
-		public LF_UQUADWORD(IServiceContainer pdb, SpanStream stream) {
-			TypeDataReader r = new TypeDataReader(pdb, stream);
+		public LF_UQUADWORD(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
+		}
 
+		public override void Read() {
+			TypeDataReader r = CreateReader();
 			Value = r.ReadUInt64();
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
-			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_UQUADWORD);
+		public override void Write() {
+			TypeDataWriter w = CreateWriter(LeafType.LF_UQUADWORD);
 			w.WriteUInt64(Value);
-			w.WriteLeafHeader();
+			w.WriteHeader();
 		}
 	}
 }

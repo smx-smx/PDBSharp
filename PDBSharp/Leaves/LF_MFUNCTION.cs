@@ -13,20 +13,23 @@ using System.IO;
 namespace Smx.PDBSharp.Leaves
 {
 
-	public class LF_MFUNCTION : ILeaf
+	public class LF_MFUNCTION : LeafBase
 	{
-		public readonly ILeafContainer ReturnValueType;
-		public readonly ILeafContainer ContainingClassType;
-		public readonly ILeafContainer ThisPointerType;
-		public readonly CallingConvention CallingConvention;
-		public readonly UInt16 NumberOfParameters;
-		public readonly ILeafContainer ArgumentListType;
-		public readonly UInt32 ThisAdjustor;
+		public ILeafContainer ReturnValueType { get; set; }
+		public ILeafContainer ContainingClassType { get; set; }
+		public ILeafContainer ThisPointerType { get; set; }
+		public CallingConvention CallingConvention { get; set; }
+		public UInt16 NumberOfParameters { get; set; }
+		public ILeafContainer ArgumentListType { get; set; }
+		public UInt32 ThisAdjustor { get; set; }
 
-		public readonly FunctionAttributes Attributes;
+		public FunctionAttributes Attributes { get; set; }
 
-		public LF_MFUNCTION(IServiceContainer pdb, SpanStream stream) {
-			TypeDataReader r = new TypeDataReader(pdb, stream);
+		public LF_MFUNCTION(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
+		}
+
+		public override void Read() {
+			TypeDataReader r = CreateReader();
 
 			ReturnValueType = r.ReadIndexedTypeLazy();
 			ContainingClassType = r.ReadIndexedTypeLazy();
@@ -38,17 +41,17 @@ namespace Smx.PDBSharp.Leaves
 			ThisAdjustor = r.ReadUInt32();
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
-			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_MFUNCTION);
+		public override void Write() {
+			TypeDataWriter w = CreateWriter(LeafType.LF_MFUNCTION);
 			w.WriteIndexedType(ReturnValueType);
 			w.WriteIndexedType(ContainingClassType);
 			w.WriteIndexedType(ThisPointerType);
-			w.WriteEnum<CallingConvention>(CallingConvention);
-			w.WriteEnum<FunctionAttributes>(Attributes);
+			w.Write<CallingConvention>(CallingConvention);
+			w.Write<FunctionAttributes>(Attributes);
 			w.WriteUInt16(NumberOfParameters);
 			w.WriteIndexedType(ArgumentListType);
 			w.WriteUInt32(ThisAdjustor);
-			w.WriteLeafHeader();
+			w.WriteHeader();
 		}
 
 		public override string ToString() {

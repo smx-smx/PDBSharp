@@ -13,35 +13,38 @@ using System.IO;
 
 namespace Smx.PDBSharp.Leaves
 {
-	public class LF_FIELDLIST : ILeaf
+	public class LF_FIELDLIST : LeafBase
 	{
 		private readonly ILazy<IEnumerable<LeafContainerBase>> lazyFields;
 		public IEnumerable<LeafContainerBase> Fields => lazyFields.Value;
 
-		private IEnumerable<LeafContainerBase> ReadFields(IServiceContainer pdb, SpanStream stream) {
+		private IEnumerable<LeafContainerBase> ReadFields() {
+			TypeDataReader r = CreateReader();
 			while (stream.Position + sizeof(UInt16) < stream.Length) {
 				// We have to read the type directly to increase Stream.Position
-				LeafContainerBase leaf = new TypeDataReader(pdb, stream).ReadTypeDirect(hasSize: false);
+				LeafContainerBase leaf = r.ReadTypeDirect(hasSize: false);
 				if (leaf == null)
 					yield break;
 				yield return leaf;
 			}
 		}
 
-		public void Write(PDBFile pdb, Stream stream) {
-			TypeDataWriter w = new TypeDataWriter(pdb, stream, LeafType.LF_FIELDLIST);
-
-			foreach (LeafContainerBase lf in Fields) {
-				lf.Write(pdb, stream);
-			}
-
-			w.WriteLeafHeader(hasSize: false);
+		public override void Read() {
+			//no-op as we read lazily
 		}
 
-		public LF_FIELDLIST(IServiceContainer pdb, SpanStream stream) {
-			lazyFields = LazyFactory.CreateLazy(() => {
-				return ReadFields(pdb, stream);
-			});
+		public override void Write() {
+			TypeDataWriter w = CreateWriter(LeafType.LF_FIELDLIST, false);
+
+			foreach (LeafContainerBase lf in Fields) {
+				lf.Write();
+			}
+
+			w.WriteHeader();
+		}
+
+		public LF_FIELDLIST(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
+			lazyFields = LazyFactory.CreateLazy(ReadFields);
 		}
 
 		/*

@@ -13,39 +13,29 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class ExportSym
+	public class S_EXPORT : SymbolBase
 	{
 		public UInt16 Ordinal { get; set; }
 		public ExportSymFlags Flags { get; set; }
 		public string Name { get; set; }
-	}
 
-	public class S_EXPORT : ISymbol
-	{
-		public readonly UInt16 Ordinal;
-		public readonly ExportSymFlags Flags;
-		public readonly string Name;
+		public S_EXPORT(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		}
 
-		public S_EXPORT(IServiceContainer ctx, IModule mod, SpanStream stream) {
-			var r = new SymbolDataReader(ctx, stream);
+		public override void Read() {
+			var r = CreateReader();
 			Ordinal = r.ReadUInt16();
 			Flags = r.ReadFlagsEnum<ExportSymFlags>();
 			Name = r.ReadSymbolString();
-		}
+		}		
 
-		public S_EXPORT(ExportSym data) {
-			Ordinal = data.Ordinal;
-			Flags = data.Flags;
-			Name = data.Name;
-		}
-
-		public void Write(PDBFile pdb, Stream stream) {
-			var w = new SymbolDataWriter(pdb, stream, SymbolType.S_EXPORT);
+		public override void Write() {
+			var w = CreateWriter(SymbolType.S_EXPORT);
 			w.WriteUInt16(Ordinal);
-			w.WriteEnum<ExportSymFlags>(Flags);
+			w.Write<ExportSymFlags>(Flags);
 			w.WriteSymbolString(Name);
 
-			w.WriteSymbolHeader();
+			w.WriteHeader();
 		}
 	}
 }
