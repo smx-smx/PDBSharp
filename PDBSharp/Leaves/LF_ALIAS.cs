@@ -28,9 +28,5 @@ namespace Smx.PDBSharp.Leaves
 		public LF_ALIAS(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 			
 		}
-
-		public LF_ALIAS(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
-			
-		}
 	}
 }
