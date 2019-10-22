@@ -149,8 +149,11 @@ namespace Smx.PDBSharp
 		private IEnumerable<IModuleContainer> ReadModules() {
 			Position = Marshal.SizeOf<DBIHeader>();
 
-			ModuleListReader rdr = new ModuleListReader(ctx, this, Header.ModuleListSize);
-			ctx.AddService<ModuleListReader>(rdr);
+			ModuleListReader rdr = ctx.GetService<ModuleListReader>();
+			if(rdr == null) {
+				rdr = new ModuleListReader(ctx, this, Header.ModuleListSize);
+				ctx.AddService<ModuleListReader>(rdr);
+			}
 
 			IEnumerable<ModuleInfo> moduleInfoList = rdr.Modules;
 			foreach (ModuleInfo mod in moduleInfoList) {
