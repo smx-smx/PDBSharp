@@ -64,8 +64,6 @@ namespace Smx.PDBSharp
 	{
 		public readonly DBIHeader Header;
 
-		private readonly ILazy<IEnumerable<IModuleContainer>> lazyModuleContainers;
-
 		public readonly DebugReader DebugInfo;
 		public readonly SectionContribsReader SectionContribs;
 
@@ -74,7 +72,7 @@ namespace Smx.PDBSharp
 
 		private readonly StreamTableReader StreamTable;
 
-		public IEnumerable<IModuleContainer> Modules => lazyModuleContainers?.Value;
+		public IEnumerable<IModuleContainer> Modules;
 
 		public event OnModuleDataDelegate OnModuleData;
 		public event OnModuleReaderInitDelegate OnModuleReaderInit;
@@ -118,7 +116,7 @@ namespace Smx.PDBSharp
 				throw new InvalidDataException();
 			}
 
-			lazyModuleContainers = LazyFactory.CreateLazy(ReadModules);
+			Modules = new CachedEnumerable<IModuleContainer>(ReadModules());
 			Position += Header.ModuleListSize;
 
 			if (Header.SectionContributionSize > 0) {

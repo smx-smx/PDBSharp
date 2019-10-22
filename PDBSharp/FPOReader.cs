@@ -73,8 +73,7 @@ namespace Smx.PDBSharp
 
 	public unsafe class FPOReader : SpanStream
 	{
-		public IEnumerable<FPOData> Frames => lazyFrames.Value;
-		private readonly ILazy<IEnumerable<FPOData>> lazyFrames;
+		public readonly IEnumerable<FPOData> Frames;
 
 		private readonly int itemSize = sizeof(FPOData);
 
@@ -87,7 +86,7 @@ namespace Smx.PDBSharp
 		}
 
 		public FPOReader(byte[] data) : base(data) {
-			lazyFrames = LazyFactory.CreateLazy(ReadFrames);
+			Frames = new CachedEnumerable<FPOData>(ReadFrames());
 		}
 	}
 
