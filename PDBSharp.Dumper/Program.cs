@@ -30,10 +30,34 @@ namespace Smx.PDBSharp.Dumper
 		public static bool OptPrintDecls = false;
 		public static string PdbFilePath = null;
 
+		public static bool OptPrintFpo = false;
+		public static bool OptPrintSc = false;
+		public static bool OptPrintSyms = false;
+		public static bool OptPrintTypes = false;
+		public static bool OptPrintTpiHash = false;
+
 		private static void ParseArguments(string[] args) {
 			for (int i = 0; i < args.Length; i++) {
 				string arg = args[i];
 				switch (arg) {
+					case "-print-fpo":
+						OptPrintFpo = true;
+						break;
+					case "-print-sc":
+						OptPrintSc = true;
+						break;
+					case "-print-syms":
+						OptPrintSyms = true;
+						break;
+					case "-print-types":
+						OptPrintTypes = true;
+						break;
+					case "-print-tpihash":
+						OptPrintTpiHash = true;
+						break;
+					case "-print-decls":
+						OptPrintDecls = true;
+						break;
 					case "-dump":
 						OptDumpStreams = true;
 						break;
@@ -45,9 +69,6 @@ namespace Smx.PDBSharp.Dumper
 						break;
 					case "-dump-syms":
 						OptDumpSymbols = true;
-						break;
-					case "-print":
-						OptPrintDecls = true;
 						break;
 					default:
 						PdbFilePath = arg;
@@ -66,15 +87,18 @@ namespace Smx.PDBSharp.Dumper
     [-dump-modules]    Verbose output for DBI Modules
     [-dump-leaves]     Verbose output for TPI Leaves
     [-dump-syms]       Verbose output for DBI Symbols
-    [-print]           Extract and print type definitions");
+    [-print-decls]     Extract and print type definitions
+    [-print-fpo]       Print FPO entries
+    [-print-sc]        Print Section Contribution entries
+    [-print-syms]      Print symbol entries
+    [-print-types]     Print type
+    [-print-tpihash]   Print TPIHash");
 				Environment.Exit(1);
 			}
 
-#if PERF
 			Console.WriteLine("Starting...");
 			Stopwatch sw = new Stopwatch();
 			sw.Start();
-#endif
 
 			PDBFile pdb = PDBFile.Open(PdbFilePath);
 			IServiceContainer sc = pdb.Services;
@@ -85,10 +109,10 @@ namespace Smx.PDBSharp.Dumper
 
 			if (OptPrintDecls) {
 				var tree = new GraphBuilder(sc).Build();
-				CodeWriter cw = new CodeWriter(tree);
-#if !PERF
-				cw.Write(Console.Out);
-#endif
+				if (tree != null) {
+					CodeWriter cw = new CodeWriter(tree);
+					cw.Write(Console.Out);
+				}
 			}
 
 			if (OptDumpLeaves) {
@@ -120,71 +144,64 @@ namespace Smx.PDBSharp.Dumper
 				foreach (var pair in tpiHash.NameIndexToTypeIndex) {
 					string name = udtNameTable.GetString(pair.Key);
 					ILeafContainer leaf = resolver.GetTypeByIndex(pair.Value);
-#if !PERF
-					Console.WriteLine($"=> {name} [NI={pair.Key}] [TI={pair.Value}]");
-					Console.WriteLine(leaf.Data.GetType().Name);
-#endif
+					if (OptPrintTpiHash) {
+						Console.WriteLine($"=> {name} [NI={pair.Key}] [TI={pair.Value}]");
+						Console.WriteLine(leaf.Data.GetType().Name);
+					}
 				}
 			}
 
-			foreach(var contrib in dbi.SectionContribs.SectionContribs) {
-#if !PERF
-				ObjectDumper.Dump(contrib);
-#endif
+			if(dbi.SectionContribs != null) {
+				foreach (var contrib in dbi.SectionContribs.SectionContribs) {
+					if (OptPrintSc) {
+						ObjectDumper.Dump(contrib);
+					}
+				}
 			}
 
 			DebugReader debug = dbi.DebugInfo;
-			if(debug != null && debug.FPO != null) {
+			if(debug != null && OptPrintFpo && debug.FPO != null) {
 				foreach(var frame in debug.FPO.Frames) {
-#if !PERF
 					ObjectDumper.Dump(frame);
-#endif
 				}
 			}
 
-			foreach (var container in dbi.Modules) {
-#if !PERF
-				Console.WriteLine($"[MODULE => {container.Info.ModuleName}]");
-				Console.WriteLine($"[OBJECT => {container.Info.ObjectFileName}]");
-				Console.WriteLine($"[SRC    => {container.Info.SourceFileName}]");
-				if (container.Module != null) {
-					Console.WriteLine($"[TYPE   => {container.Module.GetType().Name}");
-				}
-				Console.WriteLine();
-#endif
+			if (dbi.Modules != null) {
+				foreach (var container in dbi.Modules) {
+					Console.WriteLine($"[MODULE => {container.Info.ModuleName}]");
+					Console.WriteLine($"[OBJECT => {container.Info.ObjectFileName}]");
+					Console.WriteLine($"[SRC    => {container.Info.SourceFileName}]");
+					if (container.Module != null) {
+						Console.WriteLine($"[TYPE   => {container.Module.GetType().Name}");
+					}
+					Console.WriteLine();
 
-				IModule mod = container.Module;
-				if (mod != null) {
-					foreach (var sym in mod.Symbols) {
-#if !PERF
-						Console.WriteLine(sym);
-#endif
+					IModule mod = container.Module;
+					if (mod != null) {
+						foreach (var sym in mod.Symbols) {
+							if (OptPrintSyms) {
+								Console.WriteLine(sym);
+							}
+						}
 					}
 				}
 			}
 
 			foreach(var type in tpi.Types) {
-#if !PERF
-				Console.WriteLine(type);
-#endif
+				if (OptPrintTypes) {
+					Console.WriteLine(type);
+				}
 			}
 
-#if !PERF
-			Console.WriteLine("Press Enter to continue...");
-			Console.ReadLine();
-#else
 			sw.Stop();
 			Console.WriteLine($"Finished in {sw.Elapsed.TotalSeconds} seconds");
-#endif
 		}
 
 		private static void Pdb_OnDbiInit(DBIReader DBI) {
-#if !PERF
 			if (OptDumpModules) {
 				DBI.OnModuleData += DBI_OnModuleData;
+				DBI.OnModuleReaderInit += DBI_OnModuleReaderInit;
 			}
-			DBI.OnModuleReaderInit += DBI_OnModuleReaderInit;
-#endif
 		}
 
 		private static void DBI_OnModuleReaderInit(IModule module) {
