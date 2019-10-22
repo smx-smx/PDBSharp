@@ -13,7 +13,6 @@ using System.IO;
 
 namespace Smx.PDBSharp
 {
-
 	public interface ISectionContrib
 	{
 		int Size { get; }

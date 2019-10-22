@@ -20,7 +20,7 @@ namespace Smx.PDBSharp.Symbols
 
 		public override void Read() {
 			var r = CreateReader();
-			ItemID = r.ReadIndexedTypeLazy();
+			ItemID = r.ReadIndexedType32Lazy();
 		}
 
 		public override void Write() {

@@ -24,7 +24,7 @@ namespace Smx.PDBSharp.Symbols
 		public override void Read() {
 			SymbolDataReader r = CreateReader();
 			Offset = r.ReadUInt32();
-			Type = r.ReadIndexedTypeLazy();
+			Type = r.ReadIndexedType32Lazy();
 			Name = r.ReadSymbolString(); 
 		}		
 

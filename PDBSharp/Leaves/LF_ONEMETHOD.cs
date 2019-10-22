@@ -27,7 +27,7 @@ namespace Smx.PDBSharp.Leaves
 			TypeDataReader r = CreateReader();
 
 			Attributes = new FieldAttributes(r.ReadUInt16());
-			ProcedureType = r.ReadIndexedTypeLazy();
+			ProcedureType = r.ReadIndexedType32Lazy();
 
 			switch (Attributes.MethodProperties) {
 				case MethodProperties.Intro:

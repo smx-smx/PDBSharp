@@ -27,7 +27,7 @@ namespace Smx.PDBSharp.Symbols
 			var r = CreateReader();
 
 			SlotIndex = r.ReadUInt32();
-			Type = r.ReadIndexedTypeLazy();
+			Type = r.ReadIndexedType32Lazy();
 			Attributes = new CV_LVAR_ATTR(stream);
 			Name = r.ReadSymbolString();
 		}

@@ -23,7 +23,7 @@ namespace Smx.PDBSharp.Leaves
 		public override void Read() {
 			TypeDataReader r = CreateReader();
 
-			ModifiedType = r.ReadIndexedTypeLazy();
+			ModifiedType = r.ReadIndexedType32Lazy();
 			Flags = r.ReadFlagsEnum<CVModifier>();
 		}
 

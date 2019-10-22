@@ -30,8 +30,8 @@ namespace Smx.PDBSharp.Leaves
 		public override void Read() {
 			TypeDataReader r = CreateReader();
 
-			Type = r.ReadIndexedTypeLazy();
-			BaseVfTable = r.ReadIndexedTypeLazy();
+			Type = r.ReadIndexedType32Lazy();
+			BaseVfTable = r.ReadIndexedType32Lazy();
 			OffsetInObjectLayout = r.ReadUInt32();
 			NamesSize = r.ReadUInt32();
 

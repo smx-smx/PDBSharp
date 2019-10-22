@@ -59,7 +59,7 @@ namespace Smx.PDBSharp.Leaves
 
 			NumberOfElements = r.ReadUInt16();
 			Properties = r.ReadFlagsEnum<TypeProperties>();
-			FieldType = r.ReadIndexedTypeLazy();
+			FieldType = r.ReadIndexedType32Lazy();
 
 			StructSize = r.ReadVaryingType(out uint dataSize);
 			Name = r.ReadCString();

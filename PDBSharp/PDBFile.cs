@@ -96,7 +96,6 @@ namespace Smx.PDBSharp
 				throw new NotImplementedException($"Small/Old/JG PDBs not supported/tested yet");
 			}
 
-
 			MSFReader msf = new MSFReader(mf, stream.Length);
 			Services.AddService<MSFReader>(msf);
 

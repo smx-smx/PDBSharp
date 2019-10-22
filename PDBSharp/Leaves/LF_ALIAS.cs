@@ -21,7 +21,7 @@ namespace Smx.PDBSharp.Leaves
 
 		public override void Read() {
 			TypeDataReader r = CreateReader();
-			UnderlyingType = r.ReadIndexedTypeLazy();
+			UnderlyingType = r.ReadIndexedType32Lazy();
 			Name = r.ReadCString();
 		}
 

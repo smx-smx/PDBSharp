@@ -24,7 +24,7 @@ namespace Smx.PDBSharp.Leaves
 			TypeDataReader r = CreateReader();
 
 			Attributes = new FieldAttributes(r.ReadUInt16());
-			TypeRecord = r.ReadIndexedTypeLazy();
+			TypeRecord = r.ReadIndexedType32Lazy();
 			Name = r.ReadCString();
 		}
 

@@ -45,7 +45,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 			Length = r.ReadUInt32();
 			DebugStartOffset = r.ReadUInt32();
 			DebugEndOffset = r.ReadUInt32();
-			Type = r.ReadIndexedTypeLazy();
+			Type = r.ReadIndexedType32Lazy();
 			Offset = r.ReadUInt32();
 			Segment = r.ReadUInt16();
 			Flags = r.ReadFlagsEnum<CV_PROCFLAGS>();

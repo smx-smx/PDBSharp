@@ -26,7 +26,7 @@ namespace Smx.PDBSharp.Codegen
 
 		public IEnumerable<SymbolNode> Build() {
 			IEnumerable<SymbolNode> tree = Dbi.Modules
-				.Select(mod => BuildGraph(mod))
+				?.Select(mod => BuildGraph(mod))
 				//skip modules without graph
 				.Where(graph => graph != null)
 				.SelectMany(graph => graph)

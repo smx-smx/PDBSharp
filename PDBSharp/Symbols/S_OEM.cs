@@ -25,7 +25,7 @@ namespace Smx.PDBSharp.Symbols
 			var r = CreateReader();
 
 			Id = new Guid(r.ReadBytes(16));
-			Type = r.ReadIndexedTypeLazy();
+			Type = r.ReadIndexedType32Lazy();
 			UserData = r.ReadRemaining();
 		}
 

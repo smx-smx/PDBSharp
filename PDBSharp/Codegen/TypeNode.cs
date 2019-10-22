@@ -41,9 +41,13 @@ namespace Smx.PDBSharp.Codegen
 						AddDependency(arg);
 					}
 					break;
-				case LF_ARRAY lfArray:
-					AddDependency(lfArray.ElementType);
-					AddDependency(lfArray.IndexingType);
+				case LF_ARRAY<ushort> lfArray16:
+					AddDependency(lfArray16.ElementType);
+					AddDependency(lfArray16.IndexingType);
+					break;
+				case LF_ARRAY<uint> lfArray32:
+					AddDependency(lfArray32.ElementType);
+					AddDependency(lfArray32.IndexingType);
 					break;
 				case LF_FIELDLIST lfFieldList:
 					foreach (var field in lfFieldList.Fields) {

@@ -74,7 +74,7 @@ namespace Smx.PDBSharp
 
 		private readonly StreamTableReader StreamTable;
 
-		public IEnumerable<IModuleContainer> Modules => lazyModuleContainers.Value;
+		public IEnumerable<IModuleContainer> Modules => lazyModuleContainers?.Value;
 
 		public event OnModuleDataDelegate OnModuleData;
 		public event OnModuleReaderInitDelegate OnModuleReaderInit;

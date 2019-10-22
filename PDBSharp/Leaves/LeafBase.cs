@@ -17,15 +17,20 @@ namespace Smx.PDBSharp.Leaves
 	{
 		protected readonly IServiceContainer ctx;
 		protected readonly SpanStream stream;
-		
+
+		private readonly ILazy<TypeDataReader> reader;
+		//public TypeDataReader Reader => reader.Value;
+
+		public long Length => reader.Value.Position;
+
 		public LeafBase(IServiceContainer ctx, SpanStream stream) {
 			this.ctx = ctx;
 			this.stream = stream;
+
+			reader = LazyFactory.CreateLazy(() => new TypeDataReader(ctx, stream));
 		}
 
-		protected TypeDataReader CreateReader() {
-			return new TypeDataReader(ctx, stream);
-		}
+		protected TypeDataReader CreateReader() => reader.Value;
 
 		protected TypeDataWriter CreateWriter(LeafType type, bool hasSize = true) {
 			return new TypeDataWriter(ctx, stream, type, hasSize);

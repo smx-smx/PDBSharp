@@ -28,7 +28,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 			NumberOfFunctions = r.ReadUInt32();
 			Functions = Enumerable
 				.Range(1, (int)NumberOfFunctions)
-				.Select(_ => r.ReadIndexedTypeLazy())
+				.Select(_ => r.ReadIndexedType32Lazy())
 				.ToArray();
 		}
 

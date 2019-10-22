@@ -60,8 +60,8 @@ namespace Smx.PDBSharp.Leaves
 
 			NumElements = r.ReadUInt16();
 			Properties = r.ReadFlagsEnum<TypeProperties>();
-			UnderlyingType = r.ReadIndexedTypeLazy();
-			FieldType = r.ReadIndexedTypeLazy();
+			UnderlyingType = r.ReadIndexedType32Lazy();
+			FieldType = r.ReadIndexedType32Lazy();
 			Name = r.ReadCString();
 		}
 

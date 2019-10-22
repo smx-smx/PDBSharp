@@ -24,8 +24,8 @@ namespace Smx.PDBSharp.Leaves
 			TypeDataReader r = CreateReader();
 
 			Attributes = new FieldAttributes(r.ReadUInt16());
-			VirtualBaseClassType = r.ReadIndexedTypeLazy();
-			VirtualBasePointerType = r.ReadIndexedTypeLazy();
+			VirtualBaseClassType = r.ReadIndexedType32Lazy();
+			VirtualBasePointerType = r.ReadIndexedType32Lazy();
 
 
 			//virtual base pointer offset from address point

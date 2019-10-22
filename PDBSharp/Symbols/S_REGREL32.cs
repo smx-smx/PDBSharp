@@ -26,7 +26,7 @@ namespace Smx.PDBSharp.Symbols
 			var r = CreateReader();
 
 			Offset = r.ReadUInt32();
-			Type = r.ReadIndexedTypeLazy();
+			Type = r.ReadIndexedType32Lazy();
 			RegisterIndex = r.ReadUInt16();
 			Name = r.ReadSymbolString();
 		}

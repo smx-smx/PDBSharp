@@ -21,7 +21,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 
 		public override void Read() {
 			var r = CreateReader();
-			Type = r.ReadIndexedTypeLazy();
+			Type = r.ReadIndexedType32Lazy();
 			Name = r.ReadSymbolString();
 		}
 

@@ -23,7 +23,7 @@ namespace Smx.PDBSharp.Symbols
 
 		public override void Read() {
 			var r = CreateReader();
-			Type = r.ReadIndexedTypeLazy();
+			Type = r.ReadIndexedType32Lazy();
 			Flags = r.ReadFlagsEnum<CV_LVARFLAGS>();
 			Name = r.ReadSymbolString();
 		}
