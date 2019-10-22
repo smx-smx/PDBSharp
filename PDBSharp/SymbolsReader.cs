@@ -154,6 +154,9 @@ namespace Smx.PDBSharp
 
 
 			ISymbol sym = CreateSymbolStream(hdr);
+			if(sym != null) {
+				sym.Read();
+			}
 			Position = endOffset;
 
 			if (sym == null)
