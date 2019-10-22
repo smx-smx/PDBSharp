@@ -25,11 +25,11 @@ namespace Smx.PDBSharp.Leaves
 		public override void Read() {
 			TypeDataReader r = CreateReader();
 
-			ReturnValueType = r.ReadIndexedTypeLazy();
+			ReturnValueType = r.ReadIndexedType32Lazy();
 			CallingConvention = r.ReadEnum<CallingConvention>();
 			r.ReadByte(); //reserved
 			NumberOfParameters = r.ReadUInt16();
-			ArgumentListType = r.ReadIndexedTypeLazy();
+			ArgumentListType = r.ReadIndexedType32Lazy();
 		}
 
 		public override void Write() {

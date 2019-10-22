@@ -11,7 +11,7 @@ using System.IO;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public class S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE : SymbolBase
+	public class S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE : S_DEFRANGE_FRAMEPOINTER_REL
 	{
 		public S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
 

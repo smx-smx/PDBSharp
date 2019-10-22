@@ -23,7 +23,7 @@ namespace Smx.PDBSharp.Leaves
 			TypeDataReader r = CreateReader();
 
 			r.ReadUInt16(); //padding
-			NestedTypeDef = r.ReadIndexedTypeLazy();
+			NestedTypeDef = r.ReadIndexedType32Lazy();
 			Name = r.ReadCString();
 		}
 

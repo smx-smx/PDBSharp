@@ -13,7 +13,7 @@ namespace Smx.PDBSharp.Leaves
 {
 	class LF_CHAR : LeafBase
 	{
-		public byte Value { get; set; }
+		public sbyte Value { get; set; }
 
 		public LF_CHAR(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 			
@@ -21,12 +21,12 @@ namespace Smx.PDBSharp.Leaves
 
 		public override void Read() {
 			TypeDataReader r = CreateReader();
-			Value = r.ReadByte();
+			Value = (sbyte)r.ReadByte();
 		}
 
 		public override void Write() {
 			TypeDataWriter w = CreateWriter(LeafType.LF_CHAR);
-			w.WriteByte(Value);
+			w.WriteByte((byte)Value);
 			w.WriteHeader();
 		}
 	}

@@ -28,7 +28,7 @@ namespace Smx.PDBSharp.Leaves
 			NumberOfArguments = r.ReadUInt16();
 			r.ReadUInt16(); //padding
 			ArgumentTypes = Enumerable.Range(1, NumberOfArguments)
-											.Select(_ => r.ReadIndexedTypeLazy())
+											.Select(_ => r.ReadIndexedType32Lazy())
 											.ToArray();
 		}
 

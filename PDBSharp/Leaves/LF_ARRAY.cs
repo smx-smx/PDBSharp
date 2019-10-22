@@ -11,7 +11,11 @@ using System.IO;
 
 namespace Smx.PDBSharp.Leaves
 {
-	public class LF_ARRAY : LeafBase
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <typeparam name="T">used to indicate the size of the type index</typeparam>
+	public class LF_ARRAY<T> : LeafBase where T : unmanaged
 	{
 		public ILeafContainer ElementType { get; set; }
 		public ILeafContainer IndexingType { get; set; }
@@ -26,8 +30,8 @@ namespace Smx.PDBSharp.Leaves
 		public override void Read() {
 			TypeDataReader r = CreateReader();
 
-			ElementType = r.ReadIndexedTypeLazy();
-			IndexingType = r.ReadIndexedTypeLazy();
+			ElementType = r.ReadIndexedTypeLazy<T>();
+			IndexingType = r.ReadIndexedTypeLazy<T>();
 
 			Size = r.ReadVaryingType(out uint dataSize);
 

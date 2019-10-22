@@ -25,7 +25,7 @@ namespace Smx.PDBSharp.Symbols
 			Offset = r.ReadUInt32();
 			SectionIndex = r.ReadUInt16();
 			r.ReadUInt16(); //padding
-			Type = r.ReadIndexedTypeLazy();
+			Type = r.ReadIndexedType32Lazy();
 		}
 
 		public override void Write() {

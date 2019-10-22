@@ -26,7 +26,7 @@ namespace Smx.PDBSharp.Leaves
 			TypeDataReader r = CreateReader();
 
 			Attributes = new FieldAttributes(r.ReadUInt16());
-			BaseClassType = r.ReadIndexedTypeLazy();
+			BaseClassType = r.ReadIndexedType32Lazy();
 
 			Offset = r.ReadVaryingType(out uint dataSize);
 		}

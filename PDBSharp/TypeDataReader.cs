@@ -36,7 +36,11 @@ namespace Smx.PDBSharp
 			this.ctx = ctx;
 		}
 
-		public ILeafContainer ReadIndexedTypeLazy() {
+		public TypeDataReader(IServiceContainer ctx, Memory<byte> data) : base(data) {
+			this.ctx = ctx;
+		}
+
+		public ILeafContainer ReadIndexedType32Lazy() {
 			UInt32 TI = ReadUInt32();
 			return new LazyLeafProvider(ctx, TI);
 		}
@@ -44,6 +48,17 @@ namespace Smx.PDBSharp
 		public ILeafContainer ReadIndexedType16Lazy() {
 			UInt16 TI = ReadUInt16();
 			return new LazyLeafProvider(ctx, TI);
+		}
+
+		public unsafe ILeafContainer ReadIndexedTypeLazy<T>() where T : unmanaged {
+			switch (sizeof(T)) {
+				case 2:
+					return ReadIndexedType16Lazy();
+				case 4:
+					return ReadIndexedType32Lazy();
+				default:
+					throw new InvalidOperationException("Invalid type, can only read 16 and 32bit indexed types");
+			}
 		}
 
 		/// <summary>
@@ -69,8 +84,13 @@ namespace Smx.PDBSharp
 			dataSize = PrimitiveDataSizes[leafType];
 			Seek(-2, SeekOrigin.Current);
 
-			ILeafContainer leaf = new TypeDataReader(ctx, this).ReadTypeDirect(hasSize: false);
-			//ILeafContainer leaf = new TypeDataReader(ctx, this).ReadTypeLazy(hasSize: false);
+			TypeDataReader rdr = new TypeDataReader(ctx, this);
+			ILeafContainer leaf = rdr.ReadTypeDirect(hasSize: false);
+			//ILeafContainer leaf = new TypeDataReader(ctx, this).ReadTypeDirect(hasSize: false);
+
+			// add leaf size
+			this.Position += rdr.Position;
+			
 			return leaf;
 
 		}
@@ -83,7 +103,7 @@ namespace Smx.PDBSharp
 				if (b >= (byte)LeafType.LF_PAD0 && b <= (byte)LeafType.LF_PAD15) {
 					continue;
 				}
-				Seek(-1, SeekOrigin.Current);
+				Position--;
 				break;
 			}
 		}
@@ -94,8 +114,10 @@ namespace Smx.PDBSharp
 					return new LF_ALIAS(ctx, this);
 				case LeafType.LF_ARGLIST:
 					return new LF_ARGLIST(ctx, this);
+				case LeafType.LF_ARRAY_16t:
+					return new LF_ARRAY<ushort>(ctx, this);
 				case LeafType.LF_ARRAY:
-					return new LF_ARRAY(ctx, this);
+					return new LF_ARRAY<uint>(ctx, this);
 				case LeafType.LF_BCLASS:
 					return new LF_BCLASS(ctx, this);
 				case LeafType.LF_BITFIELD:
@@ -189,12 +211,16 @@ namespace Smx.PDBSharp
 			UInt16 size = 0;
 			if (hasSize) {
 				size = ReadUInt16();
+				if(size == 0) {
+					throw new InvalidDataException("Leaf size field cannot be 0");
+				}
 			}
 			LeafType leafType = ReadEnum<LeafType>();
 			
 			ILeaf typeSym = CreateLeafStream(leafType);
 			typeSym.Read();
 
+			Position += (typeSym as LeafBase).Length;
 			ConsumePadding();
 
 #if !PEFF

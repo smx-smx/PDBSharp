@@ -13,7 +13,6 @@ using System.IO;
 
 namespace Smx.PDBSharp
 {
-
 	public interface ISectionContrib
 	{
 		int Size { get; }
@@ -159,12 +158,11 @@ namespace Smx.PDBSharp
 			listSize = moduleListSize;
 			listEndOffset = listStartOffset + listSize;
 
-			lazyModules = LazyFactory.CreateLazy(ReadModules);
+			Modules = new CachedEnumerable<ModuleInfo>(ReadModules());
 		}
 
-		private ILazy<IEnumerable<ModuleInfo>> lazyModules;
+		public readonly IEnumerable<ModuleInfo> Modules;
 
-		public IEnumerable<ModuleInfo> Modules => lazyModules.Value;
 
 		private IEnumerable<ModuleInfo> ReadModules() {
 			while (Position < listEndOffset) {

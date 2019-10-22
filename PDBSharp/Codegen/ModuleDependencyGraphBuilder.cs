@@ -7,6 +7,7 @@
  */
 #endregion
 using Smx.PDBSharp.Symbols;
+using System;
 using System.Collections.Generic;
 
 namespace Smx.PDBSharp.Codegen
@@ -43,6 +44,7 @@ namespace Smx.PDBSharp.Codegen
 						node.AddDependency(gdata.Type);
 						break;
 					default:
+						//Console.Error.WriteLine($"Unsupported symbol type {sym.Type}");
 						break;
 				}
 			}

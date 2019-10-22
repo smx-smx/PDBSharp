@@ -22,7 +22,7 @@ namespace Smx.PDBSharp.Leaves
 			TypeDataReader r = CreateReader();
 
 			r.ReadUInt16(); //padding
-			PointerType = r.ReadIndexedTypeLazy();
+			PointerType = r.ReadIndexedType32Lazy();
 		}
 
 		public override void Write() {

@@ -20,11 +20,12 @@ namespace Smx.PDBSharp.Leaves
 
 		private IEnumerable<LeafContainerBase> ReadFields() {
 			TypeDataReader r = CreateReader();
-			while (stream.Position + sizeof(UInt16) < stream.Length) {
-				// We have to read the type directly to increase Stream.Position
+			while (r.Position + sizeof(UInt16) < r.Length) {
+				// we need to read the type Directly since we don't know how long it is
 				LeafContainerBase leaf = r.ReadTypeDirect(hasSize: false);
 				if (leaf == null)
 					yield break;
+				
 				yield return leaf;
 			}
 		}

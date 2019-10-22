@@ -28,7 +28,7 @@ namespace Smx.PDBSharp.Symbols
 			InlinerParentOffset = r.ReadUInt32();
 			Inliner = r.ReadSymbol(Module, InlinerParentOffset);
 			End = r.ReadUInt32();
-			Inlinee = r.ReadIndexedTypeLazy();
+			Inlinee = r.ReadIndexedType32Lazy();
 			BinaryAnnotations = r.ReadRemaining();
 		}
 	}

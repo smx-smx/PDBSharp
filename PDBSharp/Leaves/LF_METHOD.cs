@@ -26,7 +26,7 @@ namespace Smx.PDBSharp.Leaves
 			TypeDataReader r = CreateReader();
 
 			NumberOfOccurrences = r.ReadUInt16();
-			MethodListRecord = r.ReadIndexedTypeLazy();
+			MethodListRecord = r.ReadIndexedType32Lazy();
 			Name = r.ReadCString();
 		}
 

@@ -38,7 +38,7 @@ namespace Smx.PDBSharp.Symbols
 			SectionIndex = r.ReadUInt16();
 			HeapAllocationInstructionSize = r.ReadUInt16();
 
-			FunctionSignature = r.ReadIndexedTypeLazy();
+			FunctionSignature = r.ReadIndexedType32Lazy();
 		}
 
 		public override void Write() {
