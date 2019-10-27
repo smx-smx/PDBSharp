@@ -140,7 +140,7 @@ namespace Smx.PDBSharp.Dumper
 			TPIHashReader tpiHash = sc.GetService<TPIHashReader>();
 			UdtNameTableReader udtNameTable = sc.GetService<UdtNameTableReader>();
 			TypeResolver resolver = sc.GetService<TypeResolver>();
-			if (tpiHash != null && udtNameTable != null) {
+			if (tpiHash != null && tpiHash.NameIndexToTypeIndex != null && udtNameTable != null) {
 				foreach (var pair in tpiHash.NameIndexToTypeIndex) {
 					string name = udtNameTable.GetString(pair.Key);
 					ILeafContainer leaf = resolver.GetTypeByIndex(pair.Value);
