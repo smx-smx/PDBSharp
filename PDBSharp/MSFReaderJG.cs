@@ -53,10 +53,6 @@ namespace Smx.PDBSharp
 				.Select(ReadPage);
 		}
 
-		public override uint ReadPageNumber(BinaryReader rdr) {
-			return rdr.ReadUInt16();
-		}
-
 		public override IEnumerable<byte[]> GetPages_StreamTable() {
 			var numPages = GetNumPages(Header.DirectorySize);
 			

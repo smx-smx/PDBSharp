@@ -44,15 +44,16 @@ namespace Smx.PDBSharp
 		/// </summary>
 		/// <returns></returns>
 		public override IEnumerable<byte[]> GetPages_StreamTable() {
-			byte[] streamTableList = GetPages_StreamTableList()
+			Memory<byte> streamTableList = GetPages_StreamTableList()
 				.SelectMany(x => x)
 				.ToArray();
 
-			var rdr = new BinaryReader(new MemoryStream(streamTableList));
+			SpanStream stream = new SpanStream(streamTableList);
 
 			var numStreamTablePages = GetNumPages(Header.DirectorySize);
+
 			for (int i = 0; i < numStreamTablePages; i++) {
-				uint pageNum = ReadPageNumber(rdr);
+				uint pageNum = stream.ReadUInt32();
 				yield return ReadPage(pageNum);
 			}
 		}
@@ -83,10 +84,6 @@ namespace Smx.PDBSharp
 				.Cast<uint>()
 				.ToArray()
 				.Select(ReadPage);
-		}
-
-		public override uint ReadPageNumber(BinaryReader rdr) {
-			return rdr.ReadUInt32();
 		}
 	}
 }

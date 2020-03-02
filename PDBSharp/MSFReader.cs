@@ -105,7 +105,6 @@ namespace Smx.PDBSharp
 
 		public abstract byte[] ReadPage(uint pageNumber);
 		public abstract IEnumerable<byte[]> GetPages(long offset, uint numPages);
-		public abstract uint ReadPageNumber(BinaryReader rdr);
 
 		public abstract IEnumerable<byte[]> GetPages_StreamTable();
 
