@@ -128,7 +128,7 @@ namespace Smx.PDBSharp
 			dataSize = sizeof(ushort) + length;
 			Position -= sizeof(ushort);
 
-#if !PERF
+#if false //$TODO
 			{
 				var leafDataBuf = ReadBytes((int)length + sizeof(ushort));
 
