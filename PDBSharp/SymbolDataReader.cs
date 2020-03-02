@@ -81,7 +81,7 @@ namespace Smx.PDBSharp
 		}
 
 		public string ReadSymbolString() {
-			if (Header.Type > SymbolType.S_TI16_MAX && Header.Type < SymbolType.S_ST_MAX) {
+			if (Header.Type < SymbolType.S_ST_MAX) {
 				return ReadString();
 			} else {
 				return ReadCString();
