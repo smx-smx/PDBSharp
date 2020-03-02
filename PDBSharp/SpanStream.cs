@@ -62,14 +62,14 @@ namespace Smx.PDBSharp
 			pos += data.Length;
 		}
 
-		public string ReadBSTR16() {
+		public string ReadString16() {
 			int length = ReadByte();
 			string str = Encoding.ASCII.GetString(ReadBytes(length));
 			pos += length + sizeof(byte) + 1;
 			return str;
 		}
 
-		public string ReadBSTR32() {
+		public string ReadString32() {
 			int length = ReadInt32();
 			string str = Encoding.ASCII.GetString(ReadBytes(length));
 			pos += length + sizeof(int) + 1;

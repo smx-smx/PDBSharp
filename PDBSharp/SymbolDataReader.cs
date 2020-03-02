@@ -24,16 +24,16 @@ namespace Smx.PDBSharp
 
 		public new int Remaining => (int)(endOffset - startOffset + Position);
 
-		private delegate string ReadBSTRDelegate();
-		private ReadBSTRDelegate ReadBSTR;
+		private delegate string ReadStringDelegate();
+		private ReadStringDelegate ReadString;
 
 		private void InitVariants() {
 			switch (ctx.GetService<MSFReader>().FileType) {
 				case PDBType.Big:
-					ReadBSTR = ReadBSTR32;
+					ReadString = ReadString32;
 					break;
 				case PDBType.Small:
-					ReadBSTR = ReadBSTR16;
+					ReadString = ReadString16;
 					break;
 			}
 		}
@@ -81,8 +81,8 @@ namespace Smx.PDBSharp
 		}
 
 		public string ReadSymbolString() {
-			if (Header.Type < SymbolType.S_ST_MAX) {
-				return ReadBSTR();
+			if (Header.Type > SymbolType.S_TI16_MAX && Header.Type < SymbolType.S_ST_MAX) {
+				return ReadString();
 			} else {
 				return ReadCString();
 			}
