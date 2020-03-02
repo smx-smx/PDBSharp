@@ -83,6 +83,7 @@ namespace Smx.PDBSharp
 				case SymbolType.S_FRAMEPROC:
 					return new S_FRAMEPROC(ctx, mod, this); 
 				case SymbolType.S_GDATA32:
+				case SymbolType.S_GDATA32_ST:
 					return new S_GDATA32(ctx, mod, this); 
 				case SymbolType.S_INLINESITE:
 					return new S_INLINESITE(ctx, mod, this); 
@@ -90,10 +91,12 @@ namespace Smx.PDBSharp
 				case SymbolType.S_LDATA32_ST:
 					return new S_LDATA32(ctx, mod, this); 
 				case SymbolType.S_LMANDATA:
+				case SymbolType.S_LMANDATA_ST:
 					return new S_LMANDATA(ctx, mod, this); 
 				case SymbolType.S_GMANPROC:
 					return new S_GMANPROC(ctx, mod, this); 
 				case SymbolType.S_LMANPROC:
+				case SymbolType.S_LMANPROC_ST:
 					return new S_LMANPROC(ctx, mod, this); 
 				case SymbolType.S_GPROC32:
 				case SymbolType.S_GPROC32_ST:
@@ -108,12 +111,13 @@ namespace Smx.PDBSharp
 					return new S_LABEL32(ctx, mod, this); 
 				case SymbolType.S_LOCAL:
 					return new S_LOCAL(ctx, mod, this);
-				case SymbolType.S_CONSTANT_ST:
 				case SymbolType.S_CONSTANT:
+				case SymbolType.S_CONSTANT_ST:
 					return new S_CONSTANT(ctx, mod, this); 
 				case SymbolType.S_MANCONSTANT:
 					return new S_MANCONSTANT(ctx, mod, this); 
 				case SymbolType.S_MANSLOT:
+				case SymbolType.S_MANSLOT_ST:
 					return new S_MANSLOT(ctx, mod, this); 
 				case SymbolType.S_OBJNAME:
 				case SymbolType.S_OBJNAME_ST:
