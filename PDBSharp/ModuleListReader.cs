@@ -142,7 +142,7 @@ namespace Smx.PDBSharp
 		public string PDBFileName => (ECInfo != null) ? GetEcString(ECInfo.Value.PdbFileNameIndex) : null;
 
 		private string GetEcString(uint nameIndex) {
-			return this.dbi.EC?.NameTable.GetString(nameIndex) ?? "";
+			return this.dbi.EC?.NameTable.GetString(nameIndex) ?? null;
 		}
 
 		public ModuleInfo(IServiceContainer ctx, SpanStream __stream, int modIndex) : base(__stream) {
