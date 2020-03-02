@@ -16,44 +16,16 @@ using System.Text;
 
 namespace Smx.PDBSharp
 {
-	public unsafe struct DSHeader
+
+	public unsafe abstract class MSFReader : IDisposable
 	{
-		public const int MAGIC_SIZE = 32;
+		public const string SMALL_MAGIC = "Microsoft C/C++ program database 2.00\r\n\x1a" + "JG";
+		public const string BIG_MAGIC = "Microsoft C/C++ MSF 7.00\r\n\x1a" + "DS";
 
-		public fixed byte Magic[MAGIC_SIZE];
-		public UInt32 PageSize;
-		public UInt32 FpmPageNumber;
-		public UInt32 NumPages;
-		public UInt32 DirectorySize;
-		public UInt32 PageMap; //should be 0 in the header
-
-		public string GetMagic() {
-			fixed(byte *ptr = Magic) {
-				if(*(ushort*)&ptr[PDBFile.DS_OFFSET] == 0x5344) { //DS (Little Endian)
-					return Encoding.ASCII.GetString(ptr, PDBFile.BIG_MAGIC.Length);
-				}
-				if(*(ushort*)&ptr[PDBFile.JG_OFFSET] == 0x474A) { //JG (Little Endian)
-					return Encoding.ASCII.GetString(ptr, PDBFile.SMALL_MAGIC.Length);
-				}
-
-				throw new InvalidDataException("Invalid magic");
-			}
-		}
-
-		public void SetMagic(string magic) {
-			byte[] data = Encoding.ASCII.GetBytes(magic);
-			fixed (byte* ptr = Magic) {
-				new Span<byte>((void*)ptr, MAGIC_SIZE).WriteBytes(0, data);
-			}
-		}
-	}
-
-	public unsafe class MSFReader : IDisposable
-	{
-		private byte[] streamTableList;
 		private byte[] streamTable;
 
-        public DSHeader Header { get; }
+        public IHeader Header { get; }
+		public readonly PDBType FileType;
 
         private readonly long Length;
 
@@ -72,25 +44,57 @@ namespace Smx.PDBSharp
 			}
 		}
 
-		private unsafe DSHeader ReadHeader() {
-			int size = sizeof(DSHeader);
-			return Span.Read<DSHeader>(0);
+		public static PDBType DetectPdbType(Span<byte> memory) {
+			int maxSize = Math.Max(SMALL_MAGIC.Length, BIG_MAGIC.Length);
+			
+			byte[] magic = memory.Slice(0, maxSize).ToArray();
+			string msfMagic = Encoding.ASCII.GetString(magic);
+			if (msfMagic.StartsWith(BIG_MAGIC)) {
+				return PDBType.Big;
+			} else if (msfMagic.StartsWith(SMALL_MAGIC)) {
+				return PDBType.Small;
+			} else {
+				throw new InvalidDataException("No valid MSF header found");
+			}
+		}
+
+		private unsafe IHeader ReadHeader() {
+			switch (FileType) {
+				case PDBType.Big:
+					return Span.Read<DSHeader>(0);
+				case PDBType.Small:
+					return Span.Read<JGHeader>(0);
+				default:
+					throw new InvalidDataException("No valid MSF header found");
+			}
 		}
 
 		public MSFReader(Memory<byte> mem) {
 			this.memory = mem;
+			FileType = DetectPdbType(mem.Span);
 			this.Header = ReadHeader();
 		}
 
 		public MSFReader(MemoryMappedFile mfile, long length) {
 			this.mf = new MemoryMappedSpan(mfile, length);
+			FileType = DetectPdbType(mf.GetSpan());
 			this.Header = ReadHeader();
 		}
 
+		/// <summary>
+		/// Computes the byte offset for the specified page
+		/// </summary>
+		/// <param name="pageNumber"></param>
+		/// <returns></returns>
 		public uint GetPageLocation(uint pageNumber) {
 			return Header.PageSize * pageNumber;
 		}
 
+		/// <summary>
+		/// Computes the number of pages needed to represent the specified number of bytes
+		/// </summary>
+		/// <param name="numBytes"></param>
+		/// <returns></returns>
 		public uint GetNumPages(uint numBytes) {
 			return (numBytes + Header.PageSize - 1) / Header.PageSize;
 		}
@@ -99,66 +103,26 @@ namespace Smx.PDBSharp
 			return numPages * Header.PageSize;
 		}
 
-		public IEnumerable<byte[]> GetPages(long offset, uint numPages) {
-			int dataLength = (int)(numPages * sizeof(uint));	
-			uint[] pageNums = Span
-				.Slice((int)offset, dataLength)
-				.Cast<uint>()
-				.ToArray();
+		public abstract byte[] ReadPage(uint pageNumber);
+		public abstract IEnumerable<byte[]> GetPages(long offset, uint numPages);
+		public abstract uint ReadPageNumber(BinaryReader rdr);
 
-			foreach (uint pageNum in pageNums) {
-				yield return ReadPage(pageNum);
-			}		
-		}
+		public abstract IEnumerable<byte[]> GetPages_StreamTable();
 
-		private IEnumerable<byte[]> GetPages_StreamTableList() {
-			// number of pages to represent the list of streams
-			var numStreamTablePages = GetNumPages(Header.DirectorySize);
-			// number of pages to represent the list of pages
-			var numListPages = GetNumPages(numStreamTablePages);
-
-			long offset = Marshal.SizeOf<DSHeader>();
-			return GetPages(offset, numListPages);
-		}
-
-		private IEnumerable<byte[]> GetPages_StreamTable() {
-			var numStreamTablePages = GetNumPages(Header.DirectorySize);
-
-			var rdr = new BinaryReader(new MemoryStream(streamTableList));
-			for (int i = 0; i < numStreamTablePages; i++) {
-				uint pageNum = rdr.ReadUInt32();
-				yield return ReadPage(pageNum);
+		/// <summary>
+		/// Returns the merged stream table data
+		/// </summary>
+		/// <returns></returns>
+		public byte[] StreamTable() {
+			if (streamTable != null) {
+				return streamTable;
 			}
-		}
 
-		private byte[] StreamTableList() {
-			if (streamTableList != null)
-				return streamTableList;
-
-			streamTableList = GetPages_StreamTableList()
+			streamTable = GetPages_StreamTable()
 				.SelectMany(x => x)
 				.ToArray();
 
-			return streamTableList;
-		}
-
-		public byte[] StreamTable() {
-			if (streamTableList == null) {
-				StreamTableList();
-			}
-
-			if (streamTable != null)
-				return streamTable;
-
-			streamTable = GetPages_StreamTable().SelectMany(x => x).ToArray();
 			return streamTable;
-		}
-
-		public byte[] ReadPage(uint pageNumber) {
-			long offset = pageNumber * Header.PageSize;
-
-			byte[] data = Span.Slice((int)offset, (int)Header.PageSize).ToArray();
-			return data;
 		}
 
 		public void Dispose() {

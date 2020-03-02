@@ -52,27 +52,6 @@ namespace Smx.PDBSharp
 			}
 		}
 
-		public readonly PDBType FileType;
-
-		private PDBType DetectPdbType() {
-			int maxSize = Math.Max(SMALL_MAGIC.Length, BIG_MAGIC.Length);
-
-			byte[] magic;
-			using(var span = new MemoryMappedSpan(mf, fs.Length)) {
-				magic = span.GetSpan().Slice(0, maxSize).ToArray();
-			}
-
-			string msfMagic = Encoding.ASCII.GetString(magic);
-			if (msfMagic.StartsWith(BIG_MAGIC)) {
-				return PDBType.Big;
-			} else if (msfMagic.StartsWith(SMALL_MAGIC)) {
-				return PDBType.Small;
-			} else {
-				throw new InvalidDataException("No valid MSF header found");
-			}
-
-		}
-
 		public static PDBFile Open(string pdbFilePath) {
 			FileStream stream = new FileStream(pdbFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
 			return new PDBFile(stream);
@@ -87,16 +66,26 @@ namespace Smx.PDBSharp
 			this.StreamTable = Services.GetService<StreamTableReader>();
 
 			this.mf = MemoryMappedFile.CreateFromFile(stream, null, 0, MemoryMappedFileAccess.Read, HandleInheritability.Inheritable, true);
-			this.FileType = DetectPdbType();
-
+			
 			Services.AddService<PDBFile>(this);
 
-			//$TODO
-			if (this.FileType == PDBType.Small) {
-				throw new NotImplementedException($"Small/Old/JG PDBs not supported/tested yet");
+			PDBType type;
+			using(var mfs = new MemoryMappedSpan(mf, fs.Length)) {
+				type = MSFReader.DetectPdbType(mfs.GetSpan());
 			}
 
-			MSFReader msf = new MSFReader(mf, stream.Length);
+			MSFReader msf;
+			switch (type) {
+				case PDBType.Big:
+					msf = new MSFReaderDS(mf, fs.Length);
+					break;
+				case PDBType.Small:
+					msf = new MSFReaderJG(mf, fs.Length);
+					break;
+				default:
+					throw new InvalidOperationException();					
+			}
+
 			Services.AddService<MSFReader>(msf);
 
 			StreamTableReader streamTable;

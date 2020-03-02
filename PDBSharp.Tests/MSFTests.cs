@@ -55,8 +55,8 @@ namespace Tests
 			wr.PageSize = 4096;
 			wr.Commit();
 
-			MSFReader rdr = new MSFReader(wr.Memory);
-			string magic = rdr.Header.GetMagic();
+			MSFReader rdr = new MSFReaderDS(wr.Memory);
+			string magic = rdr.Header.Magic;
 			Assert.AreEqual(magic, PDBFile.BIG_MAGIC);
 			Assert.AreEqual(rdr.Header.PageSize, 4096);
 		}

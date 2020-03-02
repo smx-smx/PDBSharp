@@ -12,9 +12,9 @@ using System.IO;
 
 namespace Smx.PDBSharp.Thunks
 {
-	public class NOTYPE : SymbolDataReader, IThunk
+	public class NOTYPE : IThunk
 	{
-		public NOTYPE(IServiceContainer pdb, SymbolHeader symHeader, SpanStream stream) : base(pdb, symHeader, stream) {
+		public NOTYPE(IServiceContainer pdb, SymbolHeader symHeader, SpanStream stream) {
 		}
 
 		public void Write(SymbolDataWriter w) {

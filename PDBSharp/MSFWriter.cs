@@ -19,7 +19,7 @@ namespace Smx.PDBSharp
 	{
 		private readonly PDBType type;
 
-		private DSHeader hdr = new DSHeader();
+		private IHeader hdr = new DSHeader();
 
 		private uint currentPage = 0;
 
@@ -35,7 +35,7 @@ namespace Smx.PDBSharp
 		}
 
 		public MSFWriter() {
-			hdr.SetMagic(PDBFile.BIG_MAGIC);
+			hdr.Magic = PDBFile.BIG_MAGIC;
 			StreamTable = new StreamTableWriter(this);
 		}
 
@@ -90,7 +90,7 @@ namespace Smx.PDBSharp
 		}
 
 		private void WriteHeader() {
-			WritePage(AllocPageNumber(), hdr);
+			WritePage(AllocPageNumber(), (DSHeader)hdr);
 		}
 
 		public uint AllocPageNumber() {

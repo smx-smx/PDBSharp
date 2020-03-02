@@ -36,8 +36,12 @@ namespace Smx.PDBSharp
 			this.mod = mod;
 
 			CodeViewSignature signature = ReadEnum<CodeViewSignature>();
-			if (signature != CodeViewSignature.C13) {
-				throw new NotImplementedException($"CodeView {signature} not supported yet");
+			switch (signature) {
+				case CodeViewSignature.C11:
+				case CodeViewSignature.C13:
+					break;
+				default:
+					throw new NotImplementedException($"CodeView {signature} not supported yet");
 			}
 
 			symbols = new CachedEnumerable<Symbol>(ReadSymbols());

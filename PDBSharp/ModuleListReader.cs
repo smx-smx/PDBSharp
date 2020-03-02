@@ -6,26 +6,25 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
+using Smx.PDBSharp.Symbols;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.IO;
+using System.Linq;
 
 namespace Smx.PDBSharp
 {
-	public interface ISectionContrib
-	{
-		int Size { get; }
-	}
+	public interface ISectionContrib { }
 
-	public class SectionContrib : SectionContrib40
+	public class SectionContrib : SectionContrib40, ISectionContrib
 	{
 		public readonly UInt32 DataCrc;
 		public readonly UInt32 RelocCrc;
 
 		public new const int SIZE = SectionContrib40.SIZE + 8;
 
-		public SectionContrib(SpanStream stream) : base(stream) {
+		public SectionContrib(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 			DataCrc = ReadUInt32();
 			RelocCrc = ReadUInt32();
 		}
@@ -37,22 +36,27 @@ namespace Smx.PDBSharp
 
 		public new const int SIZE = SectionContrib.SIZE + 4;
 
-		public SectionContrib2(SpanStream stream) : base(stream) {
+		public SectionContrib2(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 			CoffSectionIndex = ReadUInt32();
 		}
 	}
 
-	public class SectionContrib40 : SpanStream
+	public class SectionContrib40 : SpanStream, IComparable<SectionContrib40>, ISectionContrib
 	{
 		public readonly UInt16 SectionIndex;
 		public readonly UInt32 Offset;
 		public readonly UInt32 Size;
 		public readonly UInt32 Characteristics;
-		public readonly UInt16 ModuleIndex;
+		public readonly Int16 ModuleIndex;
 
 		public const int SIZE = 20;
 
-		public SectionContrib40(SpanStream stream) : base(stream) {
+		//////////////
+
+		private readonly ILazy<IModuleContainer> moduleLazy;
+		public IModuleContainer Module => moduleLazy.Value;
+
+		public SectionContrib40(IServiceContainer ctx, SpanStream stream) : base(stream) {
 			SectionIndex = ReadUInt16();
 			ReadUInt16();
 
@@ -60,8 +64,31 @@ namespace Smx.PDBSharp
 			Size = ReadUInt32();
 			Characteristics = ReadUInt32();
 
-			ModuleIndex = ReadUInt16();
+			ModuleIndex = ReadInt16();
 			ReadUInt16();
+
+			////////
+			DBIReader dbi = ctx.GetService<DBIReader>();
+
+			moduleLazy = LazyFactory.CreateLazy(() => ModuleIndex == -1 ? null : dbi.Modules[this.ModuleIndex]);
+		}
+
+		public int CompareTo(SectionContrib40 other) {
+			if(this.SectionIndex == other.SectionIndex) {
+				// offset >= and within section size
+				if (other.Offset - Offset < Size) {
+					return 0;
+				}
+
+				return this.Offset.CompareTo(other.Offset);
+			}
+
+			return SectionIndex.CompareTo(other.SectionIndex);
+		}
+
+		public bool Contains(int sectionIndex, long offset) {
+			// same section, offset >= and within section size
+			return (this.SectionIndex == sectionIndex && offset - this.Offset < Size);
 		}
 	}
 
@@ -86,7 +113,7 @@ namespace Smx.PDBSharp
 	public class ModuleInfo : SpanStream
 	{
 		public readonly UInt32 OpenModuleHandle;
-		public readonly SectionContrib SectionContribution;
+		public readonly ISectionContrib SectionContribution;
 		public readonly ModuleInfoFlags Flags;
 		public readonly Int16 StreamNumber;
 		public readonly UInt32 SymbolsSize;
@@ -95,33 +122,50 @@ namespace Smx.PDBSharp
 		public readonly UInt16 NumberOfFiles;
 		public readonly UInt32 FileNameOffsets;
 
-		public readonly ECInfo ECInfo;
+		public readonly ECInfo? ECInfo;
 
 		public readonly string ModuleName;
 		public readonly string ObjectFileName;
 
 		//////////////////////////////
 
-		private readonly ECReader EC;
+		public readonly IEnumerable<SectionContrib40> SectionContribs;
 
-		public const int SIZE = 38 + SectionContrib.SIZE;
-		public int Size => SIZE + ModuleName.Length + ObjectFileName.Length;
+		public readonly int ModuleIndex;
+		private readonly DBIReader dbi;
 
-		public string SourceFileName => GetEcString(ECInfo.SrcFileNameIndex);
-		public string PDBFileName => GetEcString(ECInfo.PdbFileNameIndex);
+		public int ExternalModuleIndex => ModuleIndex + 1;
+
+		public readonly long Size;
+
+		public string SourceFileName => (ECInfo != null) ? GetEcString(ECInfo.Value.SrcFileNameIndex) : null;
+		public string PDBFileName => (ECInfo != null) ? GetEcString(ECInfo.Value.PdbFileNameIndex) : null;
 
 		private string GetEcString(uint nameIndex) {
-			return EC.NameTable.GetString(nameIndex);
+			return this.dbi.EC?.NameTable.GetString(nameIndex) ?? "";
 		}
 
-		public ModuleInfo(IServiceContainer ctx, SpanStream __stream) : base(__stream) {
+		public ModuleInfo(IServiceContainer ctx, SpanStream __stream, int modIndex) : base(__stream) {
+			long savedPosition = Position;
+
+			this.ModuleIndex = modIndex;
 			DBIReader dbi = ctx.GetService<DBIReader>();
-			this.EC = dbi.EC;
+			this.dbi = dbi;
+
+			MSFReader msf = ctx.GetService<MSFReader>();
 
 			OpenModuleHandle = ReadUInt32();
-			SectionContribution = new SectionContrib(this);
 
-			Position += SectionContrib.SIZE;
+			switch (msf.FileType) {
+				case PDBType.Big:
+					SectionContribution = new SectionContrib(ctx, this);
+					Position += SectionContrib.SIZE;
+					break;
+				case PDBType.Small:
+					SectionContribution = new SectionContrib40(ctx, this);
+					Position += SectionContrib40.SIZE;
+					break;
+			}
 
 			Flags = new ModuleInfoFlags(ReadUInt16());
 			StreamNumber = ReadInt16();
@@ -135,10 +179,22 @@ namespace Smx.PDBSharp
 
 			FileNameOffsets = ReadUInt32();
 
-			ECInfo = Read<ECInfo>();
+			if (msf.FileType == PDBType.Big) {
+				ECInfo = Read<ECInfo>();
+			} else {
+				ECInfo = null;
+			}
 
 			ModuleName = ReadCString();
 			ObjectFileName = ReadCString();
+
+			Size = Position - savedPosition;
+
+			///////
+
+			SectionContribs = new CachedEnumerable<SectionContrib40>(
+				this.dbi.SectionContribs.GetByModule(this)
+			);
 		}
 	}
 
@@ -165,8 +221,8 @@ namespace Smx.PDBSharp
 
 
 		private IEnumerable<ModuleInfo> ReadModules() {
-			while (Position < listEndOffset) {
-				ModuleInfo mod = new ModuleInfo(ctx, this);
+			for(int modIndex=0; Position < listEndOffset; modIndex++) {
+				ModuleInfo mod = new ModuleInfo(ctx, this, modIndex);
 
 				Position += mod.Size;
 				AlignStream(sizeof(int));

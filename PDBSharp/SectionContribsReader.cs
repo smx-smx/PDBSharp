@@ -10,11 +10,16 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.IO;
+using System.Linq;
 
 namespace Smx.PDBSharp
 {
 	public enum SCVersion : UInt32
 	{
+		/// <summary>
+		/// VC++ 4.0, has no version code so we use this as fallback with an arbitrary free number
+		/// </summary>
+		Old,
 		V60 = 0xeffe0000 + 19970605,
 		New = 0xeffe0000 + 20140516
 	}
@@ -25,53 +30,63 @@ namespace Smx.PDBSharp
 
 		public readonly SCVersion Version;
 
-		private readonly ILazy<IEnumerable<SectionContrib40>> sectionContribsLazy;
-		public IEnumerable<SectionContrib40> SectionContribs => sectionContribsLazy.Value;
+        public IEnumerable<SectionContrib40> SectionContribs { get; }
 
-		private readonly long StreamOffset;
+        private readonly long StreamOffset;
 		private readonly uint SectionContribsSize;
-		private uint ReadBytes = 0;
+		private new uint ReadBytes = 0;
 
-		private IEnumerable<SectionContrib40> ReadSectionContribsOld() {
+		public IEnumerable<SectionContrib40> GetByModule(ModuleInfo modi) {
+			return GetByModule(modi.ModuleIndex);
+		}
+
+		public IEnumerable<SectionContrib40> GetByModule(int modIndex) {
+			return SectionContribs.Where(sc => sc.ModuleIndex == modIndex);
+		}
+
+		private IEnumerable<SectionContrib40> ReadSectionContribsOld(IServiceContainer ctx) {
 			while(ReadBytes < SectionContribsSize) {
-				yield return PerformAt(StreamOffset + ReadBytes, () => new SectionContrib40(this));
+				yield return PerformAt(StreamOffset + ReadBytes, () => new SectionContrib40(ctx, this));
 				ReadBytes += SectionContrib40.SIZE;
 			}
 		}
 
-		private IEnumerable<SectionContrib40> ReadSectionContribsV1() {
+		private IEnumerable<SectionContrib40> ReadSectionContribsV1(IServiceContainer ctx) {
 			while (ReadBytes < SectionContribsSize) {
-				yield return PerformAt(StreamOffset + ReadBytes, () => new SectionContrib(this));
+				yield return PerformAt(StreamOffset + ReadBytes, () => new SectionContrib(ctx, this));
 				ReadBytes += SectionContrib.SIZE;
 			}
 		}
 
-		private IEnumerable<SectionContrib40> ReadSectionContribsV2() {
+		private IEnumerable<SectionContrib40> ReadSectionContribsV2(IServiceContainer ctx) {
 			while(ReadBytes < SectionContribsSize) {
-				yield return PerformAt(StreamOffset + ReadBytes, () => new SectionContrib2(this));
+				yield return PerformAt(StreamOffset + ReadBytes, () => new SectionContrib2(ctx, this));
 				ReadBytes += SectionContrib2.SIZE;
 			}
 		}
 
 
-		public SectionContribsReader(uint sectionContribsSize, SpanStream stream) : base(stream) {
+		public SectionContribsReader(IServiceContainer ctx, uint sectionContribsSize, SpanStream stream) : base(stream) {
 			this.SectionContribsSize = sectionContribsSize;
 
-			Version = ReadEnum<SCVersion>();
-			switch (Version) {
-				case SCVersion.V60:
-					sectionContribsLazy = LazyFactory.CreateLazy(ReadSectionContribsV1);
+			UInt32 version = ReadUInt32();
+			switch (version) {
+				case (uint)SCVersion.V60:
+					Version = SCVersion.V60;
+					SectionContribs = new CachedEnumerable<SectionContrib40>(ReadSectionContribsV1(ctx));
 					break;
-				case SCVersion.New:
-					sectionContribsLazy = LazyFactory.CreateLazy(ReadSectionContribsV2);
+				case (uint)SCVersion.New:
+					Version = SCVersion.New;
+					SectionContribs = new CachedEnumerable<SectionContrib40>(ReadSectionContribsV2(ctx));
 					break;
 				default:
-					sectionContribsLazy = LazyFactory.CreateLazy(ReadSectionContribsOld);
+					Version = SCVersion.Old;
+					SectionContribs = new CachedEnumerable<SectionContrib40>(ReadSectionContribsOld(ctx));
 					break;
 			}
 
-			// after version
-			StreamOffset = Position;
+			// VC++ 4.0 has no version code
+			StreamOffset = (Version == SCVersion.Old) ? 0 : Position;
 		}
 	}
 }

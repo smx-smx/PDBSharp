@@ -98,13 +98,14 @@ namespace Smx.PDBSharp
 		private void ConsumePadding() {
 			long remaining = Length - Position;
 			long savedPos = Position;
-			while (remaining-- > 0) {
+			while (remaining > 0) {
 				byte b = ReadByte();
 				if (b >= (byte)LeafType.LF_PAD0 && b <= (byte)LeafType.LF_PAD15) {
-					continue;
+					remaining--;
+				} else {
+					Position--;
+					break;
 				}
-				Position--;
-				break;
 			}
 		}
 

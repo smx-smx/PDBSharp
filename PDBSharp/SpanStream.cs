@@ -62,7 +62,14 @@ namespace Smx.PDBSharp
 			pos += data.Length;
 		}
 
-		public string ReadString() {
+		public string ReadBSTR16() {
+			int length = ReadByte();
+			string str = Encoding.ASCII.GetString(ReadBytes(length));
+			pos += length + sizeof(byte) + 1;
+			return str;
+		}
+
+		public string ReadBSTR32() {
 			int length = ReadInt32();
 			string str = Encoding.ASCII.GetString(ReadBytes(length));
 			pos += length + sizeof(int) + 1;
@@ -91,7 +98,6 @@ namespace Smx.PDBSharp
 		public SpanStream(SpanStream other) {
 			this.Memory = other.Memory.Slice(other.pos);
 		}
-
 
 		public SpanStream(Memory<byte> data) {
 			this.Memory = data;

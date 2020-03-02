@@ -15,7 +15,7 @@ namespace Smx.PDBSharp
 {
 	public unsafe class MemoryMappedSpan : IDisposable
 	{
-		private readonly long Length;
+		public readonly long Length;
 
 		private readonly MemoryMappedViewAccessor acc;
 		private readonly byte* dptr = null;
@@ -29,6 +29,7 @@ namespace Smx.PDBSharp
 		public Span<byte> GetSpan() {
 			return new Span<byte>((void*)dptr, (int)Length);
 		}
+
 		public void Dispose() {
 			acc.Dispose();
 		}

@@ -27,7 +27,7 @@ namespace Smx.PDBSharp
 	class LazyFactory
 	{
 		public static ILazy<T> CreateLazy<T>(Func<T> valueFactory) where T : class {
-#if PERF
+#if false
 			return new WrappedLazy<T>(valueFactory);
 #else
 			return new DebuggableLazy<T>(valueFactory);

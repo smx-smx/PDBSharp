@@ -42,6 +42,7 @@ namespace Smx.PDBSharp
 				case SymbolType.S_BLOCK32:
 					return new S_BLOCK32(ctx, mod, this); 
 				case SymbolType.S_BPREL32:
+				case SymbolType.S_BPREL32_ST:
 					return new S_BPREL32(ctx, mod, this); 
 				case SymbolType.S_BUILDINFO:
 					return new S_BUILDINFO(ctx, mod, this); 
@@ -86,6 +87,7 @@ namespace Smx.PDBSharp
 				case SymbolType.S_INLINESITE:
 					return new S_INLINESITE(ctx, mod, this); 
 				case SymbolType.S_LDATA32:
+				case SymbolType.S_LDATA32_ST:
 					return new S_LDATA32(ctx, mod, this); 
 				case SymbolType.S_LMANDATA:
 					return new S_LMANDATA(ctx, mod, this); 
@@ -94,15 +96,19 @@ namespace Smx.PDBSharp
 				case SymbolType.S_LMANPROC:
 					return new S_LMANPROC(ctx, mod, this); 
 				case SymbolType.S_GPROC32:
+				case SymbolType.S_GPROC32_ST:
 					return new S_GPROC32(ctx, mod, this); 
 				case SymbolType.S_LPROC32:
+				case SymbolType.S_LPROC32_ST:
 					return new S_LPROC32(ctx, mod, this); 
 				case SymbolType.S_HEAPALLOCSITE:
 					return new S_HEAPALLOCSITE(ctx, mod, this); 
 				case SymbolType.S_LABEL32:
+				case SymbolType.S_LABEL32_ST:
 					return new S_LABEL32(ctx, mod, this); 
 				case SymbolType.S_LOCAL:
-					return new S_LOCAL(ctx, mod, this); 
+					return new S_LOCAL(ctx, mod, this);
+				case SymbolType.S_CONSTANT_ST:
 				case SymbolType.S_CONSTANT:
 					return new S_CONSTANT(ctx, mod, this); 
 				case SymbolType.S_MANCONSTANT:
@@ -110,23 +116,27 @@ namespace Smx.PDBSharp
 				case SymbolType.S_MANSLOT:
 					return new S_MANSLOT(ctx, mod, this); 
 				case SymbolType.S_OBJNAME:
+				case SymbolType.S_OBJNAME_ST:
 					return new S_OBJNAME(ctx, mod, this); 
 				case SymbolType.S_OEM:
 					return new S_OEM(ctx, mod, this); 
 				case SymbolType.S_REGISTER:
+				case SymbolType.S_REGISTER_ST:
 					return new S_REGISTER(ctx, mod, this); 
 				case SymbolType.S_REGREL32:
 					return new S_REGREL32(ctx, mod, this); 
 				case SymbolType.S_SECTION:
 					return new S_SECTION(ctx, mod, this); 
 				case SymbolType.S_SEPCODE:
-					return new S_SEPCODE(ctx, mod, this); 
+					return new S_SEPCODE(ctx, mod, this);
 				case SymbolType.S_THUNK32:
+				case SymbolType.S_THUNK32_ST:
 					return new S_THUNK32(ctx, mod, this); 
 				case SymbolType.S_TRAMPOLINE:
 					return new S_TRAMPOLINE(ctx, mod, this); 
 				case SymbolType.S_COBOLUDT:
-					return new S_COBOLUDT(ctx, mod, this); 
+					return new S_COBOLUDT(ctx, mod, this);
+				case SymbolType.S_UDT_ST:
 				case SymbolType.S_UDT:
 					return new S_UDT(ctx, mod, this); 
 				case SymbolType.S_UNAMESPACE:

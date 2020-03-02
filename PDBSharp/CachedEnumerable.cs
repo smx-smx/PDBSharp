@@ -13,13 +13,38 @@ using System.Text;
 
 namespace Smx.PDBSharp
 {
-	public class CachedEnumerable<T> : IEnumerable<T>, IDisposable
+	public class CachedEnumerable<T> : IReadOnlyList<T>, IEnumerable<T>, IDisposable
 	{
 		private readonly IList<T> cache = new List<T>();
 		private readonly IEnumerator<T> items;
 
 		public CachedEnumerable(IEnumerable<T> items) {
 			this.items = items.GetEnumerator();
+		}
+
+		public T this[int index] {
+			get {
+				// check if the item is already there
+				if(this.cache.Count > index) {
+					return this.cache[index];
+				}
+
+				// read until we find it
+				foreach(var item in this) {
+					if(this.cache.Count > index) {
+						return item;
+					}
+				}
+
+				// we didn't find it
+				throw new IndexOutOfRangeException();
+			}
+		}
+
+		public int Count {
+			get {
+				return this.cache.Count;
+			}
 		}
 
 		public void Dispose() {

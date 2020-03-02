@@ -14,13 +14,16 @@ using System.Linq;
 
 namespace Smx.PDBSharp
 {
-	public class StreamTableReader : SpanStream
+	public class StreamTableReader : PDBSpanStream
 	{
 		public readonly UInt32[] StreamSizes;
 		private readonly MSFReader msf;
 
-		public StreamTableReader(IServiceContainer ctx, byte[] data) : base(data) {
+		private static PDBType GetPDBType(IServiceContainer ctx) {
+			return ctx.GetService<MSFReader>().FileType;
+		}
 
+		public StreamTableReader(IServiceContainer ctx, byte[] data) : base(data, GetPDBType(ctx)) {
 			msf = ctx.GetService<MSFReader>();
 
 			NumStreams = ReadUInt32();
@@ -34,13 +37,37 @@ namespace Smx.PDBSharp
 		private readonly byte[][] streamsData;
 		private readonly long[] offsets;
 
-		private UInt32[] ReadStreamSizes() {
+		private UInt32[] ReadStreamSizesJG() {
 			UInt32[] streamSizes = Enumerable
 				.Range(1, (int)NumStreams)
-				.Select(_ => ReadUInt32())
+				.Select(_ => {
+					uint streamSize = (uint)ReadCB();
+					// skip pageof(Map<SPN, PN>)
+					ReadUInt32();
+					return streamSize;
+				}).ToArray();
+
+			return streamSizes;
+		}
+
+		private UInt32[] ReadStreamSizesDS() {
+			UInt32[] streamSizes = Enumerable
+				.Range(1, (int)NumStreams)
+				.Select(_ => (uint)ReadCB())
 				.ToArray();
 
 			return streamSizes;
+		}
+
+		private UInt32[] ReadStreamSizes() {
+			switch (msf.FileType) {
+				case PDBType.Big:
+					return ReadStreamSizesDS();
+				case PDBType.Small:
+					return ReadStreamSizesJG();
+				default:
+					throw new ArgumentException();
+			}
 		}
 
 		/// <summary>
@@ -53,12 +80,12 @@ namespace Smx.PDBSharp
 
 			long dataOffset = offsets[streamNumber];
 			if(dataOffset < 0) {
-				// skip stream sizes
-				dataOffset = sizeof(UInt32) * (NumStreams + 1);
+				// skip number of streams and stream sizes
+				dataOffset = sizeof(UInt32) + (SI_PERSIST_SIZE * NumStreams);
 
 				// skip the page list for the streams before us
 				for (int i = 0; i < streamNumber; i++) {
-					dataOffset += msf.GetNumPages(StreamSizes[i]) * sizeof(UInt32);
+					dataOffset += msf.GetNumPages(StreamSizes[i]) * PN_SIZE;
 				}
 
 				offsets[streamNumber] = dataOffset;
@@ -70,7 +97,7 @@ namespace Smx.PDBSharp
 			var numStreamPages = msf.GetNumPages(streamSize);
 			UInt32[] pageList = Enumerable
 				.Range(1, (int)numStreamPages)
-				.Select(_ => ReadUInt32())
+				.Select(_ => ReadPN())
 				.ToArray();
 
 			return pageList;
