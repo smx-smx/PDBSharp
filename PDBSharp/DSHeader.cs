@@ -53,10 +53,6 @@ namespace Smx.PDBSharp
 				if(*(ushort*)&ptr[PDBFile.DS_OFFSET] == 0x5344) { //DS (Little Endian)
 					return Encoding.ASCII.GetString(ptr, PDBFile.BIG_MAGIC.Length);
 				}
-				if(*(ushort*)&ptr[PDBFile.JG_OFFSET] == 0x474A) { //JG (Little Endian)
-					return Encoding.ASCII.GetString(ptr, PDBFile.SMALL_MAGIC.Length);
-				}
-
 				throw new InvalidDataException("Invalid magic");
 			}
 		}

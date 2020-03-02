@@ -7,6 +7,8 @@
  */
 #endregion
 using System;
+using System.IO;
+using System.Text;
 
 namespace Smx.PDBSharp
 {
@@ -21,13 +23,34 @@ namespace Smx.PDBSharp
 		public UInt32 DirectorySize;
 		public UInt32 PageMap;
 
-		string IHeader.Magic {
-			get {
-				throw new NotImplementedException();
-			}
 
-			set {
-				throw new NotImplementedException();
+		string IHeader.Magic {
+			get => GetMagic();
+			set => SetMagic(value);
+		}
+
+		/// <summary>
+		/// Returns the current MSF magic as string
+		/// </summary>
+		/// <returns></returns>
+		private string GetMagic() {
+			fixed (byte* ptr = Magic) {
+				if (*(ushort*)&ptr[PDBFile.JG_OFFSET] == 0x474A) { //JG (Little Endian)
+					return Encoding.ASCII.GetString(ptr, PDBFile.SMALL_MAGIC.Length);
+				}
+
+				throw new InvalidDataException("Invalid magic");
+			}
+		}
+
+		/// <summary>
+		/// Sets the current MSF magic
+		/// </summary>
+		/// <param name="magic"></param>
+		private void SetMagic(string magic) {
+			byte[] data = Encoding.ASCII.GetBytes(magic);
+			fixed (byte* ptr = Magic) {
+				new Span<byte>((void*)ptr, MAGIC_SIZE).WriteBytes(0, data);
 			}
 		}
 
