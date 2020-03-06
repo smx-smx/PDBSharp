@@ -18,11 +18,9 @@ namespace Smx.PDBSharp
 {
 	public class MSFReaderDS : MSFReader
 	{
-		public MSFReaderDS(Memory<byte> mem) : base(mem) {
-		}
+		public MSFReaderDS(Memory<byte> mem) : base(mem) { }
 
-		public MSFReaderDS(MemoryMappedFile mfile, long length) : base(mfile, length) {
-		}
+		public MSFReaderDS(MemoryMappedSpan memSpan) : base(memSpan) { }
 
 		/// <summary>
 		/// Reads the page list, which can be split across multiple pages

@@ -21,7 +21,7 @@ namespace Smx.PDBSharp
 		public MSFReaderJG(Memory<byte> mem) : base(mem) {
 		}
 
-		public MSFReaderJG(MemoryMappedFile mfile, long length) : base(mfile, length) {
+		public MSFReaderJG(MemoryMappedSpan memSpan) : base(memSpan) {
 		}
 
 

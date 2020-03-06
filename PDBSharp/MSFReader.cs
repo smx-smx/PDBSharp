@@ -19,15 +19,10 @@ namespace Smx.PDBSharp
 
 	public unsafe abstract class MSFReader : IDisposable
 	{
-		public const string SMALL_MAGIC = "Microsoft C/C++ program database 2.00\r\n\x1a" + "JG";
-		public const string BIG_MAGIC = "Microsoft C/C++ MSF 7.00\r\n\x1a" + "DS";
-
 		private byte[] streamTable;
 
         public IHeader Header { get; }
 		public readonly PDBType FileType;
-
-        private readonly long Length;
 
 		// used for memory based sources
 		private Memory<byte> memory;
@@ -45,13 +40,13 @@ namespace Smx.PDBSharp
 		}
 
 		public static PDBType DetectPdbType(Span<byte> memory) {
-			int maxSize = Math.Max(SMALL_MAGIC.Length, BIG_MAGIC.Length);
+			int maxSize = Math.Max(PDBFile.SMALL_MAGIC.Length, PDBFile.BIG_MAGIC.Length);
 			
 			byte[] magic = memory.Slice(0, maxSize).ToArray();
 			string msfMagic = Encoding.ASCII.GetString(magic);
-			if (msfMagic.StartsWith(BIG_MAGIC)) {
+			if (msfMagic.StartsWith(PDBFile.BIG_MAGIC)) {
 				return PDBType.Big;
-			} else if (msfMagic.StartsWith(SMALL_MAGIC)) {
+			} else if (msfMagic.StartsWith(PDBFile.SMALL_MAGIC)) {
 				return PDBType.Small;
 			} else {
 				throw new InvalidDataException("No valid MSF header found");
@@ -75,8 +70,8 @@ namespace Smx.PDBSharp
 			this.Header = ReadHeader();
 		}
 
-		public MSFReader(MemoryMappedFile mfile, long length) {
-			this.mf = new MemoryMappedSpan(mfile, length);
+		public MSFReader(MemoryMappedSpan mf) {
+			this.mf = mf;
 			FileType = DetectPdbType(mf.GetSpan());
 			this.Header = ReadHeader();
 		}
