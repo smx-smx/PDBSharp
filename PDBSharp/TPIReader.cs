@@ -79,6 +79,9 @@ namespace Smx.PDBSharp
 
 		public IEnumerable<ILeafContainer> Types => lazyLeafContainers.Value;
 
+		private delegate ILeafContainer ReadTypeDelegate(out long dataSize);
+		private readonly ReadTypeDelegate TypeReader;
+
 		public uint GetLeafSize(UInt32 offset) {
 			return PerformAt(Header.HeaderSize + offset, () => {
 				return (uint)ReadUInt16() + sizeof(UInt16);
@@ -93,16 +96,33 @@ namespace Smx.PDBSharp
 			return TypeIndex <= ((uint)SpecialTypeMode.NearPointer128 | 0xFF);
 		}
 
+		private static TPIHeader ImportJGOld(JGHeaderOld oldHeader) {
+			TPIHeader hdr = new TPIHeader() {
+				MinTypeIndex = oldHeader.MinTi,
+				MaxTypeIndex = oldHeader.MaxTi,
+				GpRecSize = oldHeader.GpRecSize
+			};
+			return hdr;
+		}
+
 		public TPIReader(IServiceContainer ctx, SpanStream stream) : base(stream) {
 			this.ctx = ctx;
 
-			Header = Read<TPIHeader>();
-			if (Header.HeaderSize != Marshal.SizeOf<TPIHeader>()) {
-				throw new InvalidDataException();
-			}
+			PDBFile pdb = ctx.GetService<PDBFile>();
+			if(pdb.Type == PDBType.Old) {
+				this.TypeReader = new ReadTypeDelegate(ReadTypeOld);
+				JGHeaderOld oldHdr = ctx.GetService<JGHeaderOld>();
+				Header = ImportJGOld(oldHdr);
+			} else {
+				Header = Read<TPIHeader>();
+				if (Header.HeaderSize != Marshal.SizeOf<TPIHeader>()) {
+					throw new InvalidDataException();
+				}
 
-			if (!Enum.IsDefined(typeof(TPIVersion), Header.Version)) {
-				throw new InvalidDataException();
+				if (!Enum.IsDefined(typeof(TPIVersion), Header.Version)) {
+					throw new InvalidDataException();
+				}
+				this.TypeReader = new ReadTypeDelegate(ReadType);
 			}
 
 
@@ -117,6 +137,23 @@ namespace Smx.PDBSharp
 
 		public ILeafContainer ReadType(uint typeOffset) {
 			return PerformAt(typeOffset, () => ReadType(out long datSize));
+		}
+
+		private ILeafContainer ReadTypeOld(out long dataSize) {
+			uint hash = ReadUInt32();
+
+			// we have no length, so we just pass all memory (after the hash)
+			SpanStream memStream = new SpanStream(Memory.Slice((int)Position));
+			TypeDataReader rdr = new TypeDataReader(ctx, memStream);
+
+			// without a length, and with a small amount of data, we can just read this directly
+			ILeafContainer leaf = rdr.ReadTypeDirect(false);
+
+			// hash + type data
+			dataSize = Position + rdr.Position;
+			
+			Position += rdr.Position;
+			return leaf;
 		}
 
 		private ILeafContainer ReadType(out long dataSize) {
@@ -151,7 +188,7 @@ namespace Smx.PDBSharp
 		private IEnumerable<ILeafContainer> ReadTypes() {
 			long processed = 0;
 			while (processed < Header.GpRecSize) {
-				yield return ReadType(out long dataSize);
+				yield return TypeReader(out long dataSize);
 				processed += dataSize;
 			}
 		}

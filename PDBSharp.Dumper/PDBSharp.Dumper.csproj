@@ -6,6 +6,7 @@
     <TargetFramework>net472</TargetFramework>
     <AssemblyName>Smx.PDBSharp.Dumper</AssemblyName>
     <StartupObject>Smx.PDBSharp.Dumper.Program</StartupObject>
+    <Authors>Stefano Moioli</Authors>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

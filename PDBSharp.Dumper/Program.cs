@@ -151,36 +151,38 @@ namespace Smx.PDBSharp.Dumper
 				}
 			}
 
-			if(dbi.SectionContribs.SectionContribs != null) {
-				foreach (var contrib in dbi.SectionContribs.SectionContribs) {
-					if (OptPrintSc) {
-						ObjectDumper.Dump(contrib);
+			if(dbi != null) {
+				if (dbi.SectionContribs.SectionContribs != null) {
+					foreach (var contrib in dbi.SectionContribs.SectionContribs) {
+						if (OptPrintSc) {
+							ObjectDumper.Dump(contrib);
+						}
 					}
 				}
-			}
 
-			DebugReader debug = dbi.DebugInfo;
-			if(debug != null && OptPrintFpo && debug.FPO != null) {
-				foreach(var frame in debug.FPO.Frames) {
-					ObjectDumper.Dump(frame);
-				}
-			}
-
-			if (dbi.Modules != null) {
-				foreach (var container in dbi.Modules) {
-					Console.WriteLine($"[MODULE => {container.Info.ModuleName}]");
-					Console.WriteLine($"[OBJECT => {container.Info.ObjectFileName}]");
-					Console.WriteLine($"[SRC    => {container.Info.SourceFileName}]");
-					if (container.Module != null) {
-						Console.WriteLine($"[TYPE   => {container.Module.GetType().Name}");
+				DebugReader debug = dbi.DebugInfo;
+				if (debug != null && OptPrintFpo && debug.FPO != null) {
+					foreach (var frame in debug.FPO.Frames) {
+						ObjectDumper.Dump(frame);
 					}
-					Console.WriteLine();
+				}
 
-					IModule mod = container.Module;
-					if (mod != null) {
-						foreach (var sym in mod.Symbols) {
-							if (OptPrintSyms) {
-								Console.WriteLine(sym);
+				if (dbi.Modules != null) {
+					foreach (var container in dbi.Modules) {
+						Console.WriteLine($"[MODULE => {container.Info.ModuleName}]");
+						Console.WriteLine($"[OBJECT => {container.Info.ObjectFileName}]");
+						Console.WriteLine($"[SRC    => {container.Info.SourceFileName}]");
+						if (container.Module != null) {
+							Console.WriteLine($"[TYPE   => {container.Module.GetType().Name}");
+						}
+						Console.WriteLine();
+
+						IModule mod = container.Module;
+						if (mod != null) {
+							foreach (var sym in mod.Symbols) {
+								if (OptPrintSyms) {
+									Console.WriteLine(sym);
+								}
 							}
 						}
 					}
@@ -189,7 +191,7 @@ namespace Smx.PDBSharp.Dumper
 
 			foreach(var type in tpi.Types) {
 				if (OptPrintTypes) {
-					Console.WriteLine(type);
+					Console.WriteLine(type.Type);
 				}
 			}
 

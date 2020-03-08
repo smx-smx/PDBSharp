@@ -16,7 +16,7 @@ namespace Smx.PDBSharp.Leaves
 	{
 		public UInt16 NumberOfElements { get; set; }
 		public TypeProperties FieldProperties { get; set; }
-		public UInt32 FieldIndex { get; set; }
+		public ILeafContainer FieldIndex { get; set; }
 		public ILeafContainer DerivedType { get; set; }
 		public ILeafContainer VShapeTableType { get; set; }
 
@@ -63,7 +63,7 @@ namespace Smx.PDBSharp.Leaves
 
 			NumberOfElements = r.ReadUInt16();
 			FieldProperties = r.ReadFlagsEnum<TypeProperties>();
-			FieldIndex = r.ReadUInt32();
+			FieldIndex = r.ReadIndexedType32Lazy();
 			DerivedType = r.ReadIndexedType32Lazy();
 			VShapeTableType = r.ReadIndexedType32Lazy();
 
@@ -76,7 +76,7 @@ namespace Smx.PDBSharp.Leaves
 			TypeDataWriter w = CreateWriter(LeafType.LF_CLASS);
 			w.WriteUInt16(NumberOfElements);
 			w.Write<TypeProperties>(FieldProperties);
-			w.WriteUInt32(FieldIndex);
+			w.WriteIndexedType(FieldIndex);
 			w.WriteIndexedType(VShapeTableType);
 			w.WriteVaryingType(StructSize);
 			w.WriteCString(Name);

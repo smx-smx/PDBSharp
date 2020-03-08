@@ -11,11 +11,11 @@ using System.IO;
 
 namespace Smx.PDBSharp
 {
-	public enum PDBVersion : UInt32
+	public enum PDBPublicVersion : UInt32
 	{
 		VC2 = 19941610,
 		VC4 = 19950623,
-		VC41 = 19950814,
+		VC41 = 920924,
 		VC50 = 19960307,
 		VC98 = 19970604,
 		VC70 = 20000404,
@@ -33,7 +33,7 @@ namespace Smx.PDBSharp
 
 	public class PdbStreamReader : SpanStream
 	{
-		public readonly PDBVersion Version;
+		public readonly PDBPublicVersion Version;
 		public readonly UInt32 Signature;
 		public readonly UInt32 NumberOfUpdates; //AGE
 
@@ -44,15 +44,15 @@ namespace Smx.PDBSharp
 		private readonly bool ContainsIdStream;
 
 		public PdbStreamReader(byte[] nameMapData) : base(nameMapData) {
-			Version = ReadEnum<PDBVersion>();
+			Version = ReadEnum<PDBPublicVersion>();
 			Signature = ReadUInt32();
 			NumberOfUpdates = ReadUInt32();
 
-			if (Version < PDBVersion.VC4 || Version > PDBVersion.VC140) {
+			if (Version < PDBPublicVersion.VC4 || Version > PDBPublicVersion.VC140) {
 				return;
 			}
 
-			if (Version > PDBVersion.VC70Dep) {
+			if (Version > PDBPublicVersion.VC70Dep) {
 				NewSignature = Read<Guid>();
 			}
 
@@ -61,11 +61,11 @@ namespace Smx.PDBSharp
 			bool flagContinue = true;
 			while (flagContinue && Position + sizeof(uint) < Length) {
 				UInt32 signature = ReadUInt32();
-				if (Enum.IsDefined(typeof(PDBVersion), signature)) {
-					PDBVersion version = (PDBVersion)signature;
+				if (Enum.IsDefined(typeof(PDBPublicVersion), signature)) {
+					PDBPublicVersion version = (PDBPublicVersion)signature;
 					switch (version) {
-						case PDBVersion.VC110:
-						case PDBVersion.VC140:
+						case PDBPublicVersion.VC110:
+						case PDBPublicVersion.VC140:
 							flagContinue = false;
 							break;
 					}

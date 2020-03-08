@@ -11,10 +11,25 @@ using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.IO;
 using System.IO.MemoryMappedFiles;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Smx.PDBSharp
 {
+	public enum PDBInternalVersion : UInt32
+	{
+		V41 = 920924,
+		V50 = 19960502,
+		V60 = V50,
+		V50A = 19970116,
+		V61 = 19980914,
+		V69 = 19990511,
+		V70Deprecated = 20000406,
+		V70 = 20001102,
+		V80 = 20030901,
+		V110 = 20091201
+	}
+
 	public enum DefaultStreams : Int16
 	{
 		PDB = 1,
@@ -34,6 +49,7 @@ namespace Smx.PDBSharp
 		public const int JG_OFFSET = 0x28;
 		public const int DS_OFFSET = 0x1B;
 
+		public const string OLD_MAGIC = "Microsoft C/C++ program database 1.00\r\n\x1a" + "JG";
 		public const string SMALL_MAGIC = "Microsoft C/C++ program database 2.00\r\n\x1a" + "JG";
 		public const string BIG_MAGIC   = "Microsoft C/C++ MSF 7.00\r\n\x1a" + "DS";
 
@@ -42,6 +58,8 @@ namespace Smx.PDBSharp
 		private readonly FileStream fs;
 
 		private readonly StreamTableReader StreamTable;
+
+		public readonly PDBType Type;
 
 		public IServiceContainer Services { get; } = new ServiceContainer();
 
@@ -72,51 +90,65 @@ namespace Smx.PDBSharp
 			this.StreamTable = Services.GetService<StreamTableReader>();
 			Services.AddService<PDBFile>(this);
 
-			PDBType type = MSFReader.DetectPdbType(memSpan.GetSpan());
+			this.Type = MSFReader.DetectPdbType(memSpan.GetSpan());
 
-			MSFReader msf;
-			switch (type) {
-				case PDBType.Big:
-					msf = new MSFReaderDS(this.memSpan);
-					break;
-				case PDBType.Small:
-					msf = new MSFReaderJG(this.memSpan);
-					break;
-				default:
-					throw new InvalidOperationException();					
+			MSFReader msf = null;
+			StreamTableReader streamTable = null;
+
+			if(Type != PDBType.Old) {
+				switch (Type) {
+					case PDBType.Big:
+						msf = new MSFReaderDS(this.memSpan);
+						break;
+					case PDBType.Small:
+						msf = new MSFReaderJG(this.memSpan);
+						break;
+					default:
+						throw new InvalidOperationException();
+				}
+				Services.AddService<MSFReader>(msf);
+
+				// init stream table
+				{
+					byte[] streamTableData = msf.StreamTable();
+					streamTable = new StreamTableReader(Services, streamTableData);
+				}
+				Services.AddService<StreamTableReader>(streamTable);
+
+				DBIReader dbi;
+				// init DBI
+				{
+					byte[] dbiData = streamTable.GetStream(DefaultStreams.DBI);
+					dbi = new DBIReader(Services, dbiData);
+					OnDbiInit?.Invoke(dbi);
+				}
+				Services.AddService<DBIReader>(dbi);
 			}
-
-			Services.AddService<MSFReader>(msf);
-
-			StreamTableReader streamTable;
-			// init stream table
-			{
-				byte[] streamTableData = msf.StreamTable();
-				streamTable = new StreamTableReader(Services, streamTableData);
-			}
-			Services.AddService<StreamTableReader>(streamTable);
-
-			DBIReader dbi;
-			// init DBI
-			{
-				byte[] dbiData = streamTable.GetStream(DefaultStreams.DBI);
-				dbi = new DBIReader(Services, dbiData);
-				OnDbiInit?.Invoke(dbi);
-			}
-			Services.AddService<DBIReader>(dbi);
 
 			TPIReader tpi;
+
 			// init TPI
 			{
-				byte[] tpiData = streamTable.GetStream(DefaultStreams.TPI);
-				tpi = new TPIReader(Services, new SpanStream(tpiData));
+				SpanStream tpiStream;
+				if(Type != PDBType.Old) {
+					byte[] tpiData  = streamTable.GetStream(DefaultStreams.TPI);
+					tpiStream = new SpanStream(tpiData);
+				} else {
+					Span<byte> span = memSpan.GetSpan();
+					JGHeaderOld header = span.Read<JGHeaderOld>(0);
+					// $TODO: the MSFReader interface should be abstracted into a more generic PDBHeader
+					Services.AddService<JGHeaderOld>(header);
+
+					tpiStream = new SpanStream(span.Slice(header.SIZE).ToArray());					
+				}
+				tpi = new TPIReader(Services, tpiStream);
 				OnTpiInit?.Invoke(tpi);
 			}
 			Services.AddService<TPIReader>(tpi);
 
 			TPIHashReader tpiHash = null;
 			// init TPIHash
-			if (tpi.Header.Hash.StreamNumber != -1) {
+			if (Type != PDBType.Old && tpi.Header.Hash.StreamNumber != -1) {
 				byte[] tpiHashData = streamTable.GetStream(tpi.Header.Hash.StreamNumber);
 				tpiHash = new TPIHashReader(Services, tpiHashData);
 				Services.AddService<TPIHashReader>(tpiHash);
@@ -131,26 +163,25 @@ namespace Smx.PDBSharp
 			HasherV2 hasher = new HasherV2(Services);
 			Services.AddService<HasherV2>(hasher);
 
-			PdbStreamReader nameMap;
-			// init NameMap
-			{
-				byte[] nameMapData = streamTable.GetStream(DefaultStreams.PDB);
-				nameMap = new PdbStreamReader(nameMapData);
-			}
-			Services.AddService<PdbStreamReader>(nameMap);
+			if(Type != PDBType.Old){
+				{ // init NameMap
+					byte[] nameMapData = streamTable.GetStream(DefaultStreams.PDB);
 
-			NamedStreamTableReader namedStreamTable = new NamedStreamTableReader(Services);
-			Services.AddService<NamedStreamTableReader>(namedStreamTable);
-
-			UdtNameTableReader udtNameTable = null;
-			// init UdtNameMap
-			{
-				byte[] namesData = namedStreamTable.GetStreamByName("/names");
-				if (namesData != null) {
-					udtNameTable = new UdtNameTableReader(Services, namesData);
-					Services.AddService<UdtNameTableReader>(udtNameTable);
+					PdbStreamReader nameMap = new PdbStreamReader(nameMapData);
+					Services.AddService<PdbStreamReader>(nameMap);
 				}
-			}
+
+				NamedStreamTableReader namedStreamTable = new NamedStreamTableReader(Services);
+				Services.AddService<NamedStreamTableReader>(namedStreamTable);
+
+				{ // init UdtNameMap
+					byte[] namesData = namedStreamTable.GetStreamByName("/names");
+					if (namesData != null) {
+						UdtNameTableReader udtNameTable = new UdtNameTableReader(Services, namesData);
+						Services.AddService<UdtNameTableReader>(udtNameTable);
+					}
+				}
+			}			
 		}
 	}
 }

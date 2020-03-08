@@ -10,7 +10,8 @@ namespace Smx.PDBSharp
 {
 	public enum PDBType
 	{
+		Old,
+		Small,
 		Big,
-		Small
 	}
 }

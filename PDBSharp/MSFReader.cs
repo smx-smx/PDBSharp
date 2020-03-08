@@ -17,6 +17,9 @@ using System.Text;
 namespace Smx.PDBSharp
 {
 
+	/// <summary>
+	/// MultiStreamFile implementation
+	/// </summary>
 	public unsafe abstract class MSFReader : IDisposable
 	{
 		private byte[] streamTable;
@@ -48,32 +51,37 @@ namespace Smx.PDBSharp
 				return PDBType.Big;
 			} else if (msfMagic.StartsWith(PDBFile.SMALL_MAGIC)) {
 				return PDBType.Small;
+			} else if (msfMagic.StartsWith(PDBFile.OLD_MAGIC)) {
+				return PDBType.Old;
 			} else {
 				throw new InvalidDataException("No valid MSF header found");
 			}
 		}
 
-		private unsafe IHeader ReadHeader() {
+		private unsafe IHeader ReadHeader(Span<byte> span) {
 			switch (FileType) {
 				case PDBType.Big:
-					return Span.Read<DSHeader>(0);
+					return span.Read<DSHeader>(0);
 				case PDBType.Small:
-					return Span.Read<JGHeader>(0);
+					return span.Read<JGHeader>(0);
+				case PDBType.Old:
+					throw new NotSupportedException("PDB 1.0 is not a MSF");
 				default:
 					throw new InvalidDataException("No valid MSF header found");
 			}
 		}
 
-		public MSFReader(Memory<byte> mem) {
-			this.memory = mem;
-			FileType = DetectPdbType(mem.Span);
-			this.Header = ReadHeader();
+		private MSFReader(Span<byte> span, PDBType type) {
+			this.FileType = type;
+			this.Header = ReadHeader(span);
 		}
 
-		public MSFReader(MemoryMappedSpan mf) {
+		public MSFReader(Memory<byte> mem, PDBType type) : this(mem.Span, type){
+			this.memory = mem;
+		}
+
+		public MSFReader(MemoryMappedSpan mf, PDBType type) : this(mf.GetSpan(), type) {
 			this.mf = mf;
-			FileType = DetectPdbType(mf.GetSpan());
-			this.Header = ReadHeader();
 		}
 
 		/// <summary>
@@ -98,7 +106,18 @@ namespace Smx.PDBSharp
 			return numPages * Header.PageSize;
 		}
 
-		public abstract byte[] ReadPage(uint pageNumber);
+		/// <summary>
+		/// Reads a given page
+		/// </summary>
+		/// <param name="pageNumber">page number to read</param>
+		/// <returns></returns>
+		public virtual byte[] ReadPage(uint pageNumber) {
+			long offset = pageNumber * Header.PageSize;
+
+			byte[] data = Span.Slice((int)offset, (int)Header.PageSize).ToArray();
+			return data;
+		}
+
 		public abstract IEnumerable<byte[]> GetPages(long offset, uint numPages);
 
 		public abstract IEnumerable<byte[]> GetPages_StreamTable();

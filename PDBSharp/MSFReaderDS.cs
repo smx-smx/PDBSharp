@@ -18,9 +18,9 @@ namespace Smx.PDBSharp
 {
 	public class MSFReaderDS : MSFReader
 	{
-		public MSFReaderDS(Memory<byte> mem) : base(mem) { }
+		public MSFReaderDS(Memory<byte> mem) : base(mem, PDBType.Big) { }
 
-		public MSFReaderDS(MemoryMappedSpan memSpan) : base(memSpan) { }
+		public MSFReaderDS(MemoryMappedSpan memSpan) : base(memSpan, PDBType.Big) { }
 
 		/// <summary>
 		/// Reads the page list, which can be split across multiple pages
@@ -56,18 +56,6 @@ namespace Smx.PDBSharp
 			}
 		}
 
-
-		/// <summary>
-		/// Reads a given page
-		/// </summary>
-		/// <param name="pageNumber">page number to read</param>
-		/// <returns></returns>
-		public override byte[] ReadPage(uint pageNumber) {
-			long offset = pageNumber * Header.PageSize;
-
-			byte[] data = Span.Slice((int)offset, (int)Header.PageSize).ToArray();
-			return data;
-		}
 
 		/// <summary>
 		/// Reads a series of pages

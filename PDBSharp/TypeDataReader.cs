@@ -18,6 +18,9 @@ namespace Smx.PDBSharp
 	public class TypeDataReader : SpanStream
 	{
 
+		public delegate string ReadStringDelegate();
+		public new ReadStringDelegate ReadString16;
+
 		public static readonly ReadOnlyDictionary<LeafType, uint> PrimitiveDataSizes = new ReadOnlyDictionary<LeafType, uint>(new Dictionary<LeafType, uint>() {
 			{ LeafType.LF_CHAR, 1 },
 			{ LeafType.LF_SHORT, 2 },
@@ -32,12 +35,28 @@ namespace Smx.PDBSharp
 		});
 
 		protected readonly IServiceContainer ctx;
+		private int maxAlignment = 16; //LF_PAD0 .. LF_PAD15
+
+		private void InitVariants() {
+			switch (ctx.GetService<PDBFile>().Type) {
+				case PDBType.Small:
+					ReadString16 = base.ReadString16;
+					break;
+				case PDBType.Old:
+					ReadString16 = base.ReadString16NoTerm;
+					maxAlignment = 4;
+					break;
+			}
+		}
+
 		public TypeDataReader(IServiceContainer ctx, SpanStream data) : base(data) {
 			this.ctx = ctx;
+			InitVariants();
 		}
 
 		public TypeDataReader(IServiceContainer ctx, Memory<byte> data) : base(data) {
 			this.ctx = ctx;
+			InitVariants();
 		}
 
 		public ILeafContainer ReadIndexedType32Lazy() {
@@ -97,16 +116,36 @@ namespace Smx.PDBSharp
 
 		private void ConsumePadding() {
 			long remaining = Length - Position;
-			long savedPos = Position;
-			while (remaining > 0) {
-				byte b = ReadByte();
-				if (b >= (byte)LeafType.LF_PAD0 && b <= (byte)LeafType.LF_PAD15) {
-					remaining--;
-				} else {
-					Position--;
-					break;
+			if(remaining < 1) {
+				return;
+			}
+
+			long savedPosition = Position;
+
+			// example: LF_PAD3
+			byte b = ReadByte();
+			if(b < (byte)LeafType.LF_PAD0) {
+				goto rollback;
+			}
+			if(--remaining < 1) {
+				return;
+			}
+
+			// example: 3
+			int alignment = b & 0x0F;
+
+			for(int i=1; remaining > 0 && i<alignment; i++, remaining--) {
+				// we now expect 2..1..
+				b = ReadByte();
+				if((b & 0x0F) != (alignment - i)) {
+					goto rollback;
 				}
 			}
+			return;
+
+			rollback:
+			Position = savedPosition;
+			return;
 		}
 
 		private ILeaf CreateLeafStream(LeafType leafType) {
@@ -129,6 +168,9 @@ namespace Smx.PDBSharp
 				case LeafType.LF_STRUCTURE:
 				case LeafType.LF_INTERFACE:
 					return new LF_CLASS_STRUCTURE_INTERFACE(ctx, this);
+				case LeafType.LF_CLASS_16t:
+				case LeafType.LF_STRUCTURE_16t:
+					return new LF_CLASS_STRUCTURE_INTERFACE16(ctx, this);
 				case LeafType.LF_ENUM:
 					return new LF_ENUM(ctx, this);
 				case LeafType.LF_ENUMERATE:
@@ -156,6 +198,8 @@ namespace Smx.PDBSharp
 					return new LF_ONEMETHOD(ctx, this);
 				case LeafType.LF_POINTER:
 					return new LF_POINTER(ctx, this);
+				case LeafType.LF_POINTER_16t:
+					return new LF_POINTER16t(ctx, this);
 				case LeafType.LF_PROCEDURE:
 					return new LF_PROCEDURE(ctx, this);
 				case LeafType.LF_QUADWORD:
@@ -223,6 +267,9 @@ namespace Smx.PDBSharp
 
 			Position += (typeSym as LeafBase).Length;
 			ConsumePadding();
+			
+			// for PDB 1.0: hash collides with padding, and is not properly encoded sometimes
+			AlignStream(2);
 
 #if !PEFF
 			long typeDataSize = size + sizeof(UInt16);

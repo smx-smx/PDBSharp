@@ -18,25 +18,11 @@ namespace Smx.PDBSharp
 {
 	class MSFReaderJG : MSFReader
 	{
-		public MSFReaderJG(Memory<byte> mem) : base(mem) {
+		public MSFReaderJG(Memory<byte> mem) : base(mem, PDBType.Small) {
 		}
 
-		public MSFReaderJG(MemoryMappedSpan memSpan) : base(memSpan) {
+		public MSFReaderJG(MemoryMappedSpan memSpan) : base(memSpan, PDBType.Small) {
 		}
-
-
-		/// <summary>
-		/// Reads a given page
-		/// </summary>
-		/// <param name="pageNumber">page number to read</param>
-		/// <returns></returns>
-		public byte[] ReadPage(ushort pageNumber) {
-			long offset = pageNumber * Header.PageSize;
-
-			byte[] data = Span.Slice((int)offset, (int)Header.PageSize).ToArray();
-			return data;
-		}
-		public override byte[] ReadPage(uint pageNumber) => ReadPage((ushort)pageNumber);
 
 		/// <summary>
 		/// Reads a series of pages
@@ -50,7 +36,7 @@ namespace Smx.PDBSharp
 				.Slice((int)offset, dataLength)
 				.Cast<ushort>()
 				.ToArray()
-				.Select(ReadPage);
+				.Select(pageNum => ReadPage((uint)pageNum));
 		}
 
 		public override IEnumerable<byte[]> GetPages_StreamTable() {

@@ -24,7 +24,6 @@ namespace Smx.PDBSharp
 
 		public new int Remaining => (int)(endOffset - startOffset + Position);
 
-		private delegate string ReadStringDelegate();
 		private ReadStringDelegate ReadString;
 
 		private void InitVariants() {

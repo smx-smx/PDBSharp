@@ -6,6 +6,14 @@
     <StartupObject />
     <AssemblyName>Smx.PDBSharp</AssemblyName>
     <RootNamespace>Smx.PDBSharp</RootNamespace>
+    <Authors>Stefano Moioli</Authors>
+    <Copyright>Stefano Moioli</Copyright>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageProjectUrl></PackageProjectUrl>
+    <RepositoryUrl>https://github.com/smx-smx/PDBSharp</RepositoryUrl>
+    <RepositoryType />
+    <PackageTags>Microsoft PDB Debug Parser</PackageTags>
+    <Version>1.0.0-alpha</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -27,5 +35,11 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Leaves\Structures\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 </Project>
