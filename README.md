@@ -1,7 +1,10 @@
 # PDBSharp
 C# Library and Tools to read Program DataBase (PDB) files created by MSVC
 
-The library supports reading 32 bit PDB files (also called "DS") as well as 16 bit PDB files (also called "JG").
+The library supports reading:
+- PDB 7.0 files, also called "DS"
+- PDB 2.0 files, also called "JG"
+- PDB 1.0 files, also called "JG". They contain types information (TPI) only.
 
 Writing PDB files is not implemented yet. You will find some code around the repository, but it's not usable yet at this stage.
 
