@@ -20,8 +20,6 @@ namespace Smx.PDBSharp
 	{
 		public MSFReaderDS(Memory<byte> mem) : base(mem, PDBType.Big) { }
 
-		public MSFReaderDS(MemoryMappedSpan memSpan) : base(memSpan, PDBType.Big) { }
-
 		/// <summary>
 		/// Reads the page list, which can be split across multiple pages
 		/// </summary>
@@ -65,7 +63,7 @@ namespace Smx.PDBSharp
 		/// <returns></returns>
 		public override IEnumerable<byte[]> GetPages(long offset, uint numPages) {
 			int dataLength = (int)(numPages * sizeof(uint));
-			return Span
+			return Memory.Span
 				.Slice((int)offset, dataLength)
 				.Cast<uint>()
 				.ToArray()

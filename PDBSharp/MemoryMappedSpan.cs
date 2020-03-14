@@ -7,30 +7,45 @@
  */
 #endregion
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO.MemoryMappedFiles;
 using System.Text;
 
 namespace Smx.PDBSharp
 {
-	public unsafe class MemoryMappedSpan : IDisposable
+	public unsafe class MemoryMappedSpan<T> : MemoryManager<T>, IDisposable where T : unmanaged
 	{
-		public readonly long Length;
+		public readonly int Length;
 
 		private readonly MemoryMappedViewAccessor acc;
 		private readonly byte* dptr = null;
 
-		public MemoryMappedSpan(MemoryMappedFile mf, long length) {
+		public MemoryMappedSpan(MemoryMappedFile mf, int length) {
 			this.Length = length;
 			this.acc = mf.CreateViewAccessor(0, length, MemoryMappedFileAccess.Read);
 			this.acc.SafeMemoryMappedViewHandle.AcquirePointer(ref dptr);
 		}
 
-		public Span<byte> GetSpan() {
-			return new Span<byte>((void*)dptr, (int)Length);
+		public override Span<T> GetSpan() {
+			return new Span<T>((void*)dptr, Length);
 		}
 
+		public override MemoryHandle Pin(int elementIndex = 0) {
+			if (elementIndex < 0 || elementIndex >= Length) {
+				throw new ArgumentOutOfRangeException(nameof(elementIndex));
+			}
+
+			return new MemoryHandle(dptr + elementIndex);
+		}
+
+		public override void Unpin() { }
+
 		public void Dispose() {
+			Dispose(true);
+		}
+
+		protected override void Dispose(bool disposing) {
 			acc.Dispose();
 		}
 	}

@@ -20,27 +20,14 @@ namespace Smx.PDBSharp
 	/// <summary>
 	/// MultiStreamFile implementation
 	/// </summary>
-	public unsafe abstract class MSFReader : IDisposable
+	public unsafe abstract class MSFReader
 	{
 		private byte[] streamTable;
 
         public IHeader Header { get; }
 		public readonly PDBType FileType;
 
-		// used for memory based sources
-		private Memory<byte> memory;
-		
-		// used for file based sources
-		private readonly MemoryMappedSpan mf;
-
-		public Span<byte> Span {
-			get {
-				if (mf != null) {
-					return mf.GetSpan();
-				}
-				return memory.Span;
-			}
-		}
+		public Memory<byte> Memory;
 
 		public static PDBType DetectPdbType(Span<byte> memory) {
 			int maxSize = Math.Max(PDBFile.SMALL_MAGIC.Length, PDBFile.BIG_MAGIC.Length);
@@ -77,11 +64,7 @@ namespace Smx.PDBSharp
 		}
 
 		public MSFReader(Memory<byte> mem, PDBType type) : this(mem.Span, type){
-			this.memory = mem;
-		}
-
-		public MSFReader(MemoryMappedSpan mf, PDBType type) : this(mf.GetSpan(), type) {
-			this.mf = mf;
+			this.Memory = mem;
 		}
 
 		/// <summary>
@@ -114,7 +97,7 @@ namespace Smx.PDBSharp
 		public virtual byte[] ReadPage(uint pageNumber) {
 			long offset = pageNumber * Header.PageSize;
 
-			byte[] data = Span.Slice((int)offset, (int)Header.PageSize).ToArray();
+			byte[] data = Memory.Slice((int)offset, (int)Header.PageSize).ToArray();
 			return data;
 		}
 
@@ -136,10 +119,6 @@ namespace Smx.PDBSharp
 				.ToArray();
 
 			return streamTable;
-		}
-
-		public void Dispose() {
-			mf?.Dispose();
 		}
 	}
 }

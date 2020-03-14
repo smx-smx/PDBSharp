@@ -21,9 +21,6 @@ namespace Smx.PDBSharp
 		public MSFReaderJG(Memory<byte> mem) : base(mem, PDBType.Small) {
 		}
 
-		public MSFReaderJG(MemoryMappedSpan memSpan) : base(memSpan, PDBType.Small) {
-		}
-
 		/// <summary>
 		/// Reads a series of pages
 		/// </summary>
@@ -32,7 +29,7 @@ namespace Smx.PDBSharp
 		/// <returns></returns>
 		public override IEnumerable<byte[]> GetPages(long offset, uint numPages) {
 			int dataLength = (int)(numPages * sizeof(ushort));
-			return Span
+			return Memory.Span
 				.Slice((int)offset, dataLength)
 				.Cast<ushort>()
 				.ToArray()

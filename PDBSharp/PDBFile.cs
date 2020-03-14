@@ -53,7 +53,7 @@ namespace Smx.PDBSharp
 		public const string SMALL_MAGIC = "Microsoft C/C++ program database 2.00\r\n\x1a" + "JG";
 		public const string BIG_MAGIC   = "Microsoft C/C++ MSF 7.00\r\n\x1a" + "DS";
 
-		private readonly MemoryMappedSpan memSpan;
+		private readonly MemoryMappedSpan<byte> memSpan;
 		private readonly MemoryMappedFile mf;
 		private readonly FileStream fs;
 
@@ -85,7 +85,7 @@ namespace Smx.PDBSharp
 		public PDBFile(FileStream stream) {
 			this.fs = stream;
 			this.mf = MemoryMappedFile.CreateFromFile(stream, null, 0, MemoryMappedFileAccess.Read, HandleInheritability.Inheritable, true);
-			this.memSpan = new MemoryMappedSpan(mf, fs.Length);
+			this.memSpan = new MemoryMappedSpan<byte>(mf, (int)fs.Length);
 
 			this.StreamTable = Services.GetService<StreamTableReader>();
 			Services.AddService<PDBFile>(this);
@@ -98,10 +98,10 @@ namespace Smx.PDBSharp
 			if(Type != PDBType.Old) {
 				switch (Type) {
 					case PDBType.Big:
-						msf = new MSFReaderDS(this.memSpan);
+						msf = new MSFReaderDS(memSpan.Memory);
 						break;
 					case PDBType.Small:
-						msf = new MSFReaderJG(this.memSpan);
+						msf = new MSFReaderJG(memSpan.Memory);
 						break;
 					default:
 						throw new InvalidOperationException();
