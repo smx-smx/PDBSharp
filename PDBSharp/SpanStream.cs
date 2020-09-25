@@ -17,6 +17,18 @@ namespace Smx.PDBSharp
 {
 	public class SpanStream
 	{
+
+		delegate T ReaderDelegate<T>() where T : unmanaged;
+		delegate void WriterDelegate<T>(T value) where T : unmanaged;
+
+		private ReaderDelegate<ushort> u16Reader;
+		private ReaderDelegate<uint> u32Reader;
+		private ReaderDelegate<ulong> u64Reader;
+
+		private WriterDelegate<ushort> u16Writer;
+		private WriterDelegate<uint> u32Writer;
+		private WriterDelegate<ulong> u64Writer;
+
 		private int pos;
 
         public long Position {
@@ -29,10 +41,122 @@ namespace Smx.PDBSharp
 		public Memory<byte> Memory { get; private set; }
 		public Span<byte> Span => Memory.Span;
 
+		private Endianness endianness = Endianness.LittleEndian;
+		public Endianness Endianness {
+			get => endianness;
+			set {
+				endianness = value;
+				SetDelegates();
+			}
+		}
+
+		private void SetDelegates() {
+			if (
+				BitConverter.IsLittleEndian && Endianness == Endianness.LittleEndian ||
+				!BitConverter.IsLittleEndian && Endianness == Endianness.BigEndian
+			) {
+				u16Reader = new ReaderDelegate<ushort>(Read<ushort>);
+				u16Writer = new WriterDelegate<ushort>(Write<ushort>);
+				u32Reader = new ReaderDelegate<uint>(Read<uint>);
+				u32Writer = new WriterDelegate<uint>(Write<uint>);
+				u64Reader = new ReaderDelegate<ulong>(Read<ulong>);
+				u64Writer = new WriterDelegate<ulong>(Write<ulong>);
+			} else {
+				u16Reader = new ReaderDelegate<ushort>(ReadUInt16Swapped);
+				u16Writer = new WriterDelegate<ushort>(WriteUInt16Swapped);
+				u32Reader = new ReaderDelegate<uint>(ReadUInt32Swapped);
+				u32Writer = new WriterDelegate<uint>(WriteUInt32Swapped);
+				u64Reader = new ReaderDelegate<ulong>(ReadUInt64Swapped);
+				u64Writer = new WriterDelegate<ulong>(WriteUInt64Swapped);
+			}
+		}
+
 		public byte[] ReadBytes(int count) {
 			byte[] ret = Memory.Slice(pos, count).ToArray();
 			pos += count;
 			return ret;
+		}
+
+		private ushort ReadUInt16Swapped() {
+			return ByteSwap16(Read<ushort>());
+		}
+
+		private void WriteUInt16Swapped(ushort value) {
+			Write<ushort>(ByteSwap16(value));
+		}
+
+		private void WriteUInt32Swapped(uint value) {
+			Write<uint>(ByteSwap32(value));
+		}
+
+		private void WriteUInt64Swapped(ulong value) {
+			Write<ulong>(ByteSwap64(value));
+		}
+
+		private uint ReadUInt32Swapped() {
+			return ByteSwap32(Read<uint>());
+		}
+
+		private ulong ReadUInt64Swapped() {
+			return ByteSwap64(Read<ulong>());
+		}
+
+		private static ushort ByteSwap16(ushort num) {
+			return (ushort)(
+				((num & 0xFF00) >> 8) |
+				((num & 0x00FF) << 8)
+			);
+		}
+
+		private static uint ByteSwap32(uint num) {
+			return (
+				((num & 0xFF000000) >> 24) |
+				((num & 0x00FF0000) >> 8) |
+				((num & 0x0000FF00) << 8) |
+				((num & 0x000000FF) << 24)
+			);
+		}
+
+		private static ulong ByteSwap64(ulong num) {
+			return (
+				((num & 0xFF00000000000000) >> 56) |
+				((num & 0x00FF000000000000) >> 40) |
+				((num & 0x0000FF0000000000) >> 24) |
+				((num & 0x000000FF00000000) >>  8) | 
+				((num & 0x00000000FF000000) <<  8) |
+				((num & 0x0000000000FF0000) << 24) |
+				((num & 0x000000000000FF00) << 40) |
+				((num & 0x00000000000000FF) << 56)
+			);
+		}
+
+		private T AdjustFieldEndianness<T>(T value) where T : unmanaged {
+			switch (value) {
+				case sbyte num:
+					return (T)(object)num;
+				case byte num:
+					return (T)(object)num;
+			}
+
+			if (BitConverter.IsLittleEndian && Endianness == Endianness.LittleEndian)
+				return value;
+
+			switch (value) {
+				case short num:
+					return (T)(object)ByteSwap16((ushort)num);
+				case ushort num:
+					return (T)(object)ByteSwap16(num);
+				case int num:
+					return (T)(object)ByteSwap32((uint)num);
+				case uint num:
+					return (T)(object)ByteSwap32(num);
+				case long num:
+					return (T)(object)ByteSwap64((ulong)num);
+				case ulong num:
+					return (T)(object)ByteSwap64(num);
+				default:
+					throw new NotImplementedException(typeof(T).Name);
+			}
 		}
 
 		public unsafe T Read<T>() where T : unmanaged {
@@ -101,25 +225,16 @@ namespace Smx.PDBSharp
 			return ret;
 		}
 
-		public SpanStream(SpanStream other) {
+		public SpanStream(SpanStream other) : this() {
 			this.Memory = other.Memory.Slice(other.pos);
 		}
 
-		public SpanStream(Memory<byte> data) {
+		public SpanStream(Memory<byte> data) : this() {
 			this.Memory = data;
 		}
 
-		public SpanStream(byte[] data) {
-			this.Memory = new Memory<byte>(data);
-		}
-
-		public SpanStream(int sizeInBytes) {
-			Replace(sizeInBytes);
-		}
-
-		public void Replace(int newSizeEmpty) {
-			byte[] data = new byte[newSizeEmpty];
-			this.Memory = new Memory<byte>(data);
+		private SpanStream() {
+			SetDelegates();
 		}
 
 		public void Replace(byte[] newData) {
@@ -228,28 +343,29 @@ namespace Smx.PDBSharp
 			dspan.CopyTo(start);
 		}
 
-		public short ReadInt16() => Read<short>();
-		public void WriteInt16(Int16 value) => Write(value);
+		public short ReadInt16() => (short)u16Reader();
+		public void WriteInt16(Int16 value) => u16Writer((ushort)value);
 
-		public int ReadInt32() => Read<int>();
-		public void WriteInt32(Int32 value) => Write(value);
+		public int ReadInt32() => (int)u32Reader();
+		public void WriteInt32(Int32 value) => u32Writer((uint)value);
 
-		public long ReadInt64() => Read<long>();
-		public void WriteInt64(Int64 value) => Write(value);
+		public long ReadInt64() => (long)u64Reader();
+		public void WriteInt64(Int64 value) => u64Writer((ulong)value);
 
-		public float ReadSingle() => Read<float>();
-		public void WriteSingle(float value) => Write(value);
+		//$TODO: support precisions > 32 and 64 bits?
+		public float ReadSingle() => u32Reader();
+		public void WriteSingle(float value) => u32Writer((uint)value);
 
-		public double ReadDouble() => Read<double>();
-		public void WriteDouble(double value) => Write(value);
+		public double ReadDouble() => u64Reader();
+		public void WriteDouble(double value) => u64Writer((ulong)value);
 
-		public ushort ReadUInt16() => Read<ushort>();
-		public void WriteUInt16(UInt16 value) => Write(value);
+		public ushort ReadUInt16() => u16Reader();
+		public void WriteUInt16(UInt16 value) => u16Writer(value);
 
-		public uint ReadUInt32() => Read<uint>();
-		public void WriteUInt32(UInt32 value) => Write(value);
+		public uint ReadUInt32() => u32Reader();
+		public void WriteUInt32(UInt32 value) => u32Writer(value);
 
-		public ulong ReadUInt64() => Read<ulong>();
-		public void WriteUInt64(UInt64 value) => Write(value);
+		public ulong ReadUInt64() => u64Reader();
+		public void WriteUInt64(UInt64 value) => u64Writer(value);
 	}
 }

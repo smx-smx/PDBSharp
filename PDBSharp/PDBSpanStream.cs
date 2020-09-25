@@ -46,17 +46,6 @@ namespace Smx.PDBSharp
 			SetDataTypeSizes();
 		}
 
-		public PDBSpanStream(byte[] data, PDBType type) : base(data) {
-			this.type = type;
-			SetDataTypeSizes();
-		}
-
-		public PDBSpanStream(int sizeInBytes, PDBType type) : base(sizeInBytes) {
-			this.type = type;
-			SetDataTypeSizes();
-		}
-		
-
 		public int ReadInt() {
 			switch (this.type) {
 				case PDBType.Big:

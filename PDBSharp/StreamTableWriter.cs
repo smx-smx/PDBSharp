@@ -70,7 +70,7 @@ namespace Smx.PDBSharp
 		}
 
 		public void Commit() {
-			st = new SpanStream((int)GetDataSize());
+			st = new SpanStream(new byte[(int)GetDataSize()]);
 
 			st.WriteUInt32((uint)Streams.Count);
 			WriteStreamSizes();

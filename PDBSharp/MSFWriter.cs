@@ -59,7 +59,7 @@ namespace Smx.PDBSharp
 		}
 
 		public void Commit() {
-			msf = new SpanStream((int)GetDataSize());
+			msf = new SpanStream(new byte[(int)GetDataSize()]);
 
 			uint directoryPages = GetNumPages(StreamTable.GetCurrentSize());
 			uint directoryPageListCount = GetNumPages(directoryPages);
