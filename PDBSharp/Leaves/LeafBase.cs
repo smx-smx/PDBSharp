@@ -8,6 +8,7 @@
 #endregion
 
 
+using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 

@@ -13,6 +13,7 @@ using System.Text;
 using System.Linq;
 using System.IO;
 using System.Runtime.InteropServices;
+using Smx.SharpIO;
 
 namespace Smx.PDBSharp
 {

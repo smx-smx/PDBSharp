@@ -6,6 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
+using Smx.SharpIO;
 using System.ComponentModel.Design;
 using System.IO;
 

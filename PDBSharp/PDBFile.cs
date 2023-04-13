@@ -6,11 +6,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
+using Smx.SharpIO;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.IO;
 using System.IO.MemoryMappedFiles;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -53,13 +55,13 @@ namespace Smx.PDBSharp
 		public const string SMALL_MAGIC = "Microsoft C/C++ program database 2.00\r\n\x1a" + "JG";
 		public const string BIG_MAGIC   = "Microsoft C/C++ MSF 7.00\r\n\x1a" + "DS";
 
-		private readonly MemoryMappedSpan<byte> memSpan;
-		private readonly MemoryMappedFile mf;
-		private readonly FileStream fs;
+		private readonly Stream stream;
 
 		private readonly StreamTableReader StreamTable;
 
 		public readonly PDBType Type;
+
+		private IList<IDisposable> disposables;
 
 		public IServiceContainer Services { get; } = new ServiceContainer();
 
@@ -73,24 +75,43 @@ namespace Smx.PDBSharp
 
 		public static PDBFile Open(string pdbFilePath) {
 			FileStream stream = new FileStream(pdbFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-			return new PDBFile(stream);
+			return Open(stream);
+		}
+
+		public static PDBFile Open(FileStream fs) {
+			var mf = MemoryMappedFile.CreateFromFile(fs, null, 0, MemoryMappedFileAccess.Read, HandleInheritability.Inheritable, true);
+			var memSpan = new MemoryMappedSpan<byte>(mf, (int)fs.Length, MemoryMappedFileAccess.Read);
+			return new PDBFile(memSpan.Memory, new List<IDisposable>() {
+				memSpan, mf
+			});
+		}
+
+		public static PDBFile Open(MemoryStream mem) {
+			return new PDBFile(mem.GetBuffer());
+		}
+
+		public static PDBFile Open(Memory<byte> mem) {
+			return new PDBFile(mem);
 		}
 
 		public void Dispose() {
-			memSpan.Dispose();
-			mf.Dispose();
-			fs.Close();
+			stream.Close();
+			if(disposables != null) {
+				foreach(var res in disposables) {
+					res.Dispose();
+				}
+			}
 		}
 
-		public PDBFile(FileStream stream) {
-			this.fs = stream;
-			this.mf = MemoryMappedFile.CreateFromFile(stream, null, 0, MemoryMappedFileAccess.Read, HandleInheritability.Inheritable, true);
-			this.memSpan = new MemoryMappedSpan<byte>(mf, (int)fs.Length);
+		private PDBFile(Memory<byte> mem, IList<IDisposable> disposables = null) {
+			this.disposables = disposables;
 
 			this.StreamTable = Services.GetService<StreamTableReader>();
 			Services.AddService<PDBFile>(this);
 
-			this.Type = MSFReader.DetectPdbType(memSpan.GetSpan());
+			var span = mem.Span;
+
+			this.Type = MSFReader.DetectPdbType(span);
 
 			MSFReader msf = null;
 			StreamTableReader streamTable = null;
@@ -98,10 +119,10 @@ namespace Smx.PDBSharp
 			if(Type != PDBType.Old) {
 				switch (Type) {
 					case PDBType.Big:
-						msf = new MSFReaderDS(memSpan.Memory);
+						msf = new MSFReaderDS(mem);
 						break;
 					case PDBType.Small:
-						msf = new MSFReaderJG(memSpan.Memory);
+						msf = new MSFReaderJG(mem);
 						break;
 					default:
 						throw new InvalidOperationException();
@@ -134,7 +155,6 @@ namespace Smx.PDBSharp
 					byte[] tpiData  = streamTable.GetStream(DefaultStreams.TPI);
 					tpiStream = new SpanStream(tpiData);
 				} else {
-					Span<byte> span = memSpan.GetSpan();
 					JGHeaderOld header = span.Read<JGHeaderOld>(0);
 					// $TODO: the MSFReader interface should be abstracted into a more generic PDBHeader
 					Services.AddService<JGHeaderOld>(header);
@@ -163,7 +183,7 @@ namespace Smx.PDBSharp
 			HasherV2 hasher = new HasherV2(Services);
 			Services.AddService<HasherV2>(hasher);
 
-			if(Type != PDBType.Old){
+			if (Type != PDBType.Old) {
 				{ // init NameMap
 					byte[] nameMapData = streamTable.GetStream(DefaultStreams.PDB);
 
@@ -181,7 +201,7 @@ namespace Smx.PDBSharp
 						Services.AddService<UdtNameTableReader>(udtNameTable);
 					}
 				}
-			}			
+			}
 		}
 	}
 }

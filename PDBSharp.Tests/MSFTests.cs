@@ -8,6 +8,7 @@
 #endregion
 using NUnit.Framework;
 using Smx.PDBSharp;
+using System;
 using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Linq;

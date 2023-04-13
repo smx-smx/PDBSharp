@@ -8,6 +8,7 @@
 #endregion
 using Smx.PDBSharp.Symbols;
 using Smx.PDBSharp.Symbols.Structures;
+using Smx.SharpIO;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;

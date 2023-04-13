@@ -7,6 +7,7 @@
  */
 #endregion
 using Smx.PDBSharp.Symbols.Structures;
+using Smx.SharpIO;
 using System.ComponentModel.Design;
 using System.IO;
 

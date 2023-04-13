@@ -7,6 +7,7 @@
  */
 #endregion
 using Smx.PDBSharp.Leaves;
+using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;

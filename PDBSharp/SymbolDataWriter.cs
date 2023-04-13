@@ -8,6 +8,7 @@
 #endregion
 using Smx.PDBSharp.Leaves;
 using Smx.PDBSharp.Symbols.Structures;
+using Smx.SharpIO;
 using System.ComponentModel.Design;
 using System.IO;
 using System.Runtime.InteropServices;
