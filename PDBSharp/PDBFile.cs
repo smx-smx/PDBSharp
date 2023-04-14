@@ -55,8 +55,6 @@ namespace Smx.PDBSharp
 		public const string SMALL_MAGIC = "Microsoft C/C++ program database 2.00\r\n\x1a" + "JG";
 		public const string BIG_MAGIC   = "Microsoft C/C++ MSF 7.00\r\n\x1a" + "DS";
 
-		private readonly Stream stream;
-
 		private readonly StreamTableReader StreamTable;
 
 		public readonly PDBType Type;
@@ -95,7 +93,6 @@ namespace Smx.PDBSharp
 		}
 
 		public void Dispose() {
-			stream.Close();
 			if(disposables != null) {
 				foreach(var res in disposables) {
 					res.Dispose();
