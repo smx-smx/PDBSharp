@@ -95,7 +95,7 @@ namespace Smx.PDBSharp
 		}
 
 		public void Dispose() {
-			stream.Close();
+			stream?.Close();
 			if(disposables != null) {
 				foreach(var res in disposables) {
 					res.Dispose();
