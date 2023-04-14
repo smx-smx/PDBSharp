@@ -1,0 +1,11 @@
+linux_x64_task:
+  container:
+    cpu: 2
+    memory: 2G
+    dockerfile: .ci/linux_x64/Dockerfile
+
+  build_script:
+    - dotnet build -p:Configuration=Debug -m
+
+  test_script:
+    - dotnet test -p:Configuration=Debug
