@@ -46,6 +46,23 @@ namespace Smx.PDBSharp
 			}
 
 			symbols = new CachedEnumerable<Symbol>(ReadSymbols());
+			ReadLines();
+			ReadC13Lines();
+		}
+
+		private void ReadLines() {
+			//ReadBytes((int)mod.LinesSize);
+			if(mod.LinesSize <= 0) {
+				return;
+			}
+
+			SpanStream slice = this.SliceHere((int)mod.LinesSize);
+			C11Lines lines = new C11Lines(slice);
+		}
+
+		private void ReadC13Lines() {
+			SpanStream slice = this.SliceHere((int)mod.C13LinesSize);
+			C13Lines lines = new C13Lines(slice);
 		}
 
 		private IEnumerable<Symbol> ReadSymbols() {
