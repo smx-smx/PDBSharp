@@ -11,7 +11,7 @@ using Smx.SharpIO;
 
 namespace Smx.PDBSharp.DebugSections
 {
-	public class InlineeLineSection : IDebugSections
+	public class InlineeLineSection : IDebugSection
 	{
 		public readonly InlineeSectionType Signature;
 

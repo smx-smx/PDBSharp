@@ -10,5 +10,5 @@
 
 namespace Smx.PDBSharp.DebugSections
 {
-	public interface IDebugSections { }
+	public interface IDebugSection { }
 }

@@ -15,7 +15,7 @@ using System.Linq;
 
 namespace Smx.PDBSharp
 {
-	public class LineSection : IDebugSections
+	public class LineSection : IDebugSection
 	{
 		private readonly UInt32 contentsOffset;
 		private readonly UInt16 contentsSegment;

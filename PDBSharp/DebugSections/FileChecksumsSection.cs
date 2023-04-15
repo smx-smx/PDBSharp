@@ -11,7 +11,7 @@ using Smx.SharpIO;
 
 namespace Smx.PDBSharp.DebugSections
 {
-	public class FileChecksumsSection : IDebugSections
+	public class FileChecksumsSection : IDebugSection
 	{
 		public FileChecksumsSection(SpanStream r) {
 			ReadTable(r);

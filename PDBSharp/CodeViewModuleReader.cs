@@ -32,6 +32,9 @@ namespace Smx.PDBSharp
 		private readonly IEnumerable<Symbol> symbols;
 		public IEnumerable<Symbol> Symbols { get => symbols; }
 
+		public readonly C11Lines C11Lines;
+		public readonly C13Lines C13Lines;
+
 		public CodeViewModuleReader(IServiceContainer ctx, ModuleInfo mod, SpanStream stream) : base(stream) {
 			this.ctx = ctx;
 			this.mod = mod;
@@ -46,23 +49,23 @@ namespace Smx.PDBSharp
 			}
 
 			symbols = new CachedEnumerable<Symbol>(ReadSymbols());
-			ReadLines();
-			ReadC13Lines();
+			C11Lines = ReadLines();
+			C13Lines = ReadC13Lines();
 		}
 
-		private void ReadLines() {
+		private C11Lines ReadLines() {
 			//ReadBytes((int)mod.LinesSize);
 			if(mod.LinesSize <= 0) {
-				return;
+				return null;
 			}
 
 			SpanStream slice = this.SliceHere((int)mod.LinesSize);
-			C11Lines lines = new C11Lines(slice);
+			return new C11Lines(slice);
 		}
 
-		private void ReadC13Lines() {
+		private C13Lines ReadC13Lines() {
 			SpanStream slice = this.SliceHere((int)mod.C13LinesSize);
-			C13Lines lines = new C13Lines(slice);
+			return new C13Lines(slice);
 		}
 
 		private IEnumerable<Symbol> ReadSymbols() {

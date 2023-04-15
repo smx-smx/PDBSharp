@@ -54,7 +54,7 @@ namespace Smx.PDBSharp
 			sectionStream = r;
 		}
 
-		public IDebugSections ReadDebugSections() {
+		public IDebugSection ReadDebugSections() {
 			switch (Header.Type) {
 				case C13DebugSubSectionType.LINES:
 					return new LineSection(sectionStream);
@@ -70,19 +70,21 @@ namespace Smx.PDBSharp
 
 	public class C13Lines
 	{
-		private C13SubSectionReader ReadSubSection(SpanStream r) {
+		public readonly IDebugSection[] DebugSections;
+
+		private IDebugSection ReadSubSection(SpanStream r) {
 			C13SubSectionHeader hdr = r.ReadStruct<C13SubSectionHeader>();
 
 			SpanStream subStream = r.SliceHere((int)hdr.Length);
-			C13SubSectionReader section = new C13SubSectionReader(hdr, subStream);
-			section.ReadDebugSections();
+			C13SubSectionReader rdr = new C13SubSectionReader(hdr, subStream);
+			var subSection = rdr.ReadDebugSections();
 
 			r.Position += hdr.Length;
-			return section;
+			return subSection;
 		}
 
 		public C13Lines(SpanStream r) {
-			r.ReadAll(ReadSubSection).ToArray();
+			DebugSections = r.ReadAll(ReadSubSection).ToArray();
 		}
 	}
 }
