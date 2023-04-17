@@ -163,6 +163,12 @@ namespace Smx.PDBSharp
 
 		private readonly IServiceContainer ctx;
 
+		private bool IsValidStreamNumber(ushort sn) {
+			// snNil, allowed
+			if ((short)sn == -1) return true;
+			return sn < StreamTable.NumStreams;
+		}
+		
 		/**
 		 * Layout of the DBI stream
 		 * -> Header 
@@ -176,8 +182,6 @@ namespace Smx.PDBSharp
 		 **/
 		public DBIReader(IServiceContainer ctx, byte[] data) : base(data) {
 			this.ctx = ctx;
-			if (Length == 0)
-				throw new InvalidDataException();
 
 			if (Length < Math.Min(Marshal.SizeOf<DBIHeaderOld>(), Marshal.SizeOf<DBIHeaderNew>())) {
 				throw new InvalidDataException();
@@ -199,10 +203,9 @@ namespace Smx.PDBSharp
 			this.StreamTable = ctx.GetService<StreamTableReader>();
 
 			uint nStreams = StreamTable.NumStreams;
-			if (
-				Header.GsSymbolsStreamNumber >= nStreams ||
-				Header.PsSymbolsStreamNumber >= nStreams ||
-				Header.SymbolRecordsStreamNumber >= nStreams
+			if (!IsValidStreamNumber(Header.GsSymbolsStreamNumber)
+				|| !IsValidStreamNumber(Header.PsSymbolsStreamNumber)
+				|| !IsValidStreamNumber(Header.SymbolRecordsStreamNumber)
 			) {
 				throw new InvalidDataException();
 			}

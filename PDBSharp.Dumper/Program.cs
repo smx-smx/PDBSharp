@@ -151,7 +151,7 @@ namespace Smx.PDBSharp.Dumper
 				}
 			}
 
-			if(dbi != null) {
+			if(dbi != null && dbi.SectionContribs != null) {
 				if (dbi.SectionContribs.SectionContribs != null) {
 					foreach (var contrib in dbi.SectionContribs.SectionContribs) {
 						if (OptPrintSc) {

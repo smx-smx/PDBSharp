@@ -128,14 +128,16 @@ namespace Smx.PDBSharp
 				}
 				Services.AddService<StreamTableReader>(streamTable);
 
-				DBIReader dbi;
+				DBIReader? dbi = null;
 				// init DBI
 				{
 					byte[] dbiData = streamTable.GetStream(DefaultStreams.DBI);
-					dbi = new DBIReader(Services, dbiData);
-					OnDbiInit?.Invoke(dbi);
+					if (dbiData.Length > 0) {
+						dbi = new DBIReader(Services, dbiData);
+						OnDbiInit?.Invoke(dbi);
+						Services.AddService<DBIReader>(dbi);
+					}
 				}
-				Services.AddService<DBIReader>(dbi);
 			}
 
 			TPIReader tpi;
