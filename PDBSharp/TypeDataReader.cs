@@ -109,12 +109,14 @@ namespace Smx.PDBSharp
 			dataSize = PrimitiveDataSizes[leafType];
 			Seek(-2, SeekOrigin.Current);
 
-			TypeDataReader rdr = new TypeDataReader(ctx, this);
+			// "fork" the leaf stream
+			var subStream = SliceHere(2 + (int)dataSize);
+			TypeDataReader rdr = new TypeDataReader(ctx, subStream);
 			ILeafResolver? leaf = rdr.ReadTypeDirect(hasSize: false);
 			//ILeafContainer leaf = new TypeDataReader(ctx, this).ReadTypeDirect(hasSize: false);
 
 			// add leaf size
-			this.Position += rdr.Position;
+			this.Position += dataSize;
 			
 			return leaf;
 

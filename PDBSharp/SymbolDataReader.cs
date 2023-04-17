@@ -13,6 +13,7 @@ using System;
 using System.ComponentModel.Design;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Smx.PDBSharp
 {
@@ -45,12 +46,17 @@ namespace Smx.PDBSharp
 			}
 		}
 
+		private readonly bool useUnicodeStrings;
+		
 		public SymbolDataReader(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 			startOffset = stream.Position;
 			Header = ReadHeader();
 			endOffset = startOffset + sizeof(UInt16) + Header.Length;
 			CheckHeader();
 
+			var pdb = ctx.GetService<PdbStreamReader>();
+			useUnicodeStrings = pdb.Version >= PDBPublicVersion.VC70;
+			
 			switch (ctx.GetService<MSFReader>().FileType) {
 				case PDBType.Big:
 					ReadString = ReadString32;
@@ -90,10 +96,10 @@ namespace Smx.PDBSharp
 		}
 
 		public string ReadSymbolString() {
-			if (Header.Type < SymbolType.S_ST_MAX) {
-				return ReadString();
+			if (useUnicodeStrings) {
+				return ReadCString(Encoding.UTF8);
 			} else {
-				return ReadCString();
+				return ReadString();
 			}
 		}
 
