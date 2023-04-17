@@ -148,18 +148,18 @@ namespace Smx.PDBSharp
 	{
 		public readonly IDBIHeader Header;
 
-		public readonly DebugReader DebugInfo;
-		public readonly SectionContribsReader SectionContribs;
+		public readonly DebugReader? DebugInfo;
+		public readonly SectionContribsReader? SectionContribs;
 
-		public readonly ECReader EC;
-		public readonly TypeServerMapReader TypeServerMap;
+		public readonly ECReader? EC;
+		public readonly TypeServerMapReader? TypeServerMap;
 
 		private readonly StreamTableReader StreamTable;
 
 		public CachedEnumerable<IModuleContainer> Modules;
 
-		public event OnModuleDataDelegate OnModuleData;
-		public event OnModuleReaderInitDelegate OnModuleReaderInit;
+		public event OnModuleDataDelegate? OnModuleData;
+		public event OnModuleReaderInitDelegate? OnModuleReaderInit;
 
 		private readonly IServiceContainer ctx;
 
@@ -177,7 +177,7 @@ namespace Smx.PDBSharp
 		public DBIReader(IServiceContainer ctx, byte[] data) : base(data) {
 			this.ctx = ctx;
 			if (Length == 0)
-				return;
+				throw new InvalidDataException();
 
 			if (Length < Math.Min(Marshal.SizeOf<DBIHeaderOld>(), Marshal.SizeOf<DBIHeaderNew>())) {
 				throw new InvalidDataException();
@@ -236,14 +236,14 @@ namespace Smx.PDBSharp
 			}
 		}
 
-		public IModuleContainer GetModuleByFileOffset(int sectionIndex, long fileOffset) {
-			SectionContrib40 sc = SectionContribs.SectionContribs
+		public IModuleContainer? GetModuleByFileOffset(int sectionIndex, long fileOffset) {
+			SectionContrib40? sc = SectionContribs?.SectionContribs
 				.Where(sec => sec.Contains(sectionIndex, fileOffset))
 				//there should be only 1 match
 				.OrderBy(sec => fileOffset - sec.Offset)
 				.FirstOrDefault();
 
-			return sc.Module;
+			return sc?.Module;
 		}
 
 		private IEnumerable<IModuleContainer> ReadModules() {

@@ -7,25 +7,47 @@
  */
 #endregion
 using Smx.SharpIO;
+using System;
 using System.ComponentModel.Design;
 using System.IO;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Leaves.LF_REAL32
 {
-	public class LF_REAL32 : LeafBase
-	{
+	public class Data : ILeafData {
 		public float Value { get; set; }
-		public LF_REAL32(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+		public Data(float value) {
+			Value = value;
+		}
+	}
+
+	public class Serializer : LeafBase, ILeafSerializer
+	{
+		public Data? Data { get; set; }
+		public ILeafData? GetData() => Data;
+
+		
+
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 		}
 
-		public override void Read() {
+		public void Read() {
 			TypeDataReader r = CreateReader();
-			Value = r.ReadSingle();
+			var Value = r.ReadSingle();
+			Data = new Data(
+				value: Value
+			);
+		}
+
+		public void Write() {
+			throw new NotImplementedException();
 		}
 
 		public void Write(PDBFile pdb, Stream stream) {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			TypeDataWriter w = CreateWriter(LeafType.LF_REAL32);
-			w.WriteSingle(Value);
+			w.WriteSingle(data.Value);
 			w.WriteHeader();
 		}
 	}

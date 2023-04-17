@@ -6,10 +6,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
+using Smx.PDBSharp.Thunks;
 using Smx.SharpIO;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Xml.Linq;
 
 namespace Smx.PDBSharp
 {
@@ -32,9 +35,10 @@ namespace Smx.PDBSharp
 		public readonly uint NumberOfElements;
 		public readonly uint[] Indices;
 
-		private HashFunc hasher;
+		private HashFunc? hasher;
 
 		public uint HashName(string name) {
+			Debug.Assert(hasher != null);
 			byte[] data = Encoding.ASCII.GetBytes(name);
 			return hasher(data, unchecked((uint)-1));
 		}
@@ -57,6 +61,9 @@ namespace Smx.PDBSharp
 					break;
 				case NameTableVersion.HashV2:
 					hasher = HasherV2.HashData;
+					break;
+				default:
+					throw new InvalidDataException();
 					break;
 			}
 

@@ -6,36 +6,59 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
+
+using System;
 using Smx.PDBSharp.Symbols.Structures;
 using Smx.SharpIO;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_LOCAL
 {
-	public class S_LOCAL : SymbolBase
-	{
-		public ILeafContainer Type { get; set; }
+	public class Data : ISymbolData {
+		public ILeafResolver? Type { get; set; }
 		public CV_LVARFLAGS Flags { get; set; }
 		public string Name { get; set; }
 
-		public S_LOCAL(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) { 
+		public Data(ILeafResolver? type, CV_LVARFLAGS flags, string name) {
+			Type = type;
+			Flags = flags;
+			Name = name;
+		}
+	}
+
+	public class Serializer : SymbolSerializerBase, ISymbolSerializer
+	{
+		private Data? Data { get; set; }
+
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 		}
 
-		public override void Read() {
+		public void Read() {
 			var r = CreateReader();
-			Type = r.ReadIndexedType32Lazy();
-			Flags = r.ReadFlagsEnum<CV_LVARFLAGS>();
-			Name = r.ReadSymbolString();
+			var Type = r.ReadIndexedType32Lazy();
+			var Flags = r.ReadFlagsEnum<CV_LVARFLAGS>();
+			var Name = r.ReadSymbolString();
+			Data = new Data(
+				type: Type,
+				flags: Flags,
+				name: Name
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+			
 			var w = CreateWriter(SymbolType.S_LOCAL);
-			w.WriteIndexedType(Type);
-			w.Write<CV_LVARFLAGS>(Flags);
-			w.WriteSymbolString(Name);
-
+			w.WriteIndexedType(data.Type);
+			w.Write<CV_LVARFLAGS>(data.Flags);
+			w.WriteSymbolString(data.Name);
 			w.WriteHeader();
 		}
+
+		public ISymbolData? GetData() => Data;
 	}
 }

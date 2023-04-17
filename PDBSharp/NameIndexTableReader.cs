@@ -6,14 +6,20 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
+using Smx.PDBSharp.Thunks;
 using Smx.SharpIO;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Xml.Linq;
 
 namespace Smx.PDBSharp
 {
+	/// <summary>
+	/// A name table is a two-way mapping from string to name index and back.
+	/// Name indices(NIs) are intended to be small positive integers.
+	/// </summary>
 	public class NameIndexTableReader
 	{
 		private readonly Dictionary<uint, uint> Offset_Index;
@@ -26,7 +32,7 @@ namespace Smx.PDBSharp
 
 		public readonly UInt32 MaxIndices;
 
-		public string GetString(uint index) {
+		public string? GetString(uint index) {
 			if (!Index_Offset.ContainsKey(index)) {
 				return null;
 			}

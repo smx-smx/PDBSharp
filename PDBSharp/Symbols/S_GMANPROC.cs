@@ -10,16 +10,19 @@ using Smx.PDBSharp.Symbols.Structures;
 using Smx.SharpIO;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_GMANPROC
 {
-	public class S_GMANPROC : ManProcSymBase
+	public class Serializer : ManProcSymSerializerBase, ISymbolSerializer
 	{
-		public S_GMANPROC(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 		}
 
-		public override void Write() {
+		public void Write() {
 			base.Write(SymbolType.S_GMANPROC);
 		}
+
+		public ISymbolData? GetData() => Data;
 	}
 }

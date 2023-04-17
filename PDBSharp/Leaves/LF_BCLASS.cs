@@ -7,36 +7,56 @@
  */
 #endregion
 using Smx.SharpIO;
+using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Leaves.LF_BCLASS
 {
-	public class LF_BCLASS : LeafBase
-	{
+	public class Data : ILeafData {
 		public FieldAttributes Attributes { get; set; }
-		public ILeafContainer BaseClassType { get; set; }
+		public ILeafResolver? BaseClassType { get; set; }
 
-		public ILeafContainer Offset { get; set; }
+		public ILeafResolver? Offset { get; set; }
 
-		public LF_BCLASS(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+		public Data(FieldAttributes attributes, ILeafResolver? baseClassType, ILeafResolver? offset) {
+			Attributes = attributes;
+			BaseClassType = baseClassType;
+			Offset = offset;
+		}
+	}
+
+	public class Serializer : LeafBase, ILeafSerializer
+	{
+		public Data? Data { get; set; }
+		public ILeafData? GetData() => Data;
+
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 			
 		}
 
-		public override void Read() {
+		public void Read() {
 			TypeDataReader r = CreateReader();
 
-			Attributes = new FieldAttributes(r.ReadUInt16());
-			BaseClassType = r.ReadIndexedType32Lazy();
-
-			Offset = r.ReadVaryingType(out uint dataSize);
+			var Attributes = new FieldAttributes(r.ReadUInt16());
+			var BaseClassType = r.ReadIndexedType32Lazy();
+			var Offset = r.ReadVaryingType(out uint dataSize);
+			Data = new Data(
+				attributes: Attributes,
+				baseClassType: BaseClassType,
+				offset: Offset
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			TypeDataWriter w = CreateWriter(LeafType.LF_BCLASS);
-			w.WriteUInt16((ushort)Attributes);
-			w.WriteIndexedType(BaseClassType);
-			w.WriteIndexedType(Offset);
+			w.WriteUInt16((ushort)data.Attributes);
+			w.WriteIndexedType(data.BaseClassType);
+			w.WriteIndexedType(data.Offset);
 			w.WriteHeader();
 		}
 	}

@@ -8,64 +8,86 @@
 #endregion
 using Smx.PDBSharp.Leaves;
 using System.Collections.Generic;
+using Smx.PDBSharp.LeafResolver;
 
 namespace Smx.PDBSharp.Codegen
 {
 	public class TypeNode : INode
 	{
-		public readonly ILeafContainer Type;
+		public readonly LeafContext Type;
 		public bool Visited { get; set; }
 
 		public IList<TypeNode> TypeDependencies = new List<TypeNode>();
 
-		public TypeNode(ILeafContainer leaf) {
-			this.Type = leaf;
+		public TypeNode(LeafContext leafContext) {
+			this.Type = leafContext;
 			this.HandleType();
 		}
 
 		private void HandleType() {
 			switch (this.Type.Data) {
-				case LF_CLASS_STRUCTURE_INTERFACE csi:
-					AddDependency(csi.DerivedType);
-					AddDependency(csi.VShapeTableType);
+				case Leaves.LF_CLASS_STRUCTURE_INTERFACE.Data csi:
+					if (csi.DerivedType != null) {
+						AddDependency(csi.DerivedType);
+					}
+
+					if (csi.VShapeTableType != null) {
+						AddDependency(csi.VShapeTableType);
+					}
 					break;
-				case LF_POINTER lfPointer:
-					AddDependency(lfPointer.UnderlyingType);
+				case Leaves.LF_POINTER.Data lfPointer:
+					if (lfPointer.UnderlyingType != null) {
+						AddDependency(lfPointer.UnderlyingType);
+					}
 					break;
-				case LF_ENUM lfEnum:
-					AddDependency(lfEnum.FieldType);
-					AddDependency(lfEnum.UnderlyingType);
+				case Leaves.LF_ENUM.Data lfEnum:
+					if (lfEnum.FieldType != null) {
+						AddDependency(lfEnum.FieldType);
+					}
+					if (lfEnum.UnderlyingType != null) {
+						AddDependency(lfEnum.UnderlyingType);
+					}
 					break;
-				case LF_ARGLIST lfArgList:
+				case Leaves.LF_ARGLIST.Data lfArgList:
 					foreach (var arg in lfArgList.ArgumentTypes) {
-						AddDependency(arg);
+						if (arg != null) {
+							AddDependency(arg);
+						}
 					}
 					break;
-				case LF_ARRAY<ushort> lfArray16:
-					AddDependency(lfArray16.ElementType);
-					AddDependency(lfArray16.IndexingType);
+				case Leaves.LF_ARRAY.Data lfArray:
+					if (lfArray.ElementType != null) {
+						AddDependency(lfArray.ElementType);
+					}
+					if (lfArray.IndexingType != null) {
+						AddDependency(lfArray.IndexingType);
+					}
 					break;
-				case LF_ARRAY<uint> lfArray32:
-					AddDependency(lfArray32.ElementType);
-					AddDependency(lfArray32.IndexingType);
-					break;
-				case LF_FIELDLIST lfFieldList:
+				case Leaves.LF_FIELDLIST.Data lfFieldList:
 					foreach (var field in lfFieldList.Fields) {
-						AddDependency(field);
+						if (field != null) {
+							AddDependency(field);
+						}
 					}
 					break;
-				case LF_PROCEDURE lfProc:
-					AddDependency(lfProc.ArgumentListType);
-					AddDependency(lfProc.ReturnValueType);
+				case Leaves.LF_PROCEDURE.Data lfProc:
+					if (lfProc.ArgumentListType != null) {
+						AddDependency(lfProc.ArgumentListType);
+					}
+					if (lfProc.ReturnValueType != null) {
+						AddDependency(lfProc.ReturnValueType);
+					}
 					break;
-				case LF_UNION lfUnion:
-					AddDependency(lfUnion.FieldType);
+				case Leaves.LF_UNION.Data lfUnion:
+					if (lfUnion.FieldType != null) {
+						AddDependency(lfUnion.FieldType);
+					}
 					break;
 			}
 		}
 
-		private TypeNode AddDependency(ILeafContainer leaf) {
-			TypeNode node = new TypeNode(leaf);
+		private TypeNode AddDependency(ILeafResolver leafContext) {
+			TypeNode node = new TypeNode(leafContext.Ctx);
 			TypeDependencies.Add(node);
 			return node;
 		}

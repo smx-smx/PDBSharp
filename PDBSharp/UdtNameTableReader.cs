@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.IO;
 using System.Linq;
+using Smx.PDBSharp.LeafResolver;
 
 namespace Smx.PDBSharp
 {
@@ -35,7 +36,7 @@ namespace Smx.PDBSharp
 
 		private readonly SpanStream rdr;
 
-		private readonly Dictionary<string, uint> String_NameIndex = new Dictionary<string, uint>();
+		private readonly Dictionary<string?, uint> String_NameIndex = new Dictionary<string?, uint>();
 		private readonly Dictionary<uint, string> NameIndex_String = new Dictionary<uint, string>();
 
 		private readonly TPIReader Tpi;
@@ -50,16 +51,16 @@ namespace Smx.PDBSharp
 			uint maxTi = minTi + Tpi.Header.MaxTypeIndex - 1;
 
 			for (uint ti = minTi; ti <= maxTi; ti++) {
-				ILeafContainer leafC = resolver.GetTypeByIndex(ti);
-				if (leafC == null || !(leafC.Data is LeafBase leaf)) {
+				var leafC = resolver.GetTypeByIndex(ti);
+				if (leafC == null || leafC.Ctx is not ILeafType leaf) {
 					continue;
 				}
-
+				
 				if (!leaf.IsDefnUdt) {
 					continue;
 				}
 
-				string typeName = leaf.UdtName;
+				string? typeName = leaf.UdtName;
 
 				if (leaf.IsLocalDefnUdtWithUniqueName) {
 					throw new NotImplementedException();
@@ -74,7 +75,7 @@ namespace Smx.PDBSharp
 			}
 		}
 
-		public string GetString(uint nameIndex) {
+		public string? GetString(uint nameIndex) {
 			if (nameIndex == 0) {
 				return null;
 			}
@@ -91,7 +92,7 @@ namespace Smx.PDBSharp
 			return str;
 		}
 
-		public ILeafContainer GetType(string str) {
+		public ILeafResolver? GetType(string? str) {
 			if (!GetIndex(str, out uint nameIndex))
 				return null;
 
@@ -101,7 +102,7 @@ namespace Smx.PDBSharp
 			return resolver.GetTypeByIndex(typeIndex);
 		}
 
-		public bool GetIndex(string str, out uint index) {
+		public bool GetIndex(string? str, out uint index) {
 			if (String_NameIndex.TryGetValue(str, out uint cachedIndex)) {
 				index = cachedIndex;
 				return true;
@@ -112,8 +113,8 @@ namespace Smx.PDBSharp
 					if (ni == 0)
 						return false;
 
-					string _str = GetString(ni);
-					if (!String_NameIndex.ContainsKey(_str)) {
+					string? _str = GetString(ni);
+					if (_str != null && !String_NameIndex.ContainsKey(_str)) {
 						String_NameIndex.Add(_str, ni);
 					}
 					return _str == str;

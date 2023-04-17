@@ -11,19 +11,30 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.IO;
+using System.Linq;
+using Smx.PDBSharp.LeafResolver;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Leaves.LF_FIELDLIST
 {
-	public class LF_FIELDLIST : LeafBase
-	{
-		private readonly ILazy<IEnumerable<LeafContainerBase>> lazyFields;
-		public IEnumerable<LeafContainerBase> Fields => lazyFields.Value;
+	public class Data : ILeafData {
+		public IList<ILeafResolver?> Fields;
 
-		private IEnumerable<LeafContainerBase> ReadFields() {
-			TypeDataReader r = CreateReader();
+		public Data(IList<ILeafResolver?> fields) {
+			Fields = fields;
+		}
+	}
+
+	public class Serializer : LeafBase, ILeafSerializer
+	{
+		public Data? Data { get; set; }
+		public ILeafData? GetData() => Data;
+
+		
+
+		private static IEnumerable<ILeafResolver?> ReadFields(TypeDataReader r) {
 			while (r.Position + sizeof(UInt16) < r.Length) {
 				// we need to read the type Directly since we don't know how long it is
-				LeafContainerBase leaf = r.ReadTypeDirect(hasSize: false);
+				ILeafResolver? leaf = r.ReadTypeDirect(hasSize: false);
 				if (leaf == null)
 					yield break;
 				
@@ -31,22 +42,31 @@ namespace Smx.PDBSharp.Leaves
 			}
 		}
 
-		public override void Read() {
-			//no-op as we read lazily
+		public void Read() {
+			var r = CreateReader();
+			var fields = ReadFields(r).ToList();
+			Data = new Data(
+				fields: fields
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			TypeDataWriter w = CreateWriter(LeafType.LF_FIELDLIST, false);
 
-			foreach (LeafContainerBase lf in Fields) {
-				lf.Write();
+			foreach (var lf in data.Fields
+				         .Where(lf => lf != null)
+				         .Cast<LeafContext>()
+			) {
+				lf.CreateSerializer(w).Write();
 			}
 
 			w.WriteHeader();
 		}
 
-		public LF_FIELDLIST(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
-			lazyFields = LazyFactory.CreateLazy(ReadFields);
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
 		}
 
 		/*

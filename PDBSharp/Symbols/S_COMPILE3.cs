@@ -11,11 +11,11 @@ using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_COMPILE3
 {
-	public class S_COMPILE3 : SymbolBase
-	{
+	public class Data : ISymbolData {
 		public CompileSym3Flags Flags { get; set; }
 		public UInt16 Machine { get; set; }
 		public UInt16 FrontendVersionMajor { get; set; }
@@ -28,54 +28,91 @@ namespace Smx.PDBSharp.Symbols
 		public UInt16 BackendQFEVersion { get; set; }
 		public string VersionString { get; set; }
 
-		public S_COMPILE3(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		public Data(CompileSym3Flags flags, ushort machine, ushort frontendVersionMajor, ushort frontendVersionMinor, ushort frontendVersionBuild, ushort frontendQfeVersion, ushort backendVersionMajor, ushort backendVersionMinor, ushort backendVersionBuild, ushort backendQfeVersion, string versionString) {
+			Flags = flags;
+			Machine = machine;
+			FrontendVersionMajor = frontendVersionMajor;
+			FrontendVersionMinor = frontendVersionMinor;
+			FrontendVersionBuild = frontendVersionBuild;
+			FrontendQFEVersion = frontendQfeVersion;
+			BackendVersionMajor = backendVersionMajor;
+			BackendVersionMinor = backendVersionMinor;
+			BackendVersionBuild = backendVersionBuild;
+			BackendQFEVersion = backendQfeVersion;
+			VersionString = versionString;
+		}
+	}
+
+	public class Serializer : SymbolSerializerBase, ISymbolSerializer
+	{
+		private Data? Data { get; set; }
+
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 		}
 
-		public override void Read() {
+		public void Read() {
 			var r = CreateReader();
-			Flags = new CompileSym3Flags(r.ReadUInt32());
-			Machine = r.ReadUInt16();
-			FrontendVersionMajor = r.ReadUInt16();
-			FrontendVersionMinor = r.ReadUInt16();
-			FrontendVersionBuild = r.ReadUInt16();
-			FrontendQFEVersion = r.ReadUInt16();
-			BackendVersionMajor = r.ReadUInt16();
-			BackendVersionMinor = r.ReadUInt16();
-			BackendVersionBuild = r.ReadUInt16();
-			BackendQFEVersion = r.ReadUInt16();
-			VersionString = r.ReadSymbolString();
+			var Flags = new CompileSym3Flags(r.ReadUInt32());
+			var Machine = r.ReadUInt16();
+			var FrontendVersionMajor = r.ReadUInt16();
+			var FrontendVersionMinor = r.ReadUInt16();
+			var FrontendVersionBuild = r.ReadUInt16();
+			var FrontendQFEVersion = r.ReadUInt16();
+			var BackendVersionMajor = r.ReadUInt16();
+			var BackendVersionMinor = r.ReadUInt16();
+			var BackendVersionBuild = r.ReadUInt16();
+			var BackendQFEVersion = r.ReadUInt16();
+			var VersionString = r.ReadSymbolString();
+			Data = new Data(
+				flags: Flags,
+				machine: Machine,
+				frontendVersionMajor: FrontendVersionMajor,
+				frontendVersionMinor: FrontendVersionMinor,
+				frontendVersionBuild: FrontendVersionBuild,
+				frontendQfeVersion: FrontendQFEVersion,
+				backendVersionMajor: BackendVersionMajor,
+				backendVersionMinor: BackendVersionMinor,
+				backendVersionBuild: BackendVersionBuild,
+				backendQfeVersion: BackendQFEVersion,
+				versionString: VersionString
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+			
 			var w = CreateWriter(SymbolType.S_COMPILE3);
-			w.Write<CompileSym3FlagsEnum>((CompileSym3FlagsEnum)Flags);
-			w.WriteUInt16(Machine);
-			w.WriteUInt16(FrontendVersionMajor);
-			w.WriteUInt16(FrontendVersionMinor);
-			w.WriteUInt16(FrontendVersionBuild);
-			w.WriteUInt16(FrontendQFEVersion);
-			w.WriteUInt16(BackendVersionMajor);
-			w.WriteUInt16(BackendVersionMinor);
-			w.WriteUInt16(BackendVersionBuild);
-			w.WriteUInt16(BackendQFEVersion);
-			w.WriteSymbolString(VersionString);
-
+			w.Write<CompileSym3FlagsEnum>((CompileSym3FlagsEnum)data.Flags);
+			w.WriteUInt16(data.Machine);
+			w.WriteUInt16(data.FrontendVersionMajor);
+			w.WriteUInt16(data.FrontendVersionMinor);
+			w.WriteUInt16(data.FrontendVersionBuild);
+			w.WriteUInt16(data.FrontendQFEVersion);
+			w.WriteUInt16(data.BackendVersionMajor);
+			w.WriteUInt16(data.BackendVersionMinor);
+			w.WriteUInt16(data.BackendVersionBuild);
+			w.WriteUInt16(data.BackendQFEVersion);
+			w.WriteSymbolString(data.VersionString);
 			w.WriteHeader();
 		}
 
+		public ISymbolData? GetData() => Data;
+
 		public override string ToString() {
+			var data = Data;
 			return $"S_COMPILE3[" +
-				$"Flags='{Flags}', " +
-				$"Machine='{Machine}', " +
-				$"FrontendVersionMajor='{FrontendVersionMajor}', " +
-				$"FrontendVersionMinor='{FrontendVersionMinor}', " +
-				$"FrontendVersionBuild='{FrontendVersionBuild}', " +
-				$"FrontendQFEVersion='{FrontendQFEVersion}', " +
-				$"BackendVersionMajor='{BackendVersionMajor}', " +
-				$"BackendVersionMinor='{BackendVersionMinor}', " +
-				$"BackendVersionBuild='{BackendVersionBuild}', " +
-				$"BackendQFEVersion='{BackendQFEVersion}', " +
-				$"VersionString='{VersionString}'" +
+				$"Flags='{data?.Flags}', " +
+				$"Machine='{data?.Machine}', " +
+				$"FrontendVersionMajor='{data?.FrontendVersionMajor}', " +
+				$"FrontendVersionMinor='{data?.FrontendVersionMinor}', " +
+				$"FrontendVersionBuild='{data?.FrontendVersionBuild}', " +
+				$"FrontendQFEVersion='{data?.FrontendQFEVersion}', " +
+				$"BackendVersionMajor='{data?.BackendVersionMajor}', " +
+				$"BackendVersionMinor='{data?.BackendVersionMinor}', " +
+				$"BackendVersionBuild='{data?.BackendVersionBuild}', " +
+				$"BackendQFEVersion='{data?.BackendQFEVersion}', " +
+				$"VersionString='{data?.VersionString}'" +
 			"]";
 		}
 	}

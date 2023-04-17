@@ -11,11 +11,11 @@ using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_DEFRANGE_REGISTER_REL
 {
-	public class S_DEFRANGE_REGISTER_REL : SymbolBase
-	{
+	public class Data : ISymbolData {
 		public UInt16 BaseRegister;
 		public bool SpilledUdtMember;
 		public UInt16 ParentVariableOffset;
@@ -23,40 +23,68 @@ namespace Smx.PDBSharp.Symbols
 		public CV_LVAR_ADDR_RANGE Range;
 		public CV_LVAR_ADDR_GAP[] Gaps;
 
+		public Data(ushort baseRegister, bool spilledUdtMember, ushort parentVariableOffset, uint baseRegisterOffset, CV_LVAR_ADDR_RANGE range, CV_LVAR_ADDR_GAP[] gaps) {
+			BaseRegister = baseRegister;
+			SpilledUdtMember = spilledUdtMember;
+			ParentVariableOffset = parentVariableOffset;
+			BaseRegisterOffset = baseRegisterOffset;
+			Range = range;
+			Gaps = gaps;
+		}
+	}
 
-		public S_DEFRANGE_REGISTER_REL(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+	public class Serializer : SymbolSerializerBase, ISymbolSerializer
+	{
+		private Data? Data { get; set; }
+
+
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 		}
 
-		public override void Read() {
+		public void Read() {
 			var r = CreateReader();
-			BaseRegister = r.ReadUInt16();
+			var BaseRegister = r.ReadUInt16();
 
 			UInt16 flags = r.ReadUInt16();
-			SpilledUdtMember = (flags & 1) == 1;
-			ParentVariableOffset = (UInt16)((flags >> 4) & 0xFFF);
+			var SpilledUdtMember = (flags & 1) == 1;
+			var ParentVariableOffset = (UInt16)((flags >> 4) & 0xFFF);
 
-			BaseRegisterOffset = r.ReadUInt32();
-			Range = new CV_LVAR_ADDR_RANGE(stream);
-			Gaps = CV_LVAR_ADDR_GAP.ReadGaps(r);
+			var BaseRegisterOffset = r.ReadUInt32();
+			var Range = new CV_LVAR_ADDR_RANGE(stream);
+			var Gaps = CV_LVAR_ADDR_GAP.ReadGaps(r);
+
+			Data = new Data(
+				baseRegister: BaseRegister,
+				spilledUdtMember: SpilledUdtMember,
+				parentVariableOffset: ParentVariableOffset,
+				baseRegisterOffset: BaseRegisterOffset,
+				range: Range,
+				gaps: Gaps
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+			
 			var w = CreateWriter(SymbolType.S_DEFRANGE_REGISTER_REL);
-			w.WriteUInt16(BaseRegister);
+			w.WriteUInt16(data.BaseRegister);
 
 			UInt16 flags = (ushort)(
-				((ParentVariableOffset << 4) & 0xFFF) |
-				(Convert.ToByte(SpilledUdtMember) & 1)
+				((data.ParentVariableOffset << 4) & 0xFFF) |
+				(Convert.ToByte(data.SpilledUdtMember) & 1)
 			);
 			w.WriteUInt16(flags);
-			w.WriteUInt32(BaseRegisterOffset);
+			w.WriteUInt32(data.BaseRegisterOffset);
 
-			Range.Write(w);
-			foreach (CV_LVAR_ADDR_GAP gap in Gaps) {
+			data.Range.Write(w);
+			foreach (CV_LVAR_ADDR_GAP gap in data.Gaps) {
 				gap.Write(w);
 			}
 
 			w.WriteHeader();
 		}
+
+		public ISymbolData? GetData() => Data;
 	}
 }

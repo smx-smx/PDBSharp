@@ -10,16 +10,19 @@ using Smx.PDBSharp.Symbols.Structures;
 using Smx.SharpIO;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_LDATA32
 {
-	public class S_LDATA32 : DataSym32Base
+	public class Serializer : Symbols.DataSym32.SerializerBase, ISymbolSerializer
 	{
-		public S_LDATA32(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 		}
 
-		public override void Write() {
+		public void Write() {
 			base.Write(SymbolType.S_LDATA32);
 		}
+		
+		public ISymbolData? GetData() => Data;
 	}
 }

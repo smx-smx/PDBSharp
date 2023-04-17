@@ -10,27 +10,49 @@ using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Leaves.LF_VFTPATH_16t
 {
-	public class LF_VFTPATH_16t : LeafBase
+	public class Data : ILeafData
 	{
 		public UInt16 NumElements { get; set; }
-		public ILeafContainer Bases { get; set; }
+		public ILeafResolver? Bases { get; set; }
 
-		public LF_VFTPATH_16t(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
+		public Data(ushort numElements, ILeafResolver? bases) {
+			NumElements = numElements;
+			Bases = bases;
+		}
+	}
+
+	public class Serializer : LeafBase, ILeafSerializer
+	{
+		public Data? Data { get; set; }
+		public ILeafData? GetData() => Data;
+
+		
+
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
 		}
 
-		public override void Read() {
+		public void Read() {
 			TypeDataReader r = CreateReader();
-			NumElements = r.ReadUInt16();
-			Bases = r.ReadIndexedType16Lazy();
+			var NumElements = r.ReadUInt16();
+			var Bases = r.ReadIndexedType16Lazy();
+
+			Data = new Data(
+				numElements: NumElements,
+				bases: Bases
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			TypeDataWriter w = CreateWriter(LeafType.LF_VFTPATH_16t);
-			w.WriteUInt16(NumElements);
-			w.WriteIndexedType16(Bases);
+			w.WriteUInt16(data.NumElements);
+			w.WriteIndexedType16(data.Bases);
 			w.WriteHeader();
 		}
 	}

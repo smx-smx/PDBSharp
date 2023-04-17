@@ -11,13 +11,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Leaves.LF_VFTABLE
 {
-	public class LF_VFTABLE : LeafBase
-	{
-		public ILeafContainer Type { get; set; }
-		public ILeafContainer BaseVfTable { get; set; }
+	public class Data : ILeafData {
+		public ILeafResolver? Type { get; set; }
+		public ILeafResolver? BaseVfTable { get; set; }
 		public UInt32 OffsetInObjectLayout { get; set; }
 		/// <summary>
 		/// Size in Bytes
@@ -25,16 +25,32 @@ namespace Smx.PDBSharp.Leaves
 		public UInt32 NamesSize { get; set; }
 		public string[] Names { get; set; }
 
-		public LF_VFTABLE(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
+		public Data(ILeafResolver? type, ILeafResolver? baseVfTable, uint offsetInObjectLayout, uint namesSize, string[] names) {
+			Type = type;
+			BaseVfTable = baseVfTable;
+			OffsetInObjectLayout = offsetInObjectLayout;
+			NamesSize = namesSize;
+			Names = names;
+		}
+	}
+
+	public class Serializer : LeafBase, ILeafSerializer
+	{
+		public Data? Data { get; set; }
+		public ILeafData? GetData() => Data;
+
+		
+
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
 		}
 
-		public override void Read() {
+		public void Read() {
 			TypeDataReader r = CreateReader();
 
-			Type = r.ReadIndexedType32Lazy();
-			BaseVfTable = r.ReadIndexedType32Lazy();
-			OffsetInObjectLayout = r.ReadUInt32();
-			NamesSize = r.ReadUInt32();
+			var Type = r.ReadIndexedType32Lazy();
+			var BaseVfTable = r.ReadIndexedType32Lazy();
+			var OffsetInObjectLayout = r.ReadUInt32();
+			var NamesSize = r.ReadUInt32();
 
 			List<string> lstNames = new List<string>();
 
@@ -45,16 +61,27 @@ namespace Smx.PDBSharp.Leaves
 				read += (uint)(stream.Position - savedPos);
 				savedPos = stream.Position;
 			}
-			Names = lstNames.ToArray();
+			var Names = lstNames.ToArray();
+
+			Data = new Data(
+				type: Type,
+				baseVfTable: BaseVfTable,
+				offsetInObjectLayout: OffsetInObjectLayout,
+				namesSize: NamesSize,
+				names: Names
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			TypeDataWriter w = CreateWriter(LeafType.LF_VFTABLE);
-			w.WriteIndexedType(Type);
-			w.WriteIndexedType(BaseVfTable);
-			w.WriteUInt32(OffsetInObjectLayout);
-			w.WriteUInt32(NamesSize);
-			foreach (string name in Names) {
+			w.WriteIndexedType(data.Type);
+			w.WriteIndexedType(data.BaseVfTable);
+			w.WriteUInt32(data.OffsetInObjectLayout);
+			w.WriteUInt32(data.NamesSize);
+			foreach (string name in data.Names) {
 				w.WriteCString(name);
 			}
 			w.WriteHeader();

@@ -11,11 +11,11 @@ using Smx.SharpIO;
 using System.ComponentModel.Design;
 using System.IO;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_GDATA32
 {
-	public class S_GDATA32 : DataSym32Base
+	public class Serializer : Symbols.DataSym32.SerializerBase, ISymbolSerializer
 	{
-		public S_GDATA32(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 		}
 
 		public void Write() {

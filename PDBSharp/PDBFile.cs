@@ -12,9 +12,6 @@ using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.IO;
 using System.IO.MemoryMappedFiles;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Smx.PDBSharp
 {
@@ -45,8 +42,8 @@ namespace Smx.PDBSharp
 
 	public class PDBFile : IDisposable
 	{
-		public event OnTpiInitDelegate OnTpiInit;
-		public event OnDbiInitDelegate OnDbiInit;
+		public event OnTpiInitDelegate? OnTpiInit;
+		public event OnDbiInitDelegate? OnDbiInit;
 
 		public const int JG_OFFSET = 0x28;
 		public const int DS_OFFSET = 0x1B;
@@ -93,15 +90,13 @@ namespace Smx.PDBSharp
 		}
 
 		public void Dispose() {
-			if(disposables != null) {
-				foreach(var res in disposables) {
-					res.Dispose();
-				}
+			foreach(var res in disposables) {
+				res.Dispose();
 			}
 		}
 
-		private PDBFile(Memory<byte> mem, IList<IDisposable> disposables = null) {
-			this.disposables = disposables;
+		private PDBFile(Memory<byte> mem, IList<IDisposable>? disposables = null) {
+			this.disposables = disposables ?? new List<IDisposable>();
 
 			this.StreamTable = Services.GetService<StreamTableReader>();
 			Services.AddService<PDBFile>(this);
@@ -110,8 +105,8 @@ namespace Smx.PDBSharp
 
 			this.Type = MSFReader.DetectPdbType(span);
 
-			MSFReader msf = null;
-			StreamTableReader streamTable = null;
+			MSFReader msf;
+			StreamTableReader? streamTable = null;
 
 			if(Type != PDBType.Old) {
 				switch (Type) {
@@ -148,7 +143,7 @@ namespace Smx.PDBSharp
 			// init TPI
 			{
 				SpanStream tpiStream;
-				if(Type != PDBType.Old) {
+				if(streamTable != null) {
 					byte[] tpiData  = streamTable.GetStream(DefaultStreams.TPI);
 					tpiStream = new SpanStream(tpiData);
 				} else {
@@ -163,12 +158,15 @@ namespace Smx.PDBSharp
 			}
 			Services.AddService<TPIReader>(tpi);
 
-			TPIHashReader tpiHash = null;
+			TPIHashReader? tpiHash = null;
 			// init TPIHash
-			if (Type != PDBType.Old && tpi.Header.Hash.StreamNumber != -1) {
-				byte[] tpiHashData = streamTable.GetStream(tpi.Header.Hash.StreamNumber);
-				tpiHash = new TPIHashReader(Services, tpiHashData);
-				Services.AddService<TPIHashReader>(tpiHash);
+			if(streamTable != null) {
+				var tpiHeader = tpi.Header;
+				if(tpiHeader.Hash.StreamNumber != -1) {
+					byte[] tpiHashData = streamTable.GetStream(tpi.Header.Hash.StreamNumber);
+					tpiHash = new TPIHashReader(Services, tpiHashData);
+					Services.AddService<TPIHashReader>(tpiHash);
+				}
 			}
 
 			// init resolver
@@ -180,7 +178,7 @@ namespace Smx.PDBSharp
 			HasherV2 hasher = new HasherV2(Services);
 			Services.AddService<HasherV2>(hasher);
 
-			if (Type != PDBType.Old) {
+			if (streamTable != null) {
 				{ // init NameMap
 					byte[] nameMapData = streamTable.GetStream(DefaultStreams.PDB);
 
@@ -192,7 +190,7 @@ namespace Smx.PDBSharp
 				Services.AddService<NamedStreamTableReader>(namedStreamTable);
 
 				{ // init UdtNameMap
-					byte[] namesData = namedStreamTable.GetStreamByName("/names");
+					byte[]? namesData = namedStreamTable.GetStreamByName("/names");
 					if (namesData != null) {
 						UdtNameTableReader udtNameTable = new UdtNameTableReader(Services, namesData);
 						Services.AddService<UdtNameTableReader>(udtNameTable);

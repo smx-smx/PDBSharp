@@ -18,18 +18,18 @@ namespace Smx.PDBSharp
 	{
         public ModuleInfo Info { get; }
 
-        public IModule Module => lazyModule.Value;
+        public IModule? Module => lazyModule.Value;
 
-		private readonly ILazy<IModule> lazyModule;
+		private readonly ILazy<IModule?> lazyModule;
 
-		public event OnModuleReaderInitDelegate OnModuleReaderInit;
-		public event OnModuleDataDelegate OnModuleData;
+		public event OnModuleReaderInitDelegate? OnModuleReaderInit;
+		public event OnModuleDataDelegate? OnModuleData;
 
 		private readonly IServiceContainer ctx;
 
 		private readonly StreamTableReader StreamTable;
 
-		private IModule ReadModule() {
+		private IModule? ReadModule() {
 			if (Info.StreamNumber < 0) {
 				return null;
 			}

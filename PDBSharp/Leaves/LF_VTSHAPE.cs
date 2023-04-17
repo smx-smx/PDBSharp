@@ -11,10 +11,9 @@ using System;
 using System.ComponentModel.Design;
 using System.IO;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Leaves.LF_VTSHAPE
 {
-	public class LF_VTSHAPE : LeafBase
-	{
+	public class Data : ILeafData {
 		/// <summary>
 		/// number of entries in vfunctable
 		/// </summary>
@@ -22,20 +21,33 @@ namespace Smx.PDBSharp.Leaves
 
 		public VTableShapeDescriptor[] Descriptors { get; set; }
 
-		public LF_VTSHAPE(IServiceContainer pdb, SpanStream stream) : base(pdb, stream) {
+		public Data(ushort numberOfEntries, VTableShapeDescriptor[] descriptors) {
+			NumberOfEntries = numberOfEntries;
+			Descriptors = descriptors;
+		}
+	}
+
+	public class Serializer : LeafBase, ILeafSerializer
+	{
+		public Data? Data { get; set; }
+		public ILeafData? GetData() => Data;
+
+		
+
+		public Serializer(IServiceContainer pdb, SpanStream stream) : base(pdb, stream) {
 		}
 
 
-		public override void Read() {
+		public void Read() {
 			TypeDataReader r = CreateReader();
 
-			NumberOfEntries = r.ReadUInt16();
+			var NumberOfEntries = r.ReadUInt16();
 
 			//round up 4 bits (descriptor size)
 			int numberOfBytes = (int)Math.Ceiling((double)(4 * NumberOfEntries) / 8);
 			byte[] descriptorsData = r.ReadBytes(numberOfBytes);
 
-			Descriptors = new VTableShapeDescriptor[NumberOfEntries];
+			var Descriptors = new VTableShapeDescriptor[NumberOfEntries];
 
 			for (int i = 0; i < NumberOfEntries; i++) {
 				byte data = descriptorsData[i / 2];
@@ -50,24 +62,32 @@ namespace Smx.PDBSharp.Leaves
 
 				Descriptors[i] = (VTableShapeDescriptor)data;
 			}
+
+			Data = new Data(
+				numberOfEntries: NumberOfEntries,
+				descriptors: Descriptors
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			TypeDataWriter w = CreateWriter(LeafType.LF_VTSHAPE);
-			w.WriteUInt16(NumberOfEntries);
+			w.WriteUInt16(data.NumberOfEntries);
 
-			byte data = 0x00;
+			byte value = 0x00;
 
-			for (int i = 0; i < NumberOfEntries; i++) {
-				byte descr = (byte)Descriptors[i];
+			for (int i = 0; i < data.NumberOfEntries; i++) {
+				byte descr = (byte)data.Descriptors[i];
 
 				switch (i % 2) {
 					case 0:
-						data = (byte)(descr & 0xF);
+						value = (byte)(descr & 0xF);
 						break;
 					case 1:
-						data = (byte)(((descr << 4) & 0xF) | data);
-						w.WriteByte(data);
+						value = (byte)(((descr << 4) & 0xF) | value);
+						w.WriteByte(value);
 						break;
 				}
 			}

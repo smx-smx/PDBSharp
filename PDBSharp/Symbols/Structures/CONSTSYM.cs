@@ -7,36 +7,62 @@
  */
 #endregion
 using Smx.SharpIO;
+using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
 
 namespace Smx.PDBSharp.Symbols.Structures
 {
-	public abstract class ConstSymBase : SymbolBase
-	{
-		public ILeafContainer Type { get; set; }
-		public ILeafContainer Value { get; set; }
+	public class ConstSymData : ISymbolData {
+		public ILeafResolver? Type { get; set; }
+		public ILeafResolver? Value { get; set; }
 		public string Name { get; set; }
 
-		public ConstSymBase(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		public ConstSymData(ILeafResolver? type, ILeafResolver? value, string name) {
+			Type = type;
+			Value = value;
+			Name = name;
+		}
+	}
+
+
+	public abstract class ConstSymSerializerBase : SymbolSerializerBase, ISymbolSerializer
+	{
+		public ConstSymData? Data { get; set; }
+
+		public ConstSymSerializerBase(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
 		}
 
-		public override void Read() {
+		public void Read() {
 			var r = CreateReader();
 
-			Type = r.ReadIndexedType32Lazy();
-
-			Value = r.ReadVaryingType(out uint dataSize);
-			Name = r.ReadSymbolString();
+			var Type = r.ReadIndexedType32Lazy();
+			var Value = r.ReadVaryingType(out uint dataSize);
+			var Name = r.ReadSymbolString();
+			Data = new ConstSymData(
+				type: Type,
+				value: Value,
+				name: Name
+			);
 		}
 
+		public void Write() {
+			throw new NotImplementedException();
+		}
+
+		public ISymbolData? GetData() => Data;
+
 		public void Write(SymbolType symbolType) {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			var w = CreateWriter(symbolType);
 
-			w.WriteIndexedType(Type);
-			w.WriteVaryingType(Value);
-			w.WriteSymbolString(Name);
-
+			w.WriteIndexedType(data.Type);
+			w.WriteVaryingType(data.Value);
+			w.WriteSymbolString(data.Name);
 			w.WriteHeader();
 		}
 	}

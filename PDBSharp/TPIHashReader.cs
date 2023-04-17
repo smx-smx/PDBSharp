@@ -27,10 +27,10 @@ namespace Smx.PDBSharp
 	{
 		public readonly TreeDictionary<UInt32, UInt32> TypeIndexToOffset = new TreeDictionary<uint, uint>();
 		public Dictionary<UInt32, UInt32> HashValueToTypeIndex = new Dictionary<uint, uint>();
-		public Dictionary<uint, uint> NameIndexToTypeIndex { get; private set; }
+		public Dictionary<uint, uint>? NameIndexToTypeIndex { get; private set; }
 
 
-		public readonly UInt32[] RecordHashValues;
+		public readonly uint[]? RecordHashValues;
 
 		public TPIHashReader(IServiceContainer ctx, byte[] hashData) : base(hashData) {
 			TPIReader tpi = ctx.GetService<TPIReader>();

@@ -25,14 +25,14 @@ namespace Smx.PDBSharp.Codegen
 		}
 
 		public IEnumerable<SymbolNode> Build() {
-			IEnumerable<SymbolNode> tree = Dbi.Modules
+			IEnumerable<SymbolNode>? tree = Dbi.Modules
 				?.Select(mod => BuildGraph(mod))
 				//skip modules without graph
 				.Where(graph => graph != null)
 				.SelectMany(graph => graph)
 				.OrderBy(node => node.TypeDependencies.Count)
 				.ToList();
-			return tree;
+			return tree ?? Enumerable.Empty<SymbolNode>();
 		}
 	}
 }

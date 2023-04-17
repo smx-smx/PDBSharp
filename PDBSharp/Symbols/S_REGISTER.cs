@@ -10,31 +10,53 @@ using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_REGISTER
 {
-	public class S_REGISTER : SymbolBase
-	{
-		public ILeafContainer Type { get; set; }
+	public class Data : ISymbolData {
+		public ILeafResolver? Type { get; set; }
 		public UInt16 Register { get; set; }
 		public string Name { get; set; }
 
-		public S_REGISTER(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		public Data(ILeafResolver? type, ushort register, string name) {
+			Type = type;
+			Register = register;
+			Name = name;
+		}
+	}
+
+
+	public class Serializer : SymbolSerializerBase, ISymbolSerializer
+	{
+		public Data? Data { get; set; }
+		public ISymbolData? GetData() => Data;
+
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 		}
 
-		public override void Read() {
+		public void Read() {
 			var r = CreateReader();
 
-			Type = r.ReadIndexedType32Lazy();
-			Register = r.ReadUInt16();
-			Name = r.ReadSymbolString();
+			var Type = r.ReadIndexedType32Lazy();
+			var Register = r.ReadUInt16();
+			var Name = r.ReadSymbolString();
+			Data = new Data(
+				type: Type,
+				register: Register,
+				name: Name
+			);
 		}		
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			var w = CreateWriter(SymbolType.S_REGISTER);
-			w.WriteIndexedType(Type);
-			w.WriteUInt16(Register);
-			w.WriteSymbolString(Name);
+			w.WriteIndexedType(data.Type);
+			w.WriteUInt16(data.Register);
+			w.WriteSymbolString(data.Name);
 
 			w.WriteHeader();
 		}

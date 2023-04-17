@@ -7,36 +7,58 @@
  */
 #endregion
 using Smx.SharpIO;
+using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Leaves.LF_MODIFIER
 {
 
-	public class LF_MODIFIER : LeafBase
-	{
+	public class Data : ILeafData {
 		public CVModifier Flags { get; set; }
-		public ILeafContainer ModifiedType { get; set; }
+		public ILeafResolver? ModifiedType { get; set; }
 
-		public LF_MODIFIER(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+		public Data(CVModifier flags, ILeafResolver? modifiedType) {
+			Flags = flags;
+			ModifiedType = modifiedType;
+		}
+	}
+
+	public class Serializer : LeafBase, ILeafSerializer
+	{
+		public Data? Data { get; set; }
+		public ILeafData? GetData() => Data;
+
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 		}
 
-		public override void Read() {
+		
+
+		public void Read() {
 			TypeDataReader r = CreateReader();
 
-			ModifiedType = r.ReadIndexedType32Lazy();
-			Flags = r.ReadFlagsEnum<CVModifier>();
+			var ModifiedType = r.ReadIndexedType32Lazy();
+			var Flags = r.ReadFlagsEnum<CVModifier>();
+			Data = new Data(
+				modifiedType: ModifiedType,
+				flags: Flags
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			TypeDataWriter w = CreateWriter(LeafType.LF_MODIFIER);
-			w.WriteIndexedType(ModifiedType);
-			w.Write<CVModifier>(Flags);
+			w.WriteIndexedType(data.ModifiedType);
+			w.Write<CVModifier>(data.Flags);
 			w.WriteHeader();
 		}
 
 		public override string ToString() {
-			return $"LF_MODIFIER[ModifiedType='{ModifiedType}', Flags='{Flags}']";
+			var data = Data;
+			return $"LF_MODIFIER[ModifiedType='{data?.ModifiedType}', Flags='{data?.Flags}']";
 		}
 	}
 }

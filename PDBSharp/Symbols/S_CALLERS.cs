@@ -11,11 +11,11 @@ using Smx.SharpIO;
 using System.ComponentModel.Design;
 using System.IO;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_CALLERS
 {
-	public class S_CALLERS : FUNCTIONLIST
+	public class Serializer : Symbols.FUNCTIONLIST.Serializer
 	{
-		public S_CALLERS(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 
 		}
 	}

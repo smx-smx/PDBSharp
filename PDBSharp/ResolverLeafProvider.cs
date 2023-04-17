@@ -7,17 +7,5 @@
  */
 #endregion
 using Smx.PDBSharp.Leaves;
+using System;
 using System.IO;
-
-namespace Smx.PDBSharp
-{
-	public abstract class LeafContainerBase : ILeafContainer, ILeaf
-	{
-		public abstract uint TypeIndex { get; }
-		public abstract LeafType Type { get; }
-		public abstract ILeaf Data { get; }
-
-		public abstract void Read();
-		public abstract void Write();
-	}
-}

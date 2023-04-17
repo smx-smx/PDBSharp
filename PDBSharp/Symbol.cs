@@ -7,17 +7,14 @@
  */
 #endregion
 using Smx.PDBSharp.Symbols;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
 
 namespace Smx.PDBSharp
 {
-	public class Symbol
+	public interface ISymbol
 	{
-		public readonly SymbolType Type;
-		public readonly ISymbol Data;
-
-		public Symbol(SymbolType type, ISymbol symbol) {
-			this.Type = type;
-			this.Data = symbol;
-		}
+		SymbolType Type { get;  }
+		ISymbolSerializer Binary { get; }
+		ISymbolData Data { get; }
 	}
 }

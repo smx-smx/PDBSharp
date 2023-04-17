@@ -15,13 +15,13 @@ using System.Text;
 
 namespace Smx.PDBSharp.Symbols
 {
-	public abstract class SymbolBase : ISymbol
+	public abstract class SymbolSerializerBase
 	{
 		protected readonly IServiceContainer ctx;
 		protected readonly SpanStream stream;
 		protected readonly IModule Module;
 
-		public SymbolBase(IServiceContainer ctx, IModule mod, SpanStream stream) {
+		public SymbolSerializerBase(IServiceContainer ctx, IModule mod, SpanStream stream) {
 			this.ctx = ctx;
 			this.stream = stream;
 			this.Module = mod;
@@ -33,13 +33,6 @@ namespace Smx.PDBSharp.Symbols
 
 		protected SymbolDataWriter CreateWriter(SymbolType type) {
 			return new SymbolDataWriter(ctx, stream, type);
-		}
-
-		public virtual void Read() {
-			throw new NotImplementedException();
-		}
-		public virtual void Write() {
-			throw new NotImplementedException();
 		}
 	}
 }

@@ -7,32 +7,51 @@
  */
 #endregion
 using Smx.SharpIO;
+using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
+using Smx.PDBSharp.Leaves;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_BUILDINFO
 {
-	public class S_BUILDINFO : SymbolBase
+	public class Data : ISymbolData {
+		public ILeafResolver? ItemID { get; set; }
+		
+		public Data(ILeafResolver? itemId) {
+			ItemID = itemId;
+		}
+	}
+
+	public class Serializer : SymbolSerializerBase, ISymbolSerializer
 	{
-		public ILeafContainer ItemID { get; set; }
+		public Data? Data { get; set; }
+		public ISymbolData? GetData() => Data;
 
-		public S_BUILDINFO(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
 		}
 
-		public override void Read() {
+		public void Read() {
 			var r = CreateReader();
-			ItemID = r.ReadIndexedType32Lazy();
+			var ItemID = r.ReadIndexedType32Lazy();
+			Data = new Data(
+				itemId: ItemID
+			);
 		}
 
-		public override void Write() {
-			var w = CreateWriter(SymbolType.S_BUILDINFO);
-			w.WriteIndexedType(ItemID);
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
 
+			var w = CreateWriter(SymbolType.S_BUILDINFO);
+			w.WriteIndexedType(data.ItemID);
 			w.WriteHeader();
 		}
 
 		public override string ToString() {
-			return $"S_BUILDINFO[ItemID='{ItemID}']";
+			var data = Data;
+			return $"S_BUILDINFO[ItemID='{data?.ItemID}']";
 		}
 	}
 }

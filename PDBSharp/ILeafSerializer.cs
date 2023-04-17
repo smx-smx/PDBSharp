@@ -7,11 +7,13 @@
  */
 #endregion
 using System.IO;
+using Smx.PDBSharp.Leaves;
 
 namespace Smx.PDBSharp
 {
-	public interface ILeaf
+	public interface ILeafSerializer
 	{
+		ILeafData? GetData();
 		void Read();
 		void Write();
 	}

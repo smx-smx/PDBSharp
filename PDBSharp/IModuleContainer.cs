@@ -15,6 +15,6 @@ namespace Smx.PDBSharp
 	{
 		event OnModuleDataDelegate OnModuleData;
 		ModuleInfo Info { get; }
-		IModule Module { get; }
+		IModule? Module { get; }
 	}
 }

@@ -16,17 +16,17 @@ namespace Smx.PDBSharp
 {
 	class WrappedLazy<T> : ILazy<T>
 	{
-		private readonly Lazy<T> lazy;
-		public T Value => lazy.Value;
+		private readonly Lazy<T?> lazy;
+		public T? Value => lazy.Value;
 
 		public WrappedLazy(Func<T> valueFactory) {
-			lazy = new Lazy<T>(valueFactory, LazyThreadSafetyMode.None);
+			lazy = new Lazy<T?>(valueFactory, LazyThreadSafetyMode.None);
 		}
 	}
 
 	class LazyFactory
 	{
-		public static ILazy<T> CreateLazy<T>(Func<T> valueFactory) where T : class {
+		public static ILazy<T> CreateLazy<T>(Func<T> valueFactory) where T : class? {
 #if false
 			return new WrappedLazy<T>(valueFactory);
 #else

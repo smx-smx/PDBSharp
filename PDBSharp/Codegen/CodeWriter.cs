@@ -13,6 +13,7 @@ using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Smx.PDBSharp.LeafResolver;
 
 namespace Smx.PDBSharp.Codegen
 {
@@ -22,8 +23,9 @@ namespace Smx.PDBSharp.Codegen
 
 		private IndentedTextWriter itw;
 
-		public CodeWriter(IEnumerable<SymbolNode> tree) {
+		public CodeWriter(IEnumerable<SymbolNode> tree, TextWriter writer) {
 			this.tree = tree;
+			this.itw = new IndentedTextWriter(writer);
 		}
 
 		private Dictionary<SpecialType, string> SpecialTypeMaps = new Dictionary<SpecialType, string>() {
@@ -55,23 +57,30 @@ namespace Smx.PDBSharp.Codegen
 			type.Visited = true;
 		}
 
-		private void WriteType(ILeafContainer leafc) {
-			switch (leafc.Type) {
+		private void WriteType(ILeafResolver? leafc) {
+			if (leafc == null) return;
+			var ctx = leafc.Ctx;
+			if (ctx == null) return;
+
+			switch (ctx.Type) {
 				case LeafType.SPECIAL_BUILTIN:
-					BuiltinTypeLeaf builtin = leafc.Data as BuiltinTypeLeaf;
+					BuiltinTypeLeaf.Data? builtin = ctx.Data as BuiltinTypeLeaf.Data;
+					if (builtin == null) throw new InvalidOperationException();
+
 					itw.Write(SpecialTypeMaps[builtin.SpecialType]);
 					if (builtin.TypeMode != SpecialTypeMode.Direct)
 						itw.Write('*');
 					break;
 				case LeafType.LF_ARGLIST:
-					LF_ARGLIST lfArgList = leafc.Data as LF_ARGLIST;
+					if (ctx.Data is not Leaves.LF_ARGLIST.Data lfArgList) throw new InvalidOperationException();
+					
 					itw.Write('(');
 					for (int i = 0; i < lfArgList.NumberOfArguments; i++) {
 						WriteType(lfArgList.ArgumentTypes[i]);
-						if (lfArgList.ArgumentTypes[i].Data is BuiltinTypeLeaf bt &&
-							i + 1 == lfArgList.NumberOfArguments &&
-							bt.SpecialType == SpecialType.None &&
-							bt.TypeMode == SpecialTypeMode.Direct
+						if (lfArgList.ArgumentTypes[i]?.Ctx?.Data is BuiltinTypeLeaf.Data bt
+						    && i + 1 == lfArgList.NumberOfArguments
+						    && bt.SpecialType == SpecialType.None
+						    && bt.TypeMode == SpecialTypeMode.Direct
 						) {
 							itw.Write("...");
 						} else {
@@ -84,7 +93,7 @@ namespace Smx.PDBSharp.Codegen
 					itw.Write(')');
 					break;
 				case LeafType.LF_POINTER:
-					LF_POINTER lfPtr = leafc.Data as LF_POINTER;
+					if (ctx.Data is not Leaves.LF_POINTER.Data lfPtr) throw new InvalidOperationException();
 					WriteType(lfPtr.UnderlyingType);
 					itw.Write("*");
 					if (lfPtr.Attributes.IsConst) {
@@ -100,32 +109,32 @@ namespace Smx.PDBSharp.Codegen
 					}
 					break;
 				case LeafType.LF_MODIFIER:
-					LF_MODIFIER lfMod = leafc.Data as LF_MODIFIER;
+					if (ctx.Data is not Leaves.LF_MODIFIER.Data lfMod) throw new InvalidOperationException();
 					if (lfMod.Flags.HasFlag(CVModifier.Const)) {
 						itw.Write("const ");
 					}
 					break;
 				case LeafType.LF_ENUM:
-					LF_ENUM lfEnum = leafc.Data as LF_ENUM;
+					if (ctx.Data is not Leaves.LF_ENUM.Data lfEnum) throw new InvalidOperationException();
 					itw.Write(lfEnum.Name);
 					break;
 				case LeafType.LF_STRUCTURE:
-					LF_CLASS_STRUCTURE_INTERFACE lfcsi = leafc.Data as LF_CLASS_STRUCTURE_INTERFACE;
+					if (ctx.Data is not Leaves.LF_CLASS_STRUCTURE_INTERFACE.Data lfcsi) throw new InvalidOperationException();
 					itw.Write(lfcsi.Name);
 					break;
 				default:
-					throw new NotImplementedException(leafc.Type.ToString());
+					throw new NotImplementedException(ctx.Type.ToString());
 			}
 		}
 
-		private void WriteGproc(S_GPROC32 gproc) {
-			switch (gproc.Type.Data) {
-				case LF_PROCEDURE lfProc:
+		private void WriteGproc(Symbols.ProcSym32.Data gproc) {
+			switch (gproc.Type?.Ctx.Data) {
+				case Leaves.LF_PROCEDURE.Data lfProc:
 					WriteType(lfProc.ReturnValueType);
 					itw.Write($" {gproc.Name}");
 					WriteType(lfProc.ArgumentListType);
 					break;
-				case LF_MFUNCTION lfMfunc:
+				case Leaves.LF_MFUNCTION.Data lfMfunc:
 					throw new NotImplementedException();
 			}
 
@@ -140,15 +149,15 @@ namespace Smx.PDBSharp.Codegen
 
 			switch (sym.Symbol.Type) {
 				case SymbolType.S_GPROC32:
-					WriteGproc(sym.Symbol.Data as S_GPROC32);
+					if (sym.Symbol.Data is not Symbols.ProcSym32.Data gproc) throw new InvalidOperationException();
+					WriteGproc(gproc);
 					break;
 			}
 
 			sym.Visited = true;
 		}
 
-		public void Write(TextWriter writer) {
-			this.itw = new IndentedTextWriter(writer);
+		public void Write() {
 			foreach (var sym in tree) {
 				WriteSymbol(sym);
 			}

@@ -12,8 +12,9 @@ using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.IO;
 using System.Text;
+using Smx.PDBSharp.LeafResolver;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Leaves.LF_POINTER16t
 {
 	public class PointerAttributes16 {
 		private readonly UInt16 attrs;
@@ -79,29 +80,59 @@ namespace Smx.PDBSharp.Leaves
 		FunctionGeneral = 0x08
 	}
 
-	public class LF_POINTER16t : LeafBase
-	{
-		public ILeafContainer UnderlyingType { get; set; }
+	public class Data : ILeafData {
+		public ILeafResolver? UnderlyingType { get; set; }
 		public PointerAttributes16 Attributes { get; set; }
 
-		public ILeafContainer ContainingClass { get; set; }
+		public ILeafResolver? ContainingClass { get; set; }
 		public MemberPointerType MemberPointerType { get; set; }
 
 		public UInt16 BaseSegment { get; set; }
 
-		public ILeafContainer BaseType { get; set; }
-		public string BaseTypeName { get; set; }
+		public ILeafResolver? BaseType { get; set; }
+		public string? BaseTypeName { get; set; }
 
-		public LF_POINTER16t(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+		public Data(
+			ILeafResolver? underlyingType,
+			PointerAttributes16 attributes,
+			ILeafResolver? containingClass,
+			MemberPointerType memberPointerType,
+			ushort baseSegment,
+			ILeafResolver? baseType,
+			string? baseTypeName
+		) {
+			UnderlyingType = underlyingType;
+			Attributes = attributes;
+			ContainingClass = containingClass;
+			MemberPointerType = memberPointerType;
+			BaseSegment = baseSegment;
+			BaseType = baseType;
+			BaseTypeName = baseTypeName;
+		}
+	}
+
+	public class Serializer : LeafBase, ILeafSerializer
+	{
+		public Data? Data { get; set; }
+		public ILeafData? GetData() => Data;
+		
+		
+
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 		}
 
-		public override void Read() {
+		public void Read() {
 			TypeDataReader r = CreateReader();
 
 			//// header
 
-			Attributes = new PointerAttributes16(r.ReadUInt16());
-			UnderlyingType = r.ReadIndexedType16Lazy();
+			var Attributes = new PointerAttributes16(r.ReadUInt16());
+			var UnderlyingType = r.ReadIndexedType16Lazy();
+			var BaseSegment = new UInt16();
+			ILeafResolver? BaseType = null;
+			string? BaseTypeName = null;
+			ILeafResolver? ContainingClass = null;
+			var memberPointerType = MemberPointerType.Undefined;
 
 			//// body
 			switch (Attributes.PointerMode) {
@@ -121,9 +152,23 @@ namespace Smx.PDBSharp.Leaves
 				case PointerMode.PointerMember:
 				case PointerMode.PointerFunction:
 					ContainingClass = r.ReadIndexedType16Lazy();
-					MemberPointerType = r.ReadEnum<MemberPointerType>();
+					memberPointerType = r.ReadEnum<MemberPointerType>();
 					break;
 			}
+
+			Data = new Data(
+				underlyingType: UnderlyingType,
+				attributes: Attributes,
+				containingClass: ContainingClass,
+				memberPointerType: memberPointerType,
+				baseSegment: BaseSegment,
+				baseType: BaseType,
+				baseTypeName: BaseTypeName
+			);
+		}
+
+		public void Write() {
+			throw new NotImplementedException();
 		}
 	}
 }

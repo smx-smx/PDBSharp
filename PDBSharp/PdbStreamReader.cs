@@ -38,9 +38,8 @@ namespace Smx.PDBSharp
 		public readonly UInt32 Signature;
 		public readonly UInt32 NumberOfUpdates; //AGE
 
-		public readonly Guid NewSignature;
-
-		public readonly NameIndexTableReader NameTable;
+		public readonly Guid? NewSignature;
+		public readonly NameIndexTableReader? NameTable;
 
 		private readonly bool ContainsIdStream;
 

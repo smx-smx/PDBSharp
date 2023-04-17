@@ -11,22 +11,38 @@ using System;
 using System.ComponentModel.Design;
 using System.IO;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Leaves.LF_ULONG
 {
-	public class LF_ULONG : LeafBase
-	{
+	public class Data : ILeafData {
 		public UInt32 Value { get; set; }
-		public LF_ULONG(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
+		public Data(uint value) {
+			Value = value;
+		}
+	}
+
+	public class Serializer : LeafBase, ILeafSerializer
+	{
+		public Data? Data { get; set; }
+		public ILeafData? GetData() => Data;
+		
+
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
 		}
 
-		public override void Read() {
+		public void Read() {
 			TypeDataReader r = CreateReader();
-			Value = r.ReadUInt32();
+			var Value = r.ReadUInt32();
+			Data = new Data(
+				value: Value
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			TypeDataWriter w = CreateWriter(LeafType.LF_ULONG);
-			w.WriteUInt32(Value);
+			w.WriteUInt32(data.Value);
 			w.WriteHeader();
 		}
 	}

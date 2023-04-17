@@ -7,45 +7,72 @@
  */
 #endregion
 using Smx.SharpIO;
+using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Leaves.LF_MEMBER
 {
-	public class LF_MEMBER : LeafBase
-	{
+	public class Data : ILeafData {
 		public FieldAttributes Attributes { get; set; }
-		public ILeafContainer FieldType { get; set; }
+		public ILeafResolver? FieldType { get; set; }
 
-		public ILeafContainer Offset { get; set; }
+		public ILeafResolver? Offset { get; set; }
 
 		public string Name { get; set; }
 
-		public LF_MEMBER(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+		public Data(FieldAttributes attributes, ILeafResolver? fieldType, ILeafResolver? offset, string name) {
+			Attributes = attributes;
+			FieldType = fieldType;
+			Offset = offset;
+			Name = name;
+		}
+	}
+
+	public class Serializer : LeafBase, ILeafSerializer
+	{
+		public Data? Data { get; set; }
+		public ILeafData? GetData() => Data;
+
+		
+
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 		}
 
-		public override void Read() {
+		public void Read() {
 			TypeDataReader r = CreateReader();
 
-			Attributes = new FieldAttributes(r.ReadUInt16());
-			FieldType = r.ReadIndexedType32Lazy();
-
-			Offset = r.ReadVaryingType(out uint dataSize);
-
-			Name = r.ReadCString();
+			var Attributes = new FieldAttributes(r.ReadUInt16());
+			var FieldType = r.ReadIndexedType32Lazy();
+			var Offset = r.ReadVaryingType(out uint dataSize);
+			var Name = r.ReadCString();
+			Data = new Data(
+				attributes: Attributes,
+				fieldType: FieldType,
+				offset: Offset,
+				name: Name
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			TypeDataWriter w = CreateWriter(LeafType.LF_MEMBER);
-			w.WriteUInt16((ushort)Attributes);
-			w.WriteIndexedType(FieldType);
-			w.WriteVaryingType(Offset);
-			w.WriteCString(Name);
+			w.WriteUInt16((ushort)data.Attributes);
+			w.WriteIndexedType(data.FieldType);
+			w.WriteVaryingType(data.Offset);
+			w.WriteCString(data.Name);
 			w.WriteHeader();
 		}
 
 		public override string ToString() {
-			return $"LF_MEMBER[Attributes='{Attributes}', FieldType='{FieldType}', Offset='{Offset}', Name='{Name}']";
+			var data = Data;
+			return $"LF_MEMBER[Attributes='{data?.Attributes}'" +
+				$", FieldType='{data?.FieldType}'" +
+				$", Offset='{data?.Offset}'" +
+				$", Name='{data?.Name}']";
 		}
 	}
 }

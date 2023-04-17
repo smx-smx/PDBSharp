@@ -7,30 +7,51 @@
  */
 #endregion
 using Smx.SharpIO;
+using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
 
 namespace Smx.PDBSharp.Leaves
 {
+	public class LF_MODIFIER_16t_Data {
+		public CVModifier Attributes { get; set; }
+		public ILeafResolver? ModifiedType { get; set; }
+
+		public LF_MODIFIER_16t_Data(CVModifier attributes, ILeafResolver? modifiedType) {
+			Attributes = attributes;
+			ModifiedType = modifiedType;
+		}
+	}
+
 	public class LF_MODIFIER_16t : LeafBase
 	{
-		public CVModifier Attributes { get; set; }
-		public ILeafContainer ModifiedType { get; set; }
+		public LF_MODIFIER_16t_Data? Data { get; set;  }
+
+		
 
 		public LF_MODIFIER_16t(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
 		}
 
-		public override void Read() {
+		public void Read() {
 			TypeDataReader r = CreateReader();
 
-			Attributes = r.ReadFlagsEnum<CVModifier>();
-			ModifiedType = r.ReadIndexedType16Lazy();
+			var Attributes = r.ReadFlagsEnum<CVModifier>();
+			var ModifiedType = r.ReadIndexedType16Lazy();
+
+			Data = new LF_MODIFIER_16t_Data(
+				attributes: Attributes,
+				modifiedType: ModifiedType
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			TypeDataWriter w = CreateWriter(LeafType.LF_MODIFIER_16t);
-			w.Write<CVModifier>(Attributes);
-			w.WriteIndexedType16(ModifiedType);
+			w.Write<CVModifier>(data.Attributes);
+			w.WriteIndexedType16(data.ModifiedType);
 			w.WriteHeader();
 		}
 	}

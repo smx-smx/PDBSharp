@@ -11,35 +11,56 @@ using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_DEFRANGE_FRAMEPOINTER_REL
 {
-	public class S_DEFRANGE_FRAMEPOINTER_REL : SymbolBase
-	{
+	public class Data : ISymbolData {
 		public UInt32 FramePointerOffset { get; set; }
 		public CV_LVAR_ADDR_RANGE Range { get; set; }
 		public CV_LVAR_ADDR_GAP[] Gaps { get; set; }
 
-		public S_DEFRANGE_FRAMEPOINTER_REL(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		public Data(uint framePointerOffset, CV_LVAR_ADDR_RANGE range, CV_LVAR_ADDR_GAP[] gaps) {
+			FramePointerOffset = framePointerOffset;
+			Range = range;
+			Gaps = gaps;
+		}
+	}
+
+	public class Serializer : SymbolSerializerBase, ISymbolSerializer
+	{
+		private Data? Data { get; set; }
+
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 		}
 
-		public override void Read() {
+		public void Read() {
 			var r = CreateReader();
-			FramePointerOffset = r.ReadUInt32();
-			Range = new CV_LVAR_ADDR_RANGE(stream);
-			Gaps = CV_LVAR_ADDR_GAP.ReadGaps(r);
+			var FramePointerOffset = r.ReadUInt32();
+			var Range = new CV_LVAR_ADDR_RANGE(stream);
+			var Gaps = CV_LVAR_ADDR_GAP.ReadGaps(r);
+			Data = new Data(
+				framePointerOffset: FramePointerOffset,
+				range: Range,
+				gaps: Gaps
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+			
 			var w = CreateWriter(SymbolType.S_DEFRANGE_FRAMEPOINTER_REL);
-			w.WriteUInt32(FramePointerOffset);
-			Range.Write(w);
+			w.WriteUInt32(data.FramePointerOffset);
+			data.Range.Write(w);
 
-			foreach (CV_LVAR_ADDR_GAP gap in Gaps) {
+			foreach (CV_LVAR_ADDR_GAP gap in data.Gaps) {
 				gap.Write(w);
 			}
 
 			w.WriteHeader();
 		}
+
+		public ISymbolData? GetData() => Data;
 	}
 }

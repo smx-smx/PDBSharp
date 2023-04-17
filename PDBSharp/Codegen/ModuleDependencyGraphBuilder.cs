@@ -22,7 +22,7 @@ namespace Smx.PDBSharp.Codegen
 			this.module = module;
 		}
 
-		private SymbolNode AddSymbolNode(Symbol sym) {
+		private SymbolNode AddSymbolNode(SymbolContext sym) {
 			SymbolNode node = new SymbolNode(sym);
 			nodes.Add(node);
 			return node;
@@ -30,18 +30,24 @@ namespace Smx.PDBSharp.Codegen
 
 		public IList<SymbolNode> BuildTree() {
 			if (!(module.Module is CodeViewModuleReader cvm))
-				return null;
+				return nodes;
 
 			foreach (var sym in cvm.Symbols) {
 				SymbolNode node;
-				switch (sym.Data) {
-					case S_GPROC32 gproc:
-						node = AddSymbolNode(sym);
-						node.AddDependency(gproc.Type);
+				switch (sym.Data?.Data) {
+					case Symbols.ProcSym32.Data proc:
+						node = AddSymbolNode(sym.Data);
+						if (proc.Type != null) {
+							node.AddDependency(proc.Type.Ctx);
+						}
+
 						break;
-					case S_GDATA32 gdata:
-						node = AddSymbolNode(sym);
-						node.AddDependency(gdata.Type);
+					case Symbols.DataSym32.Data data:
+						node = AddSymbolNode(sym.Data);
+						if (data.Type != null) {
+							node.AddDependency(data.Type.Ctx);
+						}
+
 						break;
 					default:
 						//Console.Error.WriteLine($"Unsupported symbol type {sym.Type}");

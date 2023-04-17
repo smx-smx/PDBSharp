@@ -10,8 +10,9 @@ using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Leaves.LF_POINTER
 {
 	public class PointerAttributes
 	{
@@ -39,30 +40,51 @@ namespace Smx.PDBSharp.Leaves
 		public bool IsRestricted => ((attrs >> 12) & 1) == 1;
 	}
 
-	public class LF_POINTER : LeafBase
-	{
-		public ILeafContainer UnderlyingType { get; set; }
+	public class Data : ILeafData {
+		public ILeafResolver? UnderlyingType { get; set; }
 		public PointerAttributes Attributes { get; set; }
 
-		public LF_POINTER(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
+		public Data(ILeafResolver? underlyingType, PointerAttributes attributes) {
+			UnderlyingType = underlyingType;
+			Attributes = attributes;
+		}
+	}
+
+	public class Serializer : LeafBase, ILeafSerializer
+	{
+		public Data? Data { get; set; }
+		public ILeafData? GetData() => Data;
+
+		
+
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
 		}
 
-		public override void Read() {
+		public void Read() {
 			TypeDataReader r = CreateReader();
 
-			UnderlyingType = r.ReadIndexedType32Lazy();
-			Attributes = new PointerAttributes(r.ReadUInt32());
+			var UnderlyingType = r.ReadIndexedType32Lazy();
+			var Attributes = new PointerAttributes(r.ReadUInt32());
+			
+			Data = new Data(
+				underlyingType: UnderlyingType,
+				attributes: Attributes
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			TypeDataWriter w = CreateWriter(LeafType.LF_POINTER);
-			w.WriteIndexedType(UnderlyingType);
-			w.WriteUInt32((uint)Attributes);
+			w.WriteIndexedType(data.UnderlyingType);
+			w.WriteUInt32((uint)data.Attributes);
 			w.WriteHeader();
 		}
 
 		public override string ToString() {
-			return $"LF_POINTER[UnderlyingType='{UnderlyingType}', Attributes='{Attributes}']";
+			var data = Data;
+			return $"LF_POINTER[UnderlyingType='{data?.UnderlyingType}', Attributes='{data?.Attributes}']";
 		}
 	}
 }

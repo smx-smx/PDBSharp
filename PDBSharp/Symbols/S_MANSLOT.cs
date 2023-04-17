@@ -11,34 +11,58 @@ using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_MANSLOT
 {
-	public class S_MANSLOT : SymbolBase
-	{
+	public class Data : ISymbolData {
 		public UInt32 SlotIndex { get; set; }
-		public ILeafContainer Type { get; set; }
+		public ILeafResolver? Type { get; set; }
 		public CV_LVAR_ATTR Attributes { get; set; }
 		public string Name { get; set; }
 
-		public S_MANSLOT(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		public Data(uint slotIndex, ILeafResolver? type, CV_LVAR_ATTR attributes, string name) {
+			SlotIndex = slotIndex;
+			Type = type;
+			Attributes = attributes;
+			Name = name;
+		}
+	}
+
+	public class Serializer : SymbolSerializerBase, ISymbolSerializer
+	{
+		public Data? Data { get; set; }
+		public ISymbolData? GetData() => Data;
+
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
 		}
 
-		public override void Read() {
+		public void Read() {
 			var r = CreateReader();
 
-			SlotIndex = r.ReadUInt32();
-			Type = r.ReadIndexedType32Lazy();
-			Attributes = new CV_LVAR_ATTR(stream);
-			Name = r.ReadSymbolString();
+			var SlotIndex = r.ReadUInt32();
+			var Type = r.ReadIndexedType32Lazy();
+			var Attributes = new CV_LVAR_ATTR(stream);
+			var Name = r.ReadSymbolString();
+
+			Data = new Data(
+				slotIndex: SlotIndex,
+				type: Type,
+				attributes: Attributes,
+				name: Name
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			var w = CreateWriter(SymbolType.S_MANSLOT);
-			w.WriteUInt32(SlotIndex);
-			w.WriteIndexedType(Type);
-			Attributes.Write(w);
-			w.WriteSymbolString(Name);
+			w.WriteUInt32(data.SlotIndex);
+			w.WriteIndexedType(data.Type);
+			data.Attributes.Write(w);
+			w.WriteSymbolString(data.Name);
 
 			w.WriteHeader();
 		}

@@ -11,28 +11,52 @@ using System;
 using System.ComponentModel.Design;
 using System.IO;
 using System.Linq;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_ANNOTATION
 {
-	internal class S_ANNOTATION : SymbolBase
-	{
+	public class Data : ISymbolData {
 		public UInt32 Offset { get; set; }
 		public UInt16 Segment { get; set; }
 		public UInt16 NumberOfStrings { get; set; }
 		public string[] Annotations { get; set; }
 
-		public S_ANNOTATION(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		public Data(uint offset, ushort segment, ushort numberOfStrings, string[] annotations) {
+			Offset = offset;
+			Segment = segment;
+			NumberOfStrings = numberOfStrings;
+			Annotations = annotations;
+		}
+	}
+
+	public class Serializer : SymbolSerializerBase, ISymbolSerializer
+	{
+		public Data? Data { get; set; }
+		public void Write() {
+			throw new NotImplementedException();
 		}
 
-		public override void Read() {
-			var r = CreateReader();
-			Offset = r.ReadUInt32();
-			Segment = r.ReadUInt16();
-			NumberOfStrings = r.ReadUInt16();
+		public ISymbolData? GetData() => Data;
 
-			Annotations = Enumerable.Range(1, NumberOfStrings)
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		}
+
+		public void Read() {
+			var r = CreateReader();
+			var Offset = r.ReadUInt32();
+			var Segment = r.ReadUInt16();
+			var NumberOfStrings = r.ReadUInt16();
+
+			var Annotations = Enumerable.Range(1, NumberOfStrings)
 				.Select(_ => r.ReadCString())
 				.ToArray();
+
+			Data = new Data(
+				offset: Offset,
+				segment: Segment,
+				numberOfStrings: NumberOfStrings,
+				annotations: Annotations
+			);
 		}
 	}
 }

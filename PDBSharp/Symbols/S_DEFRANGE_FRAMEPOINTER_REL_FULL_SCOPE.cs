@@ -10,11 +10,11 @@ using Smx.SharpIO;
 using System.ComponentModel.Design;
 using System.IO;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE
 {
-	public class S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE : S_DEFRANGE_FRAMEPOINTER_REL
+	public class Serializer : Symbols.S_DEFRANGE_FRAMEPOINTER_REL.Serializer
 	{
-		public S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
 
 		}
 

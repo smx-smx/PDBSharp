@@ -177,10 +177,10 @@ namespace Smx.PDBSharp.Dumper
 				shouldGetValue = true;
 
 				switch (obj) {
-					case LazyLeafProvider llp:
-						if (llp.Leaf == null) {
+					case LazyLeafData llp:
+						if(llp.Ctx == null) {
 							shouldGetValue = false;
-							if (llp.Leaf != null) {
+							if (llp.Ctx != null) {
 								value = "<...>";
 							}
 						}

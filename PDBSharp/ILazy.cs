@@ -14,6 +14,6 @@ namespace Smx.PDBSharp
 {
 	public interface ILazy<T>
 	{
-		T Value { get; }
+		T? Value { get; }
 	}
 }

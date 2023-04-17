@@ -7,26 +7,43 @@
  */
 #endregion
 using Smx.SharpIO;
+using System;
 using System.ComponentModel.Design;
 using System.IO;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Leaves.LF_UQUADWORD
 {
-	public class LF_UQUADWORD : LeafBase
-	{
+	public class Data : ILeafData {
 		public ulong Value { get; set; }
+		public Data(ulong value) {
+			Value = value;
+		}
+	}
 
-		public LF_UQUADWORD(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
+	public class Serializer : LeafBase, ILeafSerializer
+	{
+		public Data? Data { get; set; }
+		public ILeafData? GetData() => Data;
+
+		
+
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
 		}
 
-		public override void Read() {
+		public void Read() {
 			TypeDataReader r = CreateReader();
-			Value = r.ReadUInt64();
+			var Value = r.ReadUInt64();
+			Data = new Data(
+				value: Value
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			TypeDataWriter w = CreateWriter(LeafType.LF_UQUADWORD);
-			w.WriteUInt64(Value);
+			w.WriteUInt64(data.Value);
 			w.WriteHeader();
 		}
 	}

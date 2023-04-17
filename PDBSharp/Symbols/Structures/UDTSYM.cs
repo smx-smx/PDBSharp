@@ -7,30 +7,53 @@
  */
 #endregion
 using Smx.SharpIO;
+using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
 
-namespace Smx.PDBSharp.Symbols.Structures
+namespace Smx.PDBSharp.Symbols.Structures.UdtSym
 {
-	public class UdtSym : SymbolBase
-	{
-		public ILeafContainer Type { get; set; }
+	public class Data : ISymbolData {
+		public ILeafResolver? Type { get; set; }
 		public string Name { get; set; }
+
+		public Data(ILeafResolver? type, string name) {
+			Type = type;
+			Name = name;
+		}
+	}
+
+	public class UdtSym : SymbolSerializerBase, ISymbolSerializer
+	{
+		public Data? Data { get; set; }
+		public void Write() {
+			throw new NotImplementedException();
+		}
+
+		public ISymbolData? GetData() => Data;
 
 		public UdtSym(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
 		}
 
-		public override void Read() {
+		public void Read() {
 			var r = CreateReader();
-			Type = r.ReadIndexedType32Lazy();
-			Name = r.ReadSymbolString();
+			var Type = r.ReadIndexedType32Lazy();
+			var Name = r.ReadSymbolString();
+			Data = new Data(
+				type: Type,
+				name: Name
+			);
 		}
 
 		public void Write(SymbolType symbolType) {
-			var w = CreateWriter(symbolType);
-			w.WriteIndexedType(Type);
-			w.WriteSymbolString(Name);
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
 
+			var w = CreateWriter(symbolType);
+			w.WriteIndexedType(data.Type);
+			w.WriteSymbolString(data.Name);
 			w.WriteHeader();
 		}
 	}

@@ -16,7 +16,7 @@ namespace Smx.PDBSharp
 		public SymbolsWriter(Stream stream) {
 		}
 
-		public void WriteSymbols(IEnumerable<Symbol> symbols) {
+		public void WriteSymbols(IEnumerable<ISymbol> symbols) {
 		}
 	}
 }

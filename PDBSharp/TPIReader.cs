@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.IO;
 using System.Runtime.InteropServices;
+using Smx.PDBSharp.LeafResolver;
 
 namespace Smx.PDBSharp
 {
@@ -74,13 +75,13 @@ namespace Smx.PDBSharp
 
 		private readonly IServiceContainer ctx;
 
-		public event OnLeafDataDelegate OnLeafData;
+		public event OnLeafDataDelegate? OnLeafData;
 
-		public ILazy<IEnumerable<ILeafContainer>> lazyLeafContainers;
+		public ILazy<IEnumerable<ILeafResolver?>> lazyLeafContainers;
 
-		public IEnumerable<ILeafContainer> Types => lazyLeafContainers.Value;
+		public IEnumerable<ILeafResolver?>? Types => lazyLeafContainers.Value;
 
-		private delegate ILeafContainer ReadTypeDelegate(out long dataSize);
+		private delegate ILeafResolver? ReadTypeDelegate(out long dataSize);
 		private readonly ReadTypeDelegate TypeReader;
 
 		public uint GetLeafSize(UInt32 offset) {
@@ -111,7 +112,7 @@ namespace Smx.PDBSharp
 
 			PDBFile pdb = ctx.GetService<PDBFile>();
 			if(pdb.Type == PDBType.Old) {
-				this.TypeReader = new ReadTypeDelegate(ReadTypeOld);
+				TypeReader = ReadTypeOld;
 				JGHeaderOld oldHdr = ctx.GetService<JGHeaderOld>();
 				Header = ImportJGOld(oldHdr);
 			} else {
@@ -123,7 +124,7 @@ namespace Smx.PDBSharp
 				if (!Enum.IsDefined(typeof(TPIVersion), Header.Version)) {
 					throw new InvalidDataException();
 				}
-				this.TypeReader = new ReadTypeDelegate(ReadType);
+				TypeReader = ReadType;
 			}
 
 
@@ -136,11 +137,11 @@ namespace Smx.PDBSharp
 			lazyLeafContainers = LazyFactory.CreateLazy(ReadTypes);
 		}
 
-		public ILeafContainer ReadType(uint typeOffset) {
+		public ILeafResolver? ReadType(uint typeOffset) {
 			return PerformAt(typeOffset, () => ReadType(out long datSize));
 		}
 
-		private ILeafContainer ReadTypeOld(out long dataSize) {
+		private ILeafResolver? ReadTypeOld(out long dataSize) {
 			uint hash = ReadUInt32();
 
 			// we have no length, so we just pass all memory (after the hash)
@@ -148,7 +149,7 @@ namespace Smx.PDBSharp
 			TypeDataReader rdr = new TypeDataReader(ctx, memStream);
 
 			// without a length, and with a small amount of data, we can just read this directly
-			ILeafContainer leaf = rdr.ReadTypeDirect(false);
+			ILeafResolver? leaf = rdr.ReadTypeDirect(false);
 
 			// hash + type data
 			dataSize = Position + rdr.Position;
@@ -157,7 +158,7 @@ namespace Smx.PDBSharp
 			return leaf;
 		}
 
-		private ILeafContainer ReadType(out long dataSize) {
+		private ILeafResolver? ReadType(out long dataSize) {
 			ushort length = ReadUInt16();
 			if (length == 0) {
 				dataSize = sizeof(ushort);
@@ -186,7 +187,7 @@ namespace Smx.PDBSharp
 			return rdr.ReadTypeLazy();
 		}
 
-		private IEnumerable<ILeafContainer> ReadTypes() {
+		private IEnumerable<ILeafResolver?> ReadTypes() {
 			long processed = 0;
 			while (processed < Header.GpRecSize) {
 				yield return TypeReader(out long dataSize);

@@ -10,87 +10,122 @@ using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Leaves.LF_CLASS_STRUCTURE_INTERFACE
 {
-	public class LF_CLASS_STRUCTURE_INTERFACE : LeafBase, ILeaf
-	{
+	public class Data : ILeafData, ILeafType {
 		public UInt16 NumberOfElements { get; set; }
 		public TypeProperties FieldProperties { get; set; }
-		public ILeafContainer FieldIndex { get; set; }
-		public ILeafContainer DerivedType { get; set; }
-		public ILeafContainer VShapeTableType { get; set; }
+		public ILeafResolver? FieldIndex { get; set; }
+		public ILeafResolver? DerivedType { get; set; }
+		public ILeafResolver? VShapeTableType { get; set; }
 
 		//public UInt16 StructSize;
 
-		public ILeafContainer StructSize { get; set; }
+		public ILeafResolver? StructSize { get; set; }
 
 		public string Name { get; set; }
 
-		public override string UdtName => Name;
+		public Data(ushort numberOfElements, TypeProperties fieldProperties, ILeafResolver? fieldIndex, ILeafResolver? derivedType, ILeafResolver? vShapeTableType, ILeafResolver? structSize, string name) {
+			NumberOfElements = numberOfElements;
+			FieldProperties = fieldProperties;
+			FieldIndex = fieldIndex;
+			DerivedType = derivedType;
+			VShapeTableType = vShapeTableType;
+			StructSize = structSize;
+			Name = name;
+		}
 
-		public override bool IsDefnUdt {
+		public string UdtName => Name;
+
+		public bool IsDefnUdt {
 			get {
 				return FieldProperties.HasFlag(TypeProperties.IsForwardReference);
 			}
 		}
 
-		public override bool IsGlobalDefnUdt {
+		public bool IsGlobalDefnUdt {
 			get {
 				return (
 					FieldProperties.HasFlag(TypeProperties.IsForwardReference) &&
 					FieldProperties.HasFlag(TypeProperties.IsScoped) &&
-					!IsUdtAnon
+					!LeafTypeHelper.IsUdtAnon(this)
 				);
 			}
 		}
 
-		public override bool IsLocalDefnUdtWithUniqueName {
+		public bool IsLocalDefnUdtWithUniqueName {
 			get {
 				return (
 					!FieldProperties.HasFlag(TypeProperties.IsForwardReference) &&
 					FieldProperties.HasFlag(TypeProperties.IsScoped) &&
 					FieldProperties.HasFlag(TypeProperties.HasUniqueName) &&
-					!IsUdtAnon
+					!LeafTypeHelper.IsUdtAnon(this)
 				);
 			}
 		}
 
-		public LF_CLASS_STRUCTURE_INTERFACE(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+		public bool IsUdtSourceLine => throw new NotImplementedException();
+
+		public bool IsGlobalDefnUdtWithUniqueName => throw new NotImplementedException();
+	}
+
+	public class Serializer : LeafBase, ILeafSerializer
+	{
+		public Data? Data { get; set; }
+		public ILeafData? GetData() => Data;
+
+		
+
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 		}
 
-		public override void Read() {
+		public void Read() {
 			TypeDataReader r = CreateReader();
 
-			NumberOfElements = r.ReadUInt16();
-			FieldProperties = r.ReadFlagsEnum<TypeProperties>();
-			FieldIndex = r.ReadIndexedType32Lazy();
-			DerivedType = r.ReadIndexedType32Lazy();
-			VShapeTableType = r.ReadIndexedType32Lazy();
+			var NumberOfElements = r.ReadUInt16();
+			var FieldProperties = r.ReadFlagsEnum<TypeProperties>();
+			var FieldIndex = r.ReadIndexedType32Lazy();
+			var DerivedType = r.ReadIndexedType32Lazy();
+			var VShapeTableType = r.ReadIndexedType32Lazy();
 
-			StructSize = r.ReadVaryingType(out uint dataSize);
+			var StructSize = r.ReadVaryingType(out uint dataSize);
+			var Name = r.ReadCString();
 
-			Name = r.ReadCString();
+			Data = new Data(
+				numberOfElements: NumberOfElements,
+				fieldProperties: FieldProperties,
+				fieldIndex: FieldIndex,
+				derivedType: DerivedType,
+				vShapeTableType: VShapeTableType,
+				structSize: StructSize,
+				name: Name
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			TypeDataWriter w = CreateWriter(LeafType.LF_CLASS);
-			w.WriteUInt16(NumberOfElements);
-			w.Write<TypeProperties>(FieldProperties);
-			w.WriteIndexedType(FieldIndex);
-			w.WriteIndexedType(VShapeTableType);
-			w.WriteVaryingType(StructSize);
-			w.WriteCString(Name);
+			w.WriteUInt16(data.NumberOfElements);
+			w.Write<TypeProperties>(data.FieldProperties);
+			w.WriteIndexedType(data.FieldIndex);
+			w.WriteIndexedType(data.VShapeTableType);
+			w.WriteVaryingType(data.StructSize);
+			w.WriteCString(data.Name);
 			w.WriteHeader();
 		}
 
 		public override string ToString() {
-			return $"LF_CLASS[NumberOfElements='{NumberOfElements}', " +
-				$"FieldProperties='{FieldProperties}', " +
-				$"FieldIndex='{FieldIndex}', " +
-				$"VShapeTableType='{VShapeTableType}', " +
-				$"StructSize='{StructSize}', " +
-				$"Name='{Name}']";
+			var data = Data;
+			return $"LF_CLASS[NumberOfElements='{data?.NumberOfElements}', " +
+				$"FieldProperties='{data?.FieldProperties}', " +
+				$"FieldIndex='{data?.FieldIndex}', " +
+				$"VShapeTableType='{data?.VShapeTableType}', " +
+				$"StructSize='{data?.StructSize}', " +
+				$"Name='{data?.Name}']";
 		}
 	}
 }

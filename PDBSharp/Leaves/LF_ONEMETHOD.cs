@@ -10,25 +10,46 @@ using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Leaves.LF_ONEMETHOD
 {
-	public class LF_ONEMETHOD : LeafBase
-	{
+	public class Data : ILeafData {
 		public FieldAttributes Attributes { get; set; }
-		public ILeafContainer ProcedureType { get; set; }
+		public ILeafResolver? ProcedureType { get; set; }
 		public UInt32 VBaseOffset { get; set; }
 
 		public string Name { get; set; }
 
-		public LF_ONEMETHOD(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
+		public Data(
+			FieldAttributes attributes,
+			ILeafResolver? procedureType,
+			UInt32 vBaseOffset,
+			string name
+		) {
+			Attributes = attributes;
+			ProcedureType = procedureType;
+			VBaseOffset = vBaseOffset;
+			Name = name;
+		}
+	}
+
+	public class Serializer : LeafBase, ILeafSerializer
+	{
+		public Data? Data { get; set; }
+		public ILeafData? GetData() => Data;
+
+		
+
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
 		}
 
-		public override void Read() {
+		public void Read() {
 			TypeDataReader r = CreateReader();
 
-			Attributes = new FieldAttributes(r.ReadUInt16());
-			ProcedureType = r.ReadIndexedType32Lazy();
+			var Attributes = new FieldAttributes(r.ReadUInt16());
+			var ProcedureType = r.ReadIndexedType32Lazy();
+			var VBaseOffset = new UInt32();
 
 			switch (Attributes.MethodProperties) {
 				case MethodProperties.Intro:
@@ -40,20 +61,30 @@ namespace Smx.PDBSharp.Leaves
 					break;
 			}
 
-			Name = r.ReadCString(); 
+			var Name = r.ReadCString();
+			
+			Data = new Data(
+				attributes: Attributes,
+				procedureType: ProcedureType,
+				vBaseOffset: VBaseOffset,
+				name: Name
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			TypeDataWriter w = CreateWriter(LeafType.LF_ONEMETHOD);
-			w.WriteUInt16((ushort)Attributes);
-			w.WriteIndexedType(ProcedureType);
-			switch (Attributes.MethodProperties) {
+			w.WriteUInt16((ushort)data.Attributes);
+			w.WriteIndexedType(data.ProcedureType);
+			switch (data.Attributes.MethodProperties) {
 				case MethodProperties.Intro:
 				case MethodProperties.PureIntro:
-					w.WriteUInt32(VBaseOffset);
+					w.WriteUInt32(data.VBaseOffset);
 					break;
 			}
-			w.WriteCString(Name);
+			w.WriteCString(data.Name);
 			w.WriteHeader();
 		}
 	}

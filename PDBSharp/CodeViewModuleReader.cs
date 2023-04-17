@@ -27,13 +27,13 @@ namespace Smx.PDBSharp
 		private readonly IServiceContainer ctx;
 		private readonly ModuleInfo mod;
 
-		public event OnSymbolDataDelegate OnSymbolData;
+		private readonly IEnumerable<ISymbolResolver> symbols;
+		public IEnumerable<ISymbolResolver> Symbols { get => symbols; }
 
-		private readonly IEnumerable<Symbol> symbols;
-		public IEnumerable<Symbol> Symbols { get => symbols; }
+		public readonly C11Lines? C11Lines;
+		public readonly C13Lines? C13Lines;
 
-		public readonly C11Lines C11Lines;
-		public readonly C13Lines C13Lines;
+		public event OnSymbolDataDelegate? OnSymbolData;
 
 		public CodeViewModuleReader(IServiceContainer ctx, ModuleInfo mod, SpanStream stream) : base(stream) {
 			this.ctx = ctx;
@@ -48,12 +48,12 @@ namespace Smx.PDBSharp
 					throw new NotImplementedException($"CodeView {signature} not supported yet");
 			}
 
-			symbols = new CachedEnumerable<Symbol>(ReadSymbols());
+			symbols = new CachedEnumerable<ISymbolResolver>(ReadSymbols());
 			C11Lines = ReadLines();
 			C13Lines = ReadC13Lines();
 		}
 
-		private C11Lines ReadLines() {
+		private C11Lines? ReadLines() {
 			//ReadBytes((int)mod.LinesSize);
 			if(mod.LinesSize <= 0) {
 				return null;
@@ -63,12 +63,16 @@ namespace Smx.PDBSharp
 			return new C11Lines(slice);
 		}
 
-		private C13Lines ReadC13Lines() {
+		private C13Lines? ReadC13Lines() {
+			if(mod.C13LinesSize <= 0) {
+				return null;
+			}
+
 			SpanStream slice = this.SliceHere((int)mod.C13LinesSize);
 			return new C13Lines(slice);
 		}
 
-		private IEnumerable<Symbol> ReadSymbols() {
+		private IEnumerable<ISymbolResolver> ReadSymbols() {
 			int symbolsSize = (int)mod.SymbolsSize - sizeof(CodeViewSignature); //exclude signature
 			
 			byte[] symbolsData = ReadBytes(symbolsSize);

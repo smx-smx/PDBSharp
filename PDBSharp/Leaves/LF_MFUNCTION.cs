@@ -10,60 +10,92 @@ using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Leaves.LF_MFUNCTION
 {
 
-	public class LF_MFUNCTION : LeafBase
-	{
-		public ILeafContainer ReturnValueType { get; set; }
-		public ILeafContainer ContainingClassType { get; set; }
-		public ILeafContainer ThisPointerType { get; set; }
+	public class Data : ILeafData {
+		public ILeafResolver? ReturnValueType { get; set; }
+		public ILeafResolver? ContainingClassType { get; set; }
+		public ILeafResolver? ThisPointerType { get; set; }
 		public CallingConvention CallingConvention { get; set; }
 		public UInt16 NumberOfParameters { get; set; }
-		public ILeafContainer ArgumentListType { get; set; }
+		public ILeafResolver? ArgumentListType { get; set; }
 		public UInt32 ThisAdjustor { get; set; }
 
 		public FunctionAttributes Attributes { get; set; }
 
-		public LF_MFUNCTION(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
+		public Data(ILeafResolver? returnValueType, ILeafResolver? containingClassType, ILeafResolver? thisPointerType, CallingConvention callingConvention, ushort numberOfParameters, ILeafResolver? argumentListType, uint thisAdjustor, FunctionAttributes attributes) {
+			ReturnValueType = returnValueType;
+			ContainingClassType = containingClassType;
+			ThisPointerType = thisPointerType;
+			CallingConvention = callingConvention;
+			NumberOfParameters = numberOfParameters;
+			ArgumentListType = argumentListType;
+			ThisAdjustor = thisAdjustor;
+			Attributes = attributes;
+		}
+	}
+
+	public class Serializer : LeafBase, ILeafSerializer {
+		public Data? Data { get; set; }
+		public ILeafData? GetData() => Data;
+
+		
+
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
 		}
 
-		public override void Read() {
+		public void Read() {
 			TypeDataReader r = CreateReader();
 
-			ReturnValueType = r.ReadIndexedType32Lazy();
-			ContainingClassType = r.ReadIndexedType32Lazy();
-			ThisPointerType = r.ReadIndexedType32Lazy();
-			CallingConvention = r.ReadEnum<CallingConvention>();
-			Attributes = r.ReadFlagsEnum<FunctionAttributes>();
-			NumberOfParameters = r.ReadUInt16();
-			ArgumentListType = r.ReadIndexedType32Lazy();
-			ThisAdjustor = r.ReadUInt32();
+			var ReturnValueType = r.ReadIndexedType32Lazy();
+			var ContainingClassType = r.ReadIndexedType32Lazy();
+			var ThisPointerType = r.ReadIndexedType32Lazy();
+			var CallingConvention = r.ReadEnum<CallingConvention>();
+			var Attributes = r.ReadFlagsEnum<FunctionAttributes>();
+			var NumberOfParameters = r.ReadUInt16();
+			var ArgumentListType = r.ReadIndexedType32Lazy();
+			var ThisAdjustor = r.ReadUInt32();
+			Data = new Data(
+				returnValueType: ReturnValueType,
+				containingClassType: ContainingClassType,
+				thisPointerType: ThisPointerType,
+				callingConvention: CallingConvention,
+				attributes: Attributes,
+				numberOfParameters: NumberOfParameters,
+				argumentListType: ArgumentListType,
+				thisAdjustor: ThisAdjustor
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			TypeDataWriter w = CreateWriter(LeafType.LF_MFUNCTION);
-			w.WriteIndexedType(ReturnValueType);
-			w.WriteIndexedType(ContainingClassType);
-			w.WriteIndexedType(ThisPointerType);
-			w.Write<CallingConvention>(CallingConvention);
-			w.Write<FunctionAttributes>(Attributes);
-			w.WriteUInt16(NumberOfParameters);
-			w.WriteIndexedType(ArgumentListType);
-			w.WriteUInt32(ThisAdjustor);
+			w.WriteIndexedType(data.ReturnValueType);
+			w.WriteIndexedType(data.ContainingClassType);
+			w.WriteIndexedType(data.ThisPointerType);
+			w.Write<CallingConvention>(data.CallingConvention);
+			w.Write<FunctionAttributes>(data.Attributes);
+			w.WriteUInt16(data.NumberOfParameters);
+			w.WriteIndexedType(data.ArgumentListType);
+			w.WriteUInt32(data.ThisAdjustor);
 			w.WriteHeader();
 		}
 
 		public override string ToString() {
-			return $"LF_MFUNCTION[ReturnValueType='{ReturnValueType}', " +
-				$"ContainingClassType='{ContainingClassType}', " +
-				$"ThisPointerType='{ThisPointerType}', " +
-				$"CallingConvention='{CallingConvention}', " +
-				$"Attributes='{Attributes}', " +
-				$"NumberOfParameters='{NumberOfParameters}', " +
-				$"ArgumentListType='{ArgumentListType}', " +
-				$"ThisAdjustor='{ThisAdjustor}']";
+			var data = Data;
+			return $"LF_MFUNCTION[ReturnValueType='{data?.ReturnValueType}', " +
+				$"ContainingClassType='{data?.ContainingClassType}', " +
+				$"ThisPointerType='{data?.ThisPointerType}', " +
+				$"CallingConvention='{data?.CallingConvention}', " +
+				$"Attributes='{data?.Attributes}', " +
+				$"NumberOfParameters='{data?.NumberOfParameters}', " +
+				$"ArgumentListType='{data?.ArgumentListType}', " +
+				$"ThisAdjustor='{data?.ThisAdjustor}']";
 		}
 	}
 }

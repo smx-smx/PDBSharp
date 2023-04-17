@@ -25,24 +25,21 @@ namespace Smx.PDBSharp.DebugSections.Types
 		public uint fileBlockLength;
 
 		public C13Line[] Lines;
-		public C13Column[] Columns;
+		public C13Column[]? Columns;
 
 		public C13FileBlock(LineSection header, SpanStream r) {
 			fileId = r.ReadUInt32();
 			numLines = r.ReadUInt32();
 			fileBlockLength = r.ReadUInt32();
-			ReadLines(header, r);
-		}
-
-		private void ReadLines(LineSection header, SpanStream r) {
+			
 			Lines = Enumerable.Range(0, (int)numLines)
-					.Select(_ => new C13Line(r))
-					.ToArray();
+				.Select(_ => new C13Line(r))
+				.ToArray();
 
 			if (header.HaveColumns) {
 				Columns = Enumerable.Range(0, (int)numLines)
-						.Select(_ => new C13Column(r))
-						.ToArray();
+					.Select(_ => new C13Column(r))
+					.ToArray();
 			}
 		}
 	}

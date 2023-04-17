@@ -10,12 +10,17 @@ using Smx.PDBSharp.Symbols.Structures;
 using Smx.SharpIO;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
+using Smx.PDBSharp.Symbols.Structures.UdtSym;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_UDT
 {
-	public class S_UDT : UdtSym
+	public class Data : ISymbolData {}
+	
+	public class Serializer : UdtSym
 	{
-		public S_UDT(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 		}
 
 		public void Write() {

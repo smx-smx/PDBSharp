@@ -18,6 +18,7 @@ using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Reflection;
+using Smx.PDBSharp.LeafResolver;
 
 namespace Smx.PDBSharp.Dumper
 {
@@ -110,8 +111,8 @@ namespace Smx.PDBSharp.Dumper
 			if (OptPrintDecls) {
 				var tree = new GraphBuilder(sc).Build();
 				if (tree != null) {
-					CodeWriter cw = new CodeWriter(tree);
-					cw.Write(Console.Out);
+					CodeWriter cw = new CodeWriter(tree, Console.Out);
+					cw.Write();
 				}
 			}
 
@@ -143,10 +144,9 @@ namespace Smx.PDBSharp.Dumper
 			if (tpiHash != null && tpiHash.NameIndexToTypeIndex != null && udtNameTable != null) {
 				foreach (var pair in tpiHash.NameIndexToTypeIndex) {
 					string name = udtNameTable.GetString(pair.Key);
-					ILeafContainer leaf = resolver.GetTypeByIndex(pair.Value);
+					ILeafResolver leafContext = resolver.GetTypeByIndex(pair.Value);
 					if (OptPrintTpiHash) {
 						Console.WriteLine($"=> {name} [NI={pair.Key}] [TI={pair.Value}]");
-						Console.WriteLine(leaf.Data.GetType().Name);
 					}
 				}
 			}
@@ -191,7 +191,7 @@ namespace Smx.PDBSharp.Dumper
 
 			foreach(var type in tpi.Types) {
 				if (OptPrintTypes) {
-					Console.WriteLine(type.Type);
+					Console.WriteLine(type.Ctx.Data);
 				}
 			}
 

@@ -15,20 +15,20 @@ namespace Smx.PDBSharp
 {
 	public static class ILeafContainerExtensions
 	{
-		public static long LeafDecimalValue(this ILeafContainer leaf) {
-			switch (leaf.Data) {
-				case LF_CHAR lfChar:
+		public static long LeafDecimalValue(this LeafContext leafContext) {
+			switch (leafContext.Data) {
+				case Leaves.LF_CHAR.Data lfChar:
 					return lfChar.Value;
-				case LF_SHORT lfShort:
+				case Leaves.LF_SHORT.Data lfShort:
 					return lfShort.Value;
-				case LF_USHORT lfUShort:
+				case Leaves.LF_USHORT.Data lfUShort:
 					return lfUShort.Value;
-				case LF_LONG lfLong:
+				case Leaves.LF_LONG.Data lfLong:
 					return lfLong.Value;
-				case LF_ULONG lfULong:
+				case Leaves.LF_ULONG.Data lfULong:
 					return lfULong.Value;
 				default:
-					throw new NotSupportedException($"Cannot get numeric decimal value for leaf {leaf.Type}");
+					throw new NotSupportedException($"Cannot get numeric decimal value for leaf {leafContext.Type}");
 			}
 		}
 	}

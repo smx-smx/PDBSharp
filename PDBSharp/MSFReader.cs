@@ -22,7 +22,7 @@ namespace Smx.PDBSharp
 	/// </summary>
 	public unsafe abstract class MSFReader
 	{
-		private byte[] streamTable;
+		private byte[]? streamTable;
 
         public IHeader Header { get; }
 		public readonly PDBType FileType;

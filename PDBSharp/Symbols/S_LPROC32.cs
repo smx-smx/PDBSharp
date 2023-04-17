@@ -11,14 +11,14 @@ using Smx.SharpIO;
 using System.ComponentModel.Design;
 using System.IO;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_LPROC32
 {
-	public class S_LPROC32 : ProcSym32Base
+	public class Serializer : Symbols.ProcSym32.SerializerBase
 	{
-		public S_LPROC32(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 		}
 
-		public override void Write() {
+		public void Write() {
 			base.Write(SymbolType.S_LPROC32);
 		}
 	}

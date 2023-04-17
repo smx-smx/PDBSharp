@@ -10,42 +10,71 @@ using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_BLOCK32
 {
-	public class S_BLOCK32 : SymbolBase
-	{
+	public class Data : ISymbolData {
 		public UInt32 ParentOffset { get; set; }
-		public Symbol Parent { get; set; }
+		public ISymbolResolver? Parent { get; set; }
 		public UInt32 End { get; set; }
 		public UInt32 Length { get; set; }
 		public UInt32 Offset { get; set; }
 		public UInt16 Segment { get; set; }
 		public string Name { get; set; }
 
-		public S_BLOCK32(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		public Data(uint parentOffset, ISymbolResolver? parent, uint end, uint length, uint offset, ushort segment, string name) {
+			ParentOffset = parentOffset;
+			Parent = parent;
+			End = end;
+			Length = length;
+			Offset = offset;
+			Segment = segment;
+			Name = name;
+		}
+	}
+
+	public class Serializer : SymbolSerializerBase, ISymbolSerializer
+	{
+		public Data? Data { get; set; }
+		public ISymbolData? GetData() => Data;
+
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 		}
 
-		public override void Read() {
+		public void Read() {
 			SymbolDataReader r = CreateReader();
-			ParentOffset = r.ReadUInt32();
-			Parent = r.ReadSymbol(Module, ParentOffset);
+			var ParentOffset = r.ReadUInt32();
+			var Parent = r.ReadSymbol(Module, ParentOffset);
 
-			End = r.ReadUInt32();
-			Length = r.ReadUInt32();
-			Offset = r.ReadUInt32();
-			Segment = r.ReadUInt16();
-			Name = r.ReadSymbolString();
+			var End = r.ReadUInt32();
+			var Length = r.ReadUInt32();
+			var Offset = r.ReadUInt32();
+			var Segment = r.ReadUInt16();
+			var Name = r.ReadSymbolString();
+
+			Data = new Data(
+				parentOffset: ParentOffset,
+				parent: Parent,
+				end: End,
+				length: Length,
+				offset: Offset,
+				segment: Segment,
+				name: Name
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			SymbolDataWriter w = CreateWriter(SymbolType.S_BLOCK32);
-			w.WriteUInt32(ParentOffset);
-			w.WriteUInt32(End);
-			w.WriteUInt32(Length);
-			w.WriteUInt32(Offset);
-			w.WriteUInt16(Segment);
-			w.WriteSymbolString(Name);
+			w.WriteUInt32(data.ParentOffset);
+			w.WriteUInt32(data.End);
+			w.WriteUInt32(data.Length);
+			w.WriteUInt32(data.Offset);
+			w.WriteUInt16(data.Segment);
+			w.WriteSymbolString(data.Name);
 
 			w.WriteHeader();
 		}

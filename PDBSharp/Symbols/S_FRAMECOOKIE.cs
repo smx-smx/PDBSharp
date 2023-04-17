@@ -11,35 +11,60 @@ using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.Leaves;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_FRAMECOOKIE
 {
-	public class S_FRAMECOOKIE : SymbolBase
-	{
+	public class Data : ISymbolData {
 		public UInt32 Offset { get; set; }
 		public UInt16 RegisterIndex { get; set; }
 		public CookieType Type { get; set; }
 		public byte Flags { get; set; }
 
-		public S_FRAMECOOKIE(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		public Data(uint offset, ushort registerIndex, CookieType type, byte flags) {
+			Offset = offset;
+			RegisterIndex = registerIndex;
+			Type = type;
+			Flags = flags;
+		}
+	}
+
+	public class Serializer : SymbolSerializerBase, ISymbolSerializer
+	{
+		private Data? Data { get; set; }
+
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 		}
 
-		public override void Read() {
+		public void Read() {
 			var r = CreateReader();
 
-			Offset = r.ReadUInt32();
-			RegisterIndex = r.ReadUInt16();
-			Type = r.ReadEnum<CookieType>();
-			Flags = r.ReadByte();
+			var Offset = r.ReadUInt32();
+			var RegisterIndex = r.ReadUInt16();
+			var Type = r.ReadEnum<CookieType>();
+			var Flags = r.ReadByte();
+
+			Data = new Data(
+				offset: Offset,
+				registerIndex: RegisterIndex,
+				type: Type,
+				flags: Flags
+			);
 		}
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+			
 			var w = CreateWriter(SymbolType.S_FRAMECOOKIE);
-			w.WriteUInt32(Offset);
-			w.WriteUInt16(RegisterIndex);
-			w.Write<CookieType>(Type);
-			w.WriteByte(Flags);
+			w.WriteUInt32(data.Offset);
+			w.WriteUInt16(data.RegisterIndex);
+			w.Write<CookieType>(data.Type);
+			w.WriteByte(data.Flags);
 
 			w.WriteHeader();
 		}
+
+		public ISymbolData? GetData() => Data;
 	}
 }

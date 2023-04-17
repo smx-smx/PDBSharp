@@ -15,6 +15,7 @@ namespace Smx.PDBSharp
 		private readonly PDBFile pdb;
 
 		public DBIWriter(PDBFile pdb, StreamTableWriter stWr, Stream stream) {
+			this.pdb = pdb;
 		}
 
 		public void WriteModule(ModuleInfo mod) {

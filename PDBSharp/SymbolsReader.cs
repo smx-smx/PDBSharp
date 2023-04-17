@@ -23,7 +23,7 @@ namespace Smx.PDBSharp
 		private readonly IServiceContainer ctx;
 		private readonly IModule mod;
 
-		public event OnSymbolDataDelegate OnSymbolData;
+		public event OnSymbolDataDelegate? OnSymbolData;
 
 		public SymbolsReader(IServiceContainer ctx, IModule mod, SpanStream data) : base(data) {
 			this.ctx = ctx;
@@ -36,119 +36,119 @@ namespace Smx.PDBSharp
 		}
 
 
-		private ISymbol CreateSymbolStream(SymbolHeader hdr) {
+		private ISymbolSerializer? CreateSymbolSerializer(SymbolHeader hdr) {
 			switch (hdr.Type) { 
 				case SymbolType.S_ANNOTATION:
-					return new S_ANNOTATION(ctx, mod, this); 
+					return new Symbols.S_ANNOTATION.Serializer(ctx, mod, this); 
 				case SymbolType.S_BLOCK32:
-					return new S_BLOCK32(ctx, mod, this); 
+					return new Symbols.S_BLOCK32.Serializer(ctx, mod, this); 
 				case SymbolType.S_BPREL32:
 				case SymbolType.S_BPREL32_ST:
-					return new S_BPREL32(ctx, mod, this); 
+					return new Symbols.S_BPREL32.Serializer(ctx, mod, this); 
 				case SymbolType.S_BUILDINFO:
-					return new S_BUILDINFO(ctx, mod, this); 
+					return new Symbols.S_BUILDINFO.Serializer(ctx, mod, this); 
 				case SymbolType.S_CALLEES:
-					return new S_CALLEES(ctx, mod, this); 
+					return new Symbols.S_CALLEES.Serializer(ctx, mod, this); 
 				case SymbolType.S_CALLERS:
-					return new S_CALLERS(ctx, mod, this); 
+					return new Symbols.S_CALLERS.Serializer(ctx, mod, this); 
 				case SymbolType.S_INLINEES:
-					return new S_INLINEES(ctx, mod, this); 
+					return new Symbols.S_INLINEES.Serializer(ctx, mod, this); 
 				case SymbolType.S_CALLSITEINFO:
-					return new S_CALLSITEINFO(ctx, mod, this); 
+					return new Symbols.S_CALLSITEINFO.Serializer(ctx, mod, this); 
 				case SymbolType.S_COFFGROUP:
-					return new S_COFFGROUP(ctx, mod, this); 
+					return new Symbols.S_COFFGROUP.Serializer(ctx, mod, this); 
 				case SymbolType.S_COMPILE:
-					return new S_COMPILE(ctx, mod, this); 
+					return new Symbols.S_COMPILE.Serializer(ctx, mod, this); 
 				case SymbolType.S_COMPILE2:
-					return new S_COMPILE2(ctx, mod, this); 
+					return new Symbols.S_COMPILE2.Serializer(ctx, mod, this); 
 				case SymbolType.S_COMPILE3:
-					return new S_COMPILE3(ctx, mod, this); 
+					return new Symbols.S_COMPILE3.Serializer(ctx, mod, this); 
 				case SymbolType.S_DEFRANGE_FRAMEPOINTER_REL:
-					return new S_DEFRANGE_FRAMEPOINTER_REL(ctx, mod, this); 
+					return new Symbols.S_DEFRANGE_FRAMEPOINTER_REL.Serializer(ctx, mod, this); 
 				case SymbolType.S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE:
-					return new S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE(ctx, mod, this); 
+					return new Symbols.S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE.Serializer(ctx, mod, this); 
 				case SymbolType.S_DEFRANGE_REGISTER:
-					return new S_DEFRANGE_REGISTER(ctx, mod, this); 
+					return new Symbols.S_DEFRANGE_REGISTER.Serializer(ctx, mod, this); 
 				case SymbolType.S_DEFRANGE_REGISTER_REL:
-					return new S_DEFRANGE_REGISTER_REL(ctx, mod, this); 
+					return new Symbols.S_DEFRANGE_REGISTER_REL.Serializer(ctx, mod, this); 
 				case SymbolType.S_DEFRANGE_SUBFIELD_REGISTER:
-					return new S_DEFRANGE_SUBFIELD_REGISTER(ctx, mod, this); 
+					return new Symbols.S_DEFRANGE_SUBFIELD_REGISTER.Serializer(ctx, mod, this); 
 				case SymbolType.S_ENVBLOCK:
-					return new S_ENVBLOCK(ctx, mod, this); 
+					return new Symbols.S_ENVBLOCK.Serializer(ctx, mod, this); 
 				case SymbolType.S_EXPORT:
-					return new S_EXPORT(ctx, mod, this); 
+					return new Symbols.S_EXPORT.Serializer(ctx, mod, this); 
 				case SymbolType.S_FILESTATIC:
-					return new S_FILESTATIC(ctx, mod, this); 
+					return new Symbols.S_FILESTATIC.Serializer(ctx, mod, this); 
 				case SymbolType.S_FRAMECOOKIE:
-					return new S_FRAMECOOKIE(ctx, mod, this); 
+					return new Symbols.S_FRAMECOOKIE.Serializer(ctx, mod, this); 
 				case SymbolType.S_FRAMEPROC:
-					return new S_FRAMEPROC(ctx, mod, this); 
+					return new Symbols.S_FRAMEPROC.Serializer(ctx, mod, this); 
 				case SymbolType.S_GDATA32:
 				case SymbolType.S_GDATA32_ST:
-					return new S_GDATA32(ctx, mod, this); 
+					return new Symbols.S_GDATA32.Serializer(ctx, mod, this); 
 				case SymbolType.S_INLINESITE:
-					return new S_INLINESITE(ctx, mod, this); 
+					return new Symbols.S_INLINESITE.Serializer(ctx, mod, this); 
 				case SymbolType.S_LDATA32:
 				case SymbolType.S_LDATA32_ST:
-					return new S_LDATA32(ctx, mod, this); 
+					return new Symbols.S_LDATA32.Serializer(ctx, mod, this); 
 				case SymbolType.S_LMANDATA:
 				case SymbolType.S_LMANDATA_ST:
-					return new S_LMANDATA(ctx, mod, this); 
+					return new Symbols.S_LMANDATA.Serializer(ctx, mod, this); 
 				case SymbolType.S_GMANPROC:
-					return new S_GMANPROC(ctx, mod, this); 
+					return new Symbols.S_GMANPROC.Serializer(ctx, mod, this); 
 				case SymbolType.S_LMANPROC:
 				case SymbolType.S_LMANPROC_ST:
-					return new S_LMANPROC(ctx, mod, this); 
+					return new Symbols.S_LMANPROC.Serializer(ctx, mod, this); 
 				case SymbolType.S_GPROC32:
 				case SymbolType.S_GPROC32_ST:
-					return new S_GPROC32(ctx, mod, this); 
+					return new Symbols.S_GPROC32.Serializer(ctx, mod, this); 
 				case SymbolType.S_LPROC32:
 				case SymbolType.S_LPROC32_ST:
-					return new S_LPROC32(ctx, mod, this); 
+					return new Symbols.S_LPROC32.Serializer(ctx, mod, this); 
 				case SymbolType.S_HEAPALLOCSITE:
-					return new S_HEAPALLOCSITE(ctx, mod, this); 
+					return new Symbols.S_HEAPALLOCSITE.Serializer(ctx, mod, this); 
 				case SymbolType.S_LABEL32:
 				case SymbolType.S_LABEL32_ST:
-					return new S_LABEL32(ctx, mod, this); 
+					return new Symbols.S_LABEL32.Serializer(ctx, mod, this); 
 				case SymbolType.S_LOCAL:
-					return new S_LOCAL(ctx, mod, this);
+					return new Symbols.S_LOCAL.Serializer(ctx, mod, this);
 				case SymbolType.S_CONSTANT:
 				case SymbolType.S_CONSTANT_ST:
-					return new S_CONSTANT(ctx, mod, this); 
+					return new Symbols.S_CONSTANT.Serializer(ctx, mod, this); 
 				case SymbolType.S_MANCONSTANT:
-					return new S_MANCONSTANT(ctx, mod, this); 
+					return new Symbols.S_MANCONSTANT.Serializer(ctx, mod, this); 
 				case SymbolType.S_MANSLOT:
 				case SymbolType.S_MANSLOT_ST:
-					return new S_MANSLOT(ctx, mod, this); 
+					return new Symbols.S_MANSLOT.Serializer(ctx, mod, this); 
 				case SymbolType.S_OBJNAME:
 				case SymbolType.S_OBJNAME_ST:
-					return new S_OBJNAME(ctx, mod, this); 
+					return new Symbols.S_OBJNAME.Serializer(ctx, mod, this); 
 				case SymbolType.S_OEM:
-					return new S_OEM(ctx, mod, this); 
+					return new Symbols.S_OEM.Serializer(ctx, mod, this); 
 				case SymbolType.S_REGISTER:
 				case SymbolType.S_REGISTER_ST:
-					return new S_REGISTER(ctx, mod, this); 
+					return new Symbols.S_REGISTER.Serializer(ctx, mod, this); 
 				case SymbolType.S_REGREL32:
-					return new S_REGREL32(ctx, mod, this); 
+					return new Symbols.S_REGREL32.Serializer(ctx, mod, this); 
 				case SymbolType.S_SECTION:
-					return new S_SECTION(ctx, mod, this); 
+					return new Symbols.S_SECTION.Serializer(ctx, mod, this); 
 				case SymbolType.S_SEPCODE:
-					return new S_SEPCODE(ctx, mod, this);
+					return new Symbols.S_SEPCODE.Serializer(ctx, mod, this);
 				case SymbolType.S_THUNK32:
 				case SymbolType.S_THUNK32_ST:
-					return new S_THUNK32(ctx, mod, this); 
+					return new Symbols.S_THUNK32.Serializer(ctx, mod, this); 
 				case SymbolType.S_TRAMPOLINE:
-					return new S_TRAMPOLINE(ctx, mod, this); 
+					return new Symbols.S_TRAMPOLINE.Serializer(ctx, mod, this); 
 				case SymbolType.S_COBOLUDT:
-					return new S_COBOLUDT(ctx, mod, this);
+					return new Symbols.S_COBOLUDT.Serializer(ctx, mod, this);
 				case SymbolType.S_UDT_ST:
 				case SymbolType.S_UDT:
-					return new S_UDT(ctx, mod, this); 
+					return new Symbols.S_UDT.Serializer(ctx, mod, this); 
 				case SymbolType.S_UNAMESPACE:
-					return new S_UNAMESPACE(ctx, mod, this); 
+					return new Symbols.S_UNAMESPACE.Serializer(ctx, mod, this); 
 				case SymbolType.S_WITH32:
 				case SymbolType.S_WITH32_ST:
-					return new S_WITH32(ctx, mod, this);
+					return new Symbols.S_WITH32.Serializer(ctx, mod, this);
 				case SymbolType.S_END:
 				case SymbolType.S_SKIP:
 				case SymbolType.S_INLINESITE_END:
@@ -159,7 +159,19 @@ namespace Smx.PDBSharp
 			}
 		}
 
-		public Symbol ReadSymbol() {
+		public ISymbolResolver ReadSymbolLazy() {
+			long startOffset = Position;
+			
+			ILazy<ISymbolResolver?> delayedSym = LazyFactory.CreateLazy<ISymbolResolver?>(() => {
+				Position = startOffset;
+				return ReadSymbolDirect();
+			});
+
+			return new LazySymbolData(delayedSym);
+
+		}
+		
+		public ISymbolResolver? ReadSymbolDirect() {
 			long startOffset = Position;
 
 			SymbolHeader hdr = Read<SymbolHeader>();
@@ -168,7 +180,7 @@ namespace Smx.PDBSharp
 			long endOffset = Position + sizeof(UInt16) + hdr.Length;
 
 
-			ISymbol sym = CreateSymbolStream(hdr);
+			ISymbolSerializer? sym = CreateSymbolSerializer(hdr);
 			if(sym != null) {
 				sym.Read();
 			}
@@ -177,12 +189,15 @@ namespace Smx.PDBSharp
 			if (sym == null)
 				return null;
 
-			return new Symbol(hdr.Type, sym);
+			return new DirectSymbolData(new SymbolContext(
+					type: hdr.Type,
+					data: sym.GetData()
+			));
 		}
 
-		public IEnumerable<Symbol> ReadSymbols() {
+		public IEnumerable<ISymbolResolver> ReadSymbols() {
 			while (Position < Length) {
-				Symbol sym = ReadSymbol();
+				ISymbolResolver? sym = ReadSymbolDirect();
 				if (sym != null) {
 					yield return sym;
 				}

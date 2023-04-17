@@ -10,70 +10,113 @@ using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
 
 namespace Smx.PDBSharp.Symbols.Structures
-{	public abstract class ManProcSymBase : SymbolBase
-	{
+{
+	public class ManProcData : ISymbolData {
 		/// <summary>
 		/// Parent Symbol
 		/// </summary>
-		public Symbol Parent;
-		private UInt32 ParentOffset;
+		public ISymbolResolver? Parent {  get; set; }
+		public UInt32 ParentOffset { get; set; }
 		/// <summary>
 		/// End of block
 		/// </summary>
-		public UInt32 End;
+		public UInt32 End { get; set; }
 		/// <summary>
 		/// Next Symbol
 		/// </summary>
-		public Symbol Next;
-		private UInt32 NextOffset;
-		public UInt32 ProcLength;
-		public UInt32 DebugStartOffset;
-		public UInt32 DebugEndOffset;
-		public UInt32 ComToken;
-		public UInt32 Offset;
-		public UInt16 Segment;
-		public CV_PROCFLAGS Flags;
-		public UInt16 ReturnRegister;
-		public string Name;
+		public ISymbolResolver? Next { get; set; }
+		public UInt32 NextOffset { get; set; }
+		public UInt32 ProcLength { get; set; }
+		public UInt32 DebugStartOffset { get; set; }
+		public UInt32 DebugEndOffset { get; set; }
+		public UInt32 ComToken { get; set; }
+		public UInt32 Offset { get; set; }
+		public UInt16 Segment { get; set; }
+		public CV_PROCFLAGS Flags { get; set; }
+		public UInt16 ReturnRegister { get; set; }
+		public string Name { get; set; }
 
-		public ManProcSymBase(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		public ManProcData(ISymbolResolver? parent, uint parentOffset, uint end, ISymbolResolver? next, uint nextOffset, uint procLength, uint debugStartOffset, uint debugEndOffset, uint comToken, uint offset, ushort segment, CV_PROCFLAGS flags, ushort returnRegister, string name) {
+			Parent = parent;
+			ParentOffset = parentOffset;
+			End = end;
+			Next = next;
+			NextOffset = nextOffset;
+			ProcLength = procLength;
+			DebugStartOffset = debugStartOffset;
+			DebugEndOffset = debugEndOffset;
+			ComToken = comToken;
+			Offset = offset;
+			Segment = segment;
+			Flags = flags;
+			ReturnRegister = returnRegister;
+			Name = name;
+		}
+	}
+
+	public abstract class ManProcSymSerializerBase : SymbolSerializerBase
+	{
+		public ManProcData? Data { get; set; }
+
+		public ManProcSymSerializerBase(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
 		}
 
-		public override void Read() {
+		public void Read() {
 			var r = CreateReader();
 
-			ParentOffset = r.ReadUInt32();
-			Parent = r.ReadSymbol(Module, ParentOffset);
-			End = r.ReadUInt32();
-			NextOffset = r.ReadUInt32();
-			Next = r.ReadSymbol(Module, NextOffset);
-			ProcLength = r.ReadUInt32();
-			DebugStartOffset = r.ReadUInt32();
-			DebugEndOffset = r.ReadUInt32();
-			ComToken = r.ReadUInt32();
-			Offset = r.ReadUInt32();
-			Segment = r.ReadUInt16();
-			Flags = r.ReadFlagsEnum<CV_PROCFLAGS>();
-			ReturnRegister = r.ReadUInt16();
-			Name = r.ReadSymbolString();
+			var ParentOffset = r.ReadUInt32();
+			var Parent = r.ReadSymbol(Module, ParentOffset);
+			var End = r.ReadUInt32();
+			var NextOffset = r.ReadUInt32();
+			var Next = r.ReadSymbol(Module, NextOffset);
+			var ProcLength = r.ReadUInt32();
+			var DebugStartOffset = r.ReadUInt32();
+			var DebugEndOffset = r.ReadUInt32();
+			var ComToken = r.ReadUInt32();
+			var Offset = r.ReadUInt32();
+			var Segment = r.ReadUInt16();
+			var Flags = r.ReadFlagsEnum<CV_PROCFLAGS>();
+			var ReturnRegister = r.ReadUInt16();
+			var Name = r.ReadSymbolString();
+
+			Data = new ManProcData(
+				parentOffset: ParentOffset,
+				parent: Parent,
+				end: End,
+				nextOffset: NextOffset,
+				next: Next,
+				procLength: ProcLength,
+				debugStartOffset: DebugStartOffset,
+				debugEndOffset: DebugEndOffset,
+				comToken: ComToken,
+				offset: Offset,
+				segment: Segment,
+				flags: Flags,
+				returnRegister: ReturnRegister,
+				name: Name
+			);
 		}
 
 		public void Write(SymbolType symbolType) {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			var w = CreateWriter(symbolType);
-			w.WriteUInt32(ParentOffset);
-			w.WriteUInt32(End);
-			w.WriteUInt32(NextOffset);
-			w.WriteUInt32(ProcLength);
-			w.WriteUInt32(DebugStartOffset);
-			w.WriteUInt32(DebugEndOffset);
-			w.WriteUInt32(ComToken);
-			w.WriteUInt32(Offset);
-			w.WriteUInt16(Segment);
-			w.Write<CV_PROCFLAGS>(Flags);
-			w.WriteUInt16(ReturnRegister);
-			w.WriteSymbolString(Name);
+			w.WriteUInt32(data.ParentOffset);
+			w.WriteUInt32(data.End);
+			w.WriteUInt32(data.NextOffset);
+			w.WriteUInt32(data.ProcLength);
+			w.WriteUInt32(data.DebugStartOffset);
+			w.WriteUInt32(data.DebugEndOffset);
+			w.WriteUInt32(data.ComToken);
+			w.WriteUInt32(data.Offset);
+			w.WriteUInt16(data.Segment);
+			w.Write<CV_PROCFLAGS>(data.Flags);
+			w.WriteUInt16(data.ReturnRegister);
+			w.WriteSymbolString(data.Name);
 
 			w.WriteHeader();
 		}

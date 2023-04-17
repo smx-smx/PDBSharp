@@ -10,31 +10,53 @@ using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
+using Smx.PDBSharp.Leaves;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_OEM
 {
-	public class S_OEM : SymbolBase
-	{
+	public class Data : ISymbolData {
 		public Guid Id { get; set; }
-		public ILeafContainer Type { get; set; }
+		public ILeafResolver? Type { get; set; }
 		public byte[] UserData { get; set; }
 
-		public S_OEM(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		public Data(Guid id, ILeafResolver? type, byte[] userData) {
+			Id = id;
+			Type = type;
+			UserData = userData;
+		}
+	}
+
+	public class Serializer : SymbolSerializerBase, ISymbolSerializer
+	{
+		public Data? Data { get; set; }
+		public ISymbolData? GetData() => Data;
+
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
 		}
 
-		public override void Read() {
+		public void Read() {
 			var r = CreateReader();
 
-			Id = new Guid(r.ReadBytes(16));
-			Type = r.ReadIndexedType32Lazy();
-			UserData = r.ReadRemaining();
+			var Id = new Guid(r.ReadBytes(16));
+			var Type = r.ReadIndexedType32Lazy();
+			var UserData = r.ReadRemaining();
+			Data = new Data(
+				id: Id,
+				type: Type,
+				userData: UserData
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			var w = CreateWriter(SymbolType.S_OEM);
-			w.WriteBytes(Id.ToByteArray());
-			w.WriteIndexedType(Type);
-			w.WriteBytes(UserData);
+			w.WriteBytes(data.Id.ToByteArray());
+			w.WriteIndexedType(data.Type);
+			w.WriteBytes(data.UserData);
 
 			w.WriteHeader();
 		}

@@ -6,28 +6,47 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
+
+using System;
 using Smx.SharpIO;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_UNAMESPACE
 {
-	public class S_UNAMESPACE : SymbolBase
+	public class Data : ISymbolData
 	{
 		public string NamespaceName { get; set; }
 
-		public S_UNAMESPACE(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){			
+		public Data(string namespaceName) {
+			NamespaceName = namespaceName;
+		}
+	}
+	
+	public class Serializer : SymbolSerializerBase, ISymbolSerializer
+	{
+		public Data? Data { get; set; }
+		public ISymbolData? GetData() => Data;
+
+		
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){			
 		}
 
-		public override void Read() {
+		public void Read() {
 			var r = CreateReader();
-			NamespaceName = r.ReadSymbolString();
+			var NamespaceName = r.ReadSymbolString();
+			Data = new Data(
+				namespaceName: NamespaceName
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+			
 			var w = CreateWriter(SymbolType.S_UNAMESPACE);
-			w.WriteSymbolString(NamespaceName);
-
+			w.WriteSymbolString(data.NamespaceName);
 			w.WriteHeader();
 		}
 	}

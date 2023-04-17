@@ -11,14 +11,14 @@ using Smx.SharpIO;
 using System.ComponentModel.Design;
 using System.IO;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_LMANDATA
 {
-	public class S_LMANDATA : DataSym32Base, ISymbol
+	public class Serializer : Symbols.DataSym32.SerializerBase, ISymbolSerializer
 	{
-		public S_LMANDATA(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 		}
 
-		public override void Write() {
+		public void Write() {
 			base.Write(SymbolType.S_LMANDATA);
 		}
 	}

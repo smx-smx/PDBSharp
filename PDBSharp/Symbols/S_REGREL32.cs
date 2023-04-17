@@ -10,36 +10,61 @@ using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
+using Smx.PDBSharp.Leaves;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_REGREL32
 {
-	public class S_REGREL32 : SymbolBase
-	{
+	public class Data : ISymbolData {
 		public UInt32 Offset { get; set; }
-		public ILeafContainer Type { get; set; }
+		public ILeafResolver? Type { get; set; }
 		public UInt16 RegisterIndex { get; set; }
 		public string Name { get; set; }
 
-		public S_REGREL32(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		public Data(uint offset, ILeafResolver? type, ushort registerIndex, string name) {
+			Offset = offset;
+			Type = type;
+			RegisterIndex = registerIndex;
+			Name = name;
+		}
+	}
+
+	public class Serializer : SymbolSerializerBase, ISymbolSerializer
+	{
+		private Data? Data { get; set; }
+
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 		}
 
-		public override void Read() {
+		public void Read() {
 			var r = CreateReader();
 
-			Offset = r.ReadUInt32();
-			Type = r.ReadIndexedType32Lazy();
-			RegisterIndex = r.ReadUInt16();
-			Name = r.ReadSymbolString();
+			var Offset = r.ReadUInt32();
+			var Type = r.ReadIndexedType32Lazy();
+			var RegisterIndex = r.ReadUInt16();
+			var Name = r.ReadSymbolString();
+			Data = new Data(
+				offset: Offset,
+				type: Type,
+				registerIndex: RegisterIndex,
+				name: Name
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+			
 			var w = CreateWriter(SymbolType.S_REGREL32);
-			w.WriteUInt32(Offset);
-			w.WriteIndexedType(Type);
-			w.WriteUInt16(RegisterIndex);
-			w.WriteSymbolString(Name);
+			w.WriteUInt32(data.Offset);
+			w.WriteIndexedType(data.Type);
+			w.WriteUInt16(data.RegisterIndex);
+			w.WriteSymbolString(data.Name);
 
 			w.WriteHeader();
 		}
+
+		public ISymbolData? GetData() => Data;
 	}
 }

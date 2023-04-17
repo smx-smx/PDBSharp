@@ -54,8 +54,8 @@ namespace Smx.PDBSharp
 
 		//////////////
 
-		private readonly ILazy<IModuleContainer> moduleLazy;
-		public IModuleContainer Module => moduleLazy.Value;
+		private readonly ILazy<IModuleContainer?> moduleLazy;
+		public IModuleContainer? Module => moduleLazy.Value;
 
 		public SectionContrib40(IServiceContainer ctx, SpanStream stream) : base(stream) {
 			SectionIndex = ReadUInt16();
@@ -71,7 +71,9 @@ namespace Smx.PDBSharp
 			////////
 			DBIReader dbi = ctx.GetService<DBIReader>();
 
-			moduleLazy = LazyFactory.CreateLazy(() => ModuleIndex == -1 ? null : dbi.Modules[this.ModuleIndex]);
+			moduleLazy = LazyFactory.CreateLazy(() => ModuleIndex == -1
+				? null
+				: dbi.Modules[this.ModuleIndex]);
 		}
 
 		public int CompareTo(SectionContrib40 other) {
@@ -114,7 +116,7 @@ namespace Smx.PDBSharp
 	public class ModuleInfo : SpanStream
 	{
 		public readonly UInt32 OpenModuleHandle;
-		public readonly ISectionContrib SectionContribution;
+		public readonly ISectionContrib? SectionContribution;
 		public readonly ModuleInfoFlags Flags;
 		public readonly Int16 StreamNumber;
 		public readonly UInt32 SymbolsSize;
@@ -130,7 +132,7 @@ namespace Smx.PDBSharp
 
 		//////////////////////////////
 
-		public readonly IEnumerable<SectionContrib40> SectionContribs;
+		public readonly IEnumerable<SectionContrib40>? SectionContribs;
 
 		public readonly int ModuleIndex;
 		private readonly DBIReader dbi;
@@ -139,10 +141,15 @@ namespace Smx.PDBSharp
 
 		public readonly long Size;
 
-		public string SourceFileName => (ECInfo != null) ? GetEcString(ECInfo.Value.SrcFileNameIndex) : null;
-		public string PDBFileName => (ECInfo != null) ? GetEcString(ECInfo.Value.PdbFileNameIndex) : null;
+		public string? SourceFileName => (ECInfo != null)
+			? GetEcString(ECInfo.Value.SrcFileNameIndex)
+			: null;
 
-		private string GetEcString(uint nameIndex) {
+		public string? PDBFileName => (ECInfo != null)
+			? GetEcString(ECInfo.Value.PdbFileNameIndex)
+			: null;
+
+		private string? GetEcString(uint nameIndex) {
 			return this.dbi.EC?.NameTable.GetString(nameIndex) ?? null;
 		}
 
@@ -193,9 +200,10 @@ namespace Smx.PDBSharp
 
 			///////
 
-			SectionContribs = new CachedEnumerable<SectionContrib40>(
-				this.dbi.SectionContribs.GetByModule(this)
-			);
+			var sc = this.dbi.SectionContribs?.GetByModule(this);
+			if (sc != null) {
+				SectionContribs = new CachedEnumerable<SectionContrib40>(sc);
+			}
 		}
 	}
 

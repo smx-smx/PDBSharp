@@ -11,38 +11,61 @@ using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_DEFRANGE_REGISTER
 {
+	public class Data : ISymbolData {
+		public UInt16 Register { get; set; }
+		public RangeAttributes Attributes { get; set; }
+		public CV_LVAR_ADDR_RANGE Range { get; set; }
+		public CV_LVAR_ADDR_GAP[] Gaps { get; set; }
 
-	public class S_DEFRANGE_REGISTER : SymbolBase
+		public Data(ushort register, RangeAttributes attributes, CV_LVAR_ADDR_RANGE range, CV_LVAR_ADDR_GAP[] gaps) {
+			Register = register;
+			Attributes = attributes;
+			Range = range;
+			Gaps = gaps;
+		}
+	}
+
+	public class Serializer : SymbolSerializerBase, ISymbolSerializer
 	{
-		public UInt16 Register;
-		public RangeAttributes Attributes;
-		public CV_LVAR_ADDR_RANGE Range;
-		public CV_LVAR_ADDR_GAP[] Gaps;
+		public Data? Data { get; set; }
 
-		public S_DEFRANGE_REGISTER(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
 		}
 
-		public override void Read() {
+		public void Read() {
 			var r = new SymbolDataReader(ctx, stream);
-			Register = r.ReadUInt16();
-			Attributes = r.ReadFlagsEnum<RangeAttributes>();
-			Range = new CV_LVAR_ADDR_RANGE(stream);
-			Gaps = CV_LVAR_ADDR_GAP.ReadGaps(r);
+			var Register = r.ReadUInt16();
+			var Attributes = r.ReadFlagsEnum<RangeAttributes>();
+			var Range = new CV_LVAR_ADDR_RANGE(stream);
+			var Gaps = CV_LVAR_ADDR_GAP.ReadGaps(r);
+
+			Data = new Data(
+				register: Register,
+				attributes: Attributes,
+				range: Range,
+				gaps: Gaps
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			var w = CreateWriter(SymbolType.S_DEFRANGE_REGISTER);
-			w.WriteUInt16(Register);
-			w.Write<RangeAttributes>(Attributes);
-			Range.Write(w);
-			foreach (CV_LVAR_ADDR_GAP gap in Gaps) {
+			w.WriteUInt16(data.Register);
+			w.Write<RangeAttributes>(data.Attributes);
+			data.Range.Write(w);
+			foreach (CV_LVAR_ADDR_GAP gap in data.Gaps) {
 				gap.Write(w);
 			}
 
 			w.WriteHeader();
 		}
+
+		public ISymbolData? GetData() => Data;
 	}
 }

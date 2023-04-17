@@ -10,30 +10,53 @@ using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
+using Smx.PDBSharp.Leaves;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_BPREL32
 {
-	public class S_BPREL32 : SymbolBase
-	{
+	public class Data : ISymbolData {
 		public UInt32 Offset { get; set; }
-		public ILeafContainer Type { get; set; }
+		public ILeafResolver? Type { get; set; }
 		public string Name { get; set; }
 
-		public S_BPREL32(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		public Data(uint offset, ILeafResolver? type, string name) {
+			Offset = offset;
+			Type = type;
+			Name = name;
+		}
+	}
+
+	public class Serializer : SymbolSerializerBase, ISymbolSerializer
+	{
+		public Data? Data { get; set; }
+		public ISymbolData? GetData() => Data;
+
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 		}
 
-		public override void Read() {
+		public void Read() {
 			SymbolDataReader r = CreateReader();
-			Offset = r.ReadUInt32();
-			Type = r.ReadIndexedType32Lazy();
-			Name = r.ReadSymbolString(); 
+			var Offset = r.ReadUInt32();
+			var Type = r.ReadIndexedType32Lazy();
+			var Name = r.ReadSymbolString();
+
+			Data = new Data(
+				offset: Offset,
+				type: Type,
+				name: Name
+			);
 		}		
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			SymbolDataWriter w = CreateWriter(SymbolType.S_BPREL32);
-			w.WriteUInt32(Offset);
-			w.WriteIndexedType(Type);
-			w.WriteSymbolString(Name);
+			w.WriteUInt32(data.Offset);
+			w.WriteIndexedType(data.Type);
+			w.WriteSymbolString(data.Name);
 
 			w.WriteHeader();
 		}

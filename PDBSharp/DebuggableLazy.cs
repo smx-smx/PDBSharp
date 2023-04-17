@@ -12,13 +12,14 @@ using System.Text;
 
 namespace Smx.PDBSharp
 {
-	public class DebuggableLazy<T> : ILazy<T> where T : class {
+	public class DebuggableLazy<T> : ILazy<T> where T : class?
+	{
 		private readonly Func<T> valueFactory;
 
 		private bool invoked = false;
-		private T value = null;
+		private T? value = null;
 
-		public T Value {
+		public T? Value {
 			get {
 				if (invoked)
 					return value;

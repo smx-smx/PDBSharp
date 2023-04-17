@@ -15,23 +15,39 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Leaves.LF_USHORT
 {
-	public class LF_USHORT : LeafBase
-	{
+	public class Data : ILeafData {
 		public UInt16 Value { get; set; }
+		public Data(ushort value) {
+			Value = value;
+		}
+	}
 
-		public LF_USHORT(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+	public class Serializer : LeafBase, ILeafSerializer
+	{
+		public Data? Data { get; set; }
+		public ILeafData? GetData() => Data;
+
+		
+
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 		}
 
-		public override void Read() {
+		public void Read() {
 			TypeDataReader r = CreateReader();
-			Value = r.ReadUInt16();
+			var Value = r.ReadUInt16();
+			Data = new Data(
+				value: Value
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			TypeDataWriter w = CreateWriter(LeafType.LF_USHORT);
-			w.WriteUInt16(Value);
+			w.WriteUInt16(data.Value);
 			w.WriteHeader();
 		}
 	}

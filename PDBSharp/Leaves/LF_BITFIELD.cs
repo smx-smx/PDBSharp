@@ -7,32 +7,56 @@
  */
 #endregion
 using Smx.SharpIO;
+using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Leaves.LF_BITFIELD
 {
-	public class LF_BITFIELD : LeafBase
-	{
-		public ILeafContainer Type { get; set; }
+	public class Data : ILeafData {
+		public ILeafResolver? Type { get; set; }
 		public byte Length { get; set; }
 		public byte Position { get; set; }
 
-		public LF_BITFIELD(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
+		public Data(ILeafResolver? type, byte length, byte position) {
+			Type = type;
+			Length = length;
+			Position = position;
+		}
+	}
+
+	public class Serializer : LeafBase, ILeafSerializer
+	{
+		public Data? Data { get; set; }
+		public ILeafData? GetData() => Data;
+
+		
+
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
 		}
 
-		public override void Read() {
+		public void Read() {
 			TypeDataReader r = CreateReader();
-			Type = r.ReadIndexedType32Lazy();
-			Length = r.ReadByte();
-			Position = r.ReadByte();
+			var Type = r.ReadIndexedType32Lazy();
+			var Length = r.ReadByte();
+			var Position = r.ReadByte();
+
+			Data = new Data(
+				type: Type,
+				length: Length,
+				position: Position
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			TypeDataWriter w = CreateWriter(LeafType.LF_BITFIELD);
-			w.WriteIndexedType(Type);
-			w.WriteByte(Length);
-			w.WriteByte(Position);
+			w.WriteIndexedType(data.Type);
+			w.WriteByte(data.Length);
+			w.WriteByte(data.Position);
 			w.WriteHeader();
 		}
 	}

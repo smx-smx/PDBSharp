@@ -7,44 +7,69 @@
  */
 #endregion
 using Smx.SharpIO;
+using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Leaves.LF_ARRAY
 {
+	public class Data : ILeafData {
+		public ILeafResolver? ElementType { get; set; }
+		public ILeafResolver? IndexingType { get; set; }
+
+		public ILeafResolver? Size { get; set; }
+
+		public string Name { get; set; }
+
+		public Data(ILeafResolver? elementType, ILeafResolver? indexingType, ILeafResolver? size, string name) {
+			ElementType = elementType;
+			IndexingType = indexingType;
+			Size = size;
+			Name = name;
+		}
+	}
+
+
 	/// <summary>
 	/// 
 	/// </summary>
 	/// <typeparam name="T">used to indicate the size of the type index</typeparam>
-	public class LF_ARRAY<T> : LeafBase where T : unmanaged
+	public class Serializer<T> : LeafBase, ILeafSerializer where T : unmanaged
 	{
-		public ILeafContainer ElementType { get; set; }
-		public ILeafContainer IndexingType { get; set; }
+		public Data? Data { get; set; }
+		public ILeafData? GetData() => Data;
 
-		public ILeafContainer Size { get; set; }
+		
 
-		public string Name { get; set; }
-
-		public LF_ARRAY(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 		}
 		
-		public override void Read() {
+		public void Read() {
 			TypeDataReader r = CreateReader();
 
-			ElementType = r.ReadIndexedTypeLazy<T>();
-			IndexingType = r.ReadIndexedTypeLazy<T>();
+			var ElementType = r.ReadIndexedTypeLazy<T>();
+			var IndexingType = r.ReadIndexedTypeLazy<T>();
+			var Size = r.ReadVaryingType(out uint dataSize);
+			var Name = r.ReadCString();
 
-			Size = r.ReadVaryingType(out uint dataSize);
-
-			Name = r.ReadCString();
+			Data = new Data(
+				elementType: ElementType,
+				indexingType: IndexingType,
+				size: Size,
+				name: Name
+			);
 		}
 
-		public override void Write() {
-			TypeDataWriter w = CreateWriter(Leaves.LeafType.LF_ARRAY);
-			w.WriteIndexedType(ElementType);
-			w.WriteIndexedType(IndexingType);
-			w.WriteVaryingType(Size);
-			w.WriteCString(Name);
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
+			TypeDataWriter w = CreateWriter(LeafType.LF_ARRAY);
+			w.WriteIndexedType(data.ElementType);
+			w.WriteIndexedType(data.IndexingType);
+			w.WriteVaryingType(data.Size);
+			w.WriteCString(data.Name);
 			w.WriteHeader();
 		}
 	}

@@ -10,17 +10,16 @@ using System;
 using System.IO;
 using Smx.PDBSharp.Leaves;
 
-namespace Smx.PDBSharp
+namespace Smx.PDBSharp.BuiltinTypeLeaf
 {
 	/// <summary>
 	/// A virtual ILeaf representing a builtin type
 	/// </summary>
-	public class BuiltinTypeLeaf : ILeaf
-	{
+	public class Data : ILeafData {
 		public readonly SpecialType SpecialType;
 		public readonly SpecialTypeMode TypeMode;
 
-		public BuiltinTypeLeaf(UInt32 TypeIndex) {
+		public Data(UInt32 TypeIndex) {
 			// Remove type mode
 			SpecialType = (SpecialType)(TypeIndex & 0xFF);
 
@@ -41,13 +40,24 @@ namespace Smx.PDBSharp
 			string typeMode = Enum.GetName(typeof(SpecialTypeMode), TypeMode);
 			return $"{typeName} [{typeMode}]";
 		}
+	}
 
-		public void Read() {
-			throw new NotImplementedException();
+	public class BuiltinTypeLeaf : ILeafSerializer
+	{
+		public Data? Data { get; set; }
+
+		public BuiltinTypeLeaf(UInt32 typeIndex) {
+			Data = new Data(typeIndex);
 		}
+
+		public ILeafData? GetData() => Data;
+
+		public void Read() {}
 
 		public void Write() {
 			throw new NotImplementedException();
 		}
 	}
+	
+	
 }

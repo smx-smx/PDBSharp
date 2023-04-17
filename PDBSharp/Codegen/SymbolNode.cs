@@ -15,13 +15,13 @@ namespace Smx.PDBSharp.Codegen
 		public IList<TypeNode> TypeDependencies = new List<TypeNode>();
 		public bool Visited { get; set; }
 
-		public readonly Symbol Symbol;
+		public readonly SymbolContext Symbol;
 
-		public SymbolNode(Symbol sym) {
+		public SymbolNode(SymbolContext sym) {
 			this.Symbol = sym;
 		}
 
-		public TypeNode AddDependency(ILeafContainer type) {
+		public TypeNode AddDependency(LeafContext type) {
 			TypeNode node = new TypeNode(type);
 			TypeDependencies.Add(node);
 			return node;

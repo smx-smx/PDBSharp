@@ -36,10 +36,10 @@ namespace Smx.PDBSharp
 
 		private readonly StreamTableReader StreamTable;
 
-		public FPOReader FPO => lazyFPO.Value;
-		private readonly ILazy<FPOReader> lazyFPO;
+		public FPOReader? FPO => lazyFPO.Value;
+		private readonly ILazy<FPOReader?> lazyFPO;
 
-		public byte[] GetStream(DebugType type) {
+		public byte[]? GetStream(DebugType type) {
 			if (!HasStream(type))
 				return null;
 
@@ -51,8 +51,8 @@ namespace Smx.PDBSharp
 			return DebugStreams[(int)type] != -1;
 		}
 
-		private FPOReader CreateFPOReader() {
-			byte[] fpo = GetStream(DebugType.FPO);
+		private FPOReader? CreateFPOReader() {
+			byte[]? fpo = GetStream(DebugType.FPO);
 			if (fpo == null)
 				return null;
 

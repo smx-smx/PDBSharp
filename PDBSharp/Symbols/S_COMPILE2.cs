@@ -6,17 +6,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
+using Smx.PDBSharp.PE;
 using Smx.PDBSharp.Symbols.Structures;
 using Smx.SharpIO;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_COMPILE2
 {
-	public class S_COMPILE2 : SymbolBase
-	{
+	public class Data : ISymbolData {
 		public CompileSym2Flags Flags { get; set; }
 		public UInt16 Machine { get; set; }
 		public UInt16 FrontendVersionMajor { get; set; }
@@ -28,20 +29,39 @@ namespace Smx.PDBSharp.Symbols
 		public string VersionString { get; set; }
 		public string[] OptionalData { get; set; }
 
-		public S_COMPILE2(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+
+		public Data(CompileSym2Flags flags, ushort machine, ushort frontendVersionMajor, ushort frontendVersionMinor, ushort frontendVersionBuild, ushort backendVersionMajor, ushort backendVersionMinor, ushort backendVersionBuild, string versionString, string[] optionalData) {
+			Flags = flags;
+			Machine = machine;
+			FrontendVersionMajor = frontendVersionMajor;
+			FrontendVersionMinor = frontendVersionMinor;
+			FrontendVersionBuild = frontendVersionBuild;
+			BackendVersionMajor = backendVersionMajor;
+			BackendVersionMinor = backendVersionMinor;
+			BackendVersionBuild = backendVersionBuild;
+			VersionString = versionString;
+			OptionalData = optionalData;
+		}
+	}
+
+	public class Serializer : SymbolSerializerBase, ISymbolSerializer
+	{
+		public Data? Data { get; set; }
+
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
 		}
 
-		public override void Read() {
+		public void Read() {
 			var r = CreateReader();
-			Flags = new CompileSym2Flags(r.ReadUInt32());
-			Machine = r.ReadUInt16();
-			FrontendVersionMajor = r.ReadUInt16();
-			FrontendVersionMinor = r.ReadUInt16();
-			FrontendVersionBuild = r.ReadUInt16();
-			BackendVersionMajor = r.ReadUInt16();
-			BackendVersionMinor = r.ReadUInt16();
-			BackendVersionBuild = r.ReadUInt16();
-			VersionString = r.ReadSymbolString();
+			var Flags = new CompileSym2Flags(r.ReadUInt32());
+			var Machine = r.ReadUInt16();
+			var FrontendVersionMajor = r.ReadUInt16();
+			var FrontendVersionMinor = r.ReadUInt16();
+			var FrontendVersionBuild = r.ReadUInt16();
+			var BackendVersionMajor = r.ReadUInt16();
+			var BackendVersionMinor = r.ReadUInt16();
+			var BackendVersionBuild = r.ReadUInt16();
+			var VersionString = r.ReadSymbolString();
 
 			List<string> optionalData = new List<string>();
 			while (r.HasMoreData) {
@@ -50,39 +70,58 @@ namespace Smx.PDBSharp.Symbols
 					break;
 				optionalData.Add(str);
 			}
-			OptionalData = optionalData.ToArray();
+			var OptionalData = optionalData.ToArray();
+
+			Data = new Data(
+				flags: Flags,
+				machine: Machine,
+				frontendVersionMajor: FrontendVersionMajor,
+				frontendVersionMinor: FrontendVersionMinor,
+				frontendVersionBuild: FrontendVersionBuild,
+				backendVersionMajor: BackendVersionMajor,
+				backendVersionMinor: BackendVersionMinor,
+				backendVersionBuild: BackendVersionBuild,
+				versionString: VersionString,
+				optionalData: OptionalData
+			);
 		}
 
-		public override void Write() {
-			var w = CreateWriter(SymbolType.S_COMPILE2);
-			w.Write<CompileSym2FlagsEnum>((CompileSym2FlagsEnum)Flags);
-			w.WriteUInt16(Machine);
-			w.WriteUInt16(FrontendVersionMajor);
-			w.WriteUInt16(FrontendVersionMinor);
-			w.WriteUInt16(FrontendVersionBuild);
-			w.WriteUInt16(BackendVersionMajor);
-			w.WriteUInt16(BackendVersionMinor);
-			w.WriteUInt16(BackendVersionBuild);
-			w.WriteSymbolString(VersionString);
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
 
-			foreach (string str in OptionalData) {
+			var w = CreateWriter(SymbolType.S_COMPILE2);
+			w.Write<CompileSym2FlagsEnum>((CompileSym2FlagsEnum)data.Flags);
+			w.WriteUInt16(data.Machine);
+			w.WriteUInt16(data.FrontendVersionMajor);
+			w.WriteUInt16(data.FrontendVersionMinor);
+			w.WriteUInt16(data.FrontendVersionBuild);
+			w.WriteUInt16(data.BackendVersionMajor);
+			w.WriteUInt16(data.BackendVersionMinor);
+			w.WriteUInt16(data.BackendVersionBuild);
+			w.WriteSymbolString(data.VersionString);
+
+			foreach (string str in data.OptionalData) {
 				w.WriteSymbolString(str);
 			}
 
 			w.WriteHeader();
 		}
 
+		public ISymbolData? GetData() => Data;
+
 		public override string ToString() {
+			var data = Data;
 			return $"S_COMPILE2[" +
-				$"Flags='{Flags}', " +
-				$"Machine='{Machine}', " +
-				$"FrontendVersionMajor='{FrontendVersionMajor}', " +
-				$"FrontendVersionMinor='{FrontendVersionMinor}', " +
-				$"FrontendVersionBuild='{FrontendVersionBuild}', " +
-				$"BackendVersionMajor='{BackendVersionMajor}', " +
-				$"BackendVersionMinor='{BackendVersionMinor}', " +
-				$"BackendVersionBuild='{BackendVersionBuild}'" +
-				$"VersionString='{VersionString}'" +
+				$"Flags='{data?.Flags}', " +
+				$"Machine='{data?.Machine}', " +
+				$"FrontendVersionMajor='{data?.FrontendVersionMajor}', " +
+				$"FrontendVersionMinor='{data?.FrontendVersionMinor}', " +
+				$"FrontendVersionBuild='{data?.FrontendVersionBuild}', " +
+				$"BackendVersionMajor='{data?.BackendVersionMajor}', " +
+				$"BackendVersionMinor='{data?.BackendVersionMinor}', " +
+				$"BackendVersionBuild='{data?.BackendVersionBuild}'" +
+				$"VersionString='{data?.VersionString}'" +
 			"]";
 		}
 	}

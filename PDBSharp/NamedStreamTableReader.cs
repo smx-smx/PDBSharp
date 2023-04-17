@@ -16,25 +16,21 @@ namespace Smx.PDBSharp
 	public class NamedStreamTableReader
 	{
 		private readonly StreamTableReader streamTable;
-		private readonly PdbStreamReader streamReader;
+		private readonly PdbStreamReader? streamReader;
 
 		public NamedStreamTableReader(IServiceContainer ctx) {
 			streamReader = ctx.GetService<PdbStreamReader>();
 			streamTable = ctx.GetService<StreamTableReader>();
 		}
 
-		public byte[] GetStreamByName(string streamName) {
-			if (streamReader == null)
-				return null;
-
-			if (!streamReader
-				.NameTable
-				.GetIndex(streamName, out uint streamNumber)
-			) {
+		public byte[]? GetStreamByName(string streamName) {
+			uint streamNumber = 0;
+			var res = streamReader?.NameTable?.GetIndex(streamName, out streamNumber) ?? false;
+			if (!res) {
 				return null;
 			}
 
-			return streamTable.GetStream((int)streamNumber);
+			return streamTable?.GetStream((int)streamNumber);
 		}
 	}
 }

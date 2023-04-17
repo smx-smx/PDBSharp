@@ -11,28 +11,54 @@ using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_COMPILE
 {
-	public class S_COMPILE : SymbolBase
-	{
+	public class Data : ISymbolData {
 		public CompileSymFlags Flags { get; set; }
 		public byte Machine { get; set; }
 		public string VersionString { get; set; }
 
-		public S_COMPILE(IServiceContainer ctx, IModule mod, SpanStream stream): base(ctx, mod, stream) {
+		public Data(CompileSymFlags flags, byte machine, string versionString) {
+			Flags = flags;
+			Machine = machine;
+			VersionString = versionString;
+		}
+	}
+
+	public class Serializer : SymbolSerializerBase, ISymbolSerializer
+	{
+		public Data? Data { get; set; }
+
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream): base(ctx, mod, stream) {
 		}
 
-		public override void Read() {
+		public void Read() {
 			var r = CreateReader();
-			Machine = r.ReadByte();
+			var Machine = r.ReadByte();
 			uint flags = (uint)(r.ReadByte() | (r.ReadByte() << 8) | (r.ReadByte() << 16));
-			Flags = new CompileSymFlags(flags);
-			VersionString = r.ReadSymbolString();
+			var Flags = new CompileSymFlags(flags);
+			var VersionString = r.ReadSymbolString();
+
+			Data = new Data(
+				flags: Flags,
+				machine: Machine,
+				versionString: VersionString
+			);
 		}
+
+		public void Write() {
+			throw new NotImplementedException();
+		}
+
+		public ISymbolData? GetData() => Data;
 
 		public override string ToString() {
-			return $"S_COMPILE[Flags='{Flags}', Machine='{Machine}', VersionString='{VersionString}']";
+			var data = Data;
+			return $"S_COMPILE[Flags='{data?.Flags}'" +
+				$", Machine='{data?.Machine}'" +
+				$", VersionString='{data?.VersionString}']";
 		}
 	}
 }

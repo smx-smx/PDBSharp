@@ -11,34 +11,56 @@ using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.Leaves;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_LABEL32
 {
-	public class S_LABEL32 : SymbolBase
-	{
+	public class Data : ISymbolData {
 		public UInt32 Offset { get; set; }
 		public UInt16 Segment { get; set; }
 		public CV_PROCFLAGS Flags { get; set; }
 		public string Name { get; set; }
 
-		public S_LABEL32(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		public Data(uint offset, ushort segment, CV_PROCFLAGS flags, string name) {
+			Offset = offset;
+			Segment = segment;
+			Flags = flags;
+			Name = name;
+		}
+	}
+
+	public class Serializer : SymbolSerializerBase, ISymbolSerializer
+	{
+		private Data? Data { get; set; }
+		public ISymbolData? GetData() => Data;
+
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 		}
 
-		public override void Read() {
+		public void Read() {
 			var r = CreateReader();
-			Offset = r.ReadUInt32();
-			Segment = r.ReadUInt16();
-			Flags = r.ReadFlagsEnum<CV_PROCFLAGS>();
-			Name = r.ReadSymbolString();
+			var Offset = r.ReadUInt32();
+			var Segment = r.ReadUInt16();
+			var Flags = r.ReadFlagsEnum<CV_PROCFLAGS>();
+			var Name = r.ReadSymbolString();
+			Data = new Data(
+				offset: Offset,
+				segment: Segment,
+				flags: Flags,
+				name: Name
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+			
 			var w = CreateWriter(SymbolType.S_LABEL32);
-			w.WriteUInt32(Offset);
-			w.WriteUInt16(Segment);
-			w.Write<CV_PROCFLAGS>(Flags);
-			w.WriteSymbolString(Name);
-
+			w.WriteUInt32(data.Offset);
+			w.WriteUInt16(data.Segment);
+			w.Write<CV_PROCFLAGS>(data.Flags);
+			w.WriteSymbolString(data.Name);
 			w.WriteHeader();
 		}
 	}

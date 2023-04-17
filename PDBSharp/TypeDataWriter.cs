@@ -12,6 +12,7 @@ using System;
 using System.ComponentModel.Design;
 using System.IO;
 using System.Text;
+using Smx.PDBSharp.LeafResolver;
 
 namespace Smx.PDBSharp
 {
@@ -37,22 +38,33 @@ namespace Smx.PDBSharp
 			this.hasSize = hasSize;
 		}
 
-		public void WriteIndexedType(ILeafContainer leaf) {
-			WriteUInt32(leaf.TypeIndex);
-			leaf.Data.Write();
+		public void WriteIndexedType(ILeafResolver? leaf) {
+			if (leaf == null) throw new ArgumentNullException(nameof(leaf));
+			var ctx = leaf.Ctx;
+			if (ctx == null) throw new InvalidOperationException();
+			
+			WriteUInt32(ctx.TypeIndex);
+			ctx.CreateSerializer(this).Write();
 		}
 
-		public void WriteIndexedType16(ILeafContainer leaf) {
-			WriteUInt16((ushort)leaf.TypeIndex);
-			leaf.Data.Write();
+		public void WriteIndexedType16(ILeafResolver? leaf) {
+			if (leaf == null) throw new ArgumentNullException(nameof(leaf));
+			var ctx = leaf.Ctx;
+			if(ctx == null) throw new InvalidOperationException();
+			WriteUInt16((ushort)ctx.TypeIndex);
+			ctx.CreateSerializer(this).Write();
 		}
 
-		public void WriteVaryingType(ILeafContainer leaf) {
-			if ((ushort)leaf.Type < (ushort)LeafType.LF_NUMERIC) {
+		public void WriteVaryingType(ILeafResolver? leaf) {
+			if (leaf == null) throw new ArgumentNullException(nameof(leaf));
+			var ctx = leaf.Ctx;
+			if (ctx == null) throw new InvalidOperationException();
+			
+			if ((ushort)ctx.Type < (ushort)LeafType.LF_NUMERIC) {
 				throw new NotImplementedException();
 			}
 
-			leaf.Data.Write();
+			ctx.CreateSerializer(this).Write();
 		}
 
 		public void WriteHeader() {

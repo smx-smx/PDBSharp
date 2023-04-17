@@ -10,36 +10,61 @@ using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Leaves.LF_PROCEDURE
 {
-	public class LF_PROCEDURE : LeafBase
-	{
-		public ILeafContainer ReturnValueType { get; set; }
+	public class Data : ILeafData {
+		public ILeafResolver? ReturnValueType { get; set; }
 		public CallingConvention CallingConvention { get; set; }
 		public UInt16 NumberOfParameters { get; set; }
-		public ILeafContainer ArgumentListType { get; set; }
+		public ILeafResolver? ArgumentListType { get; set; }
 
-		public LF_PROCEDURE(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
+		public Data(ILeafResolver? returnValueType, CallingConvention callingConvention, ushort numberOfParameters, ILeafResolver? argumentListType) {
+			ReturnValueType = returnValueType;
+			CallingConvention = callingConvention;
+			NumberOfParameters = numberOfParameters;
+			ArgumentListType = argumentListType;
+		}
+	}
+
+	public class Serializer : LeafBase, ILeafSerializer
+	{
+		public Data? Data { get; set; }
+		public ILeafData? GetData() => Data;
+
+		
+
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
 		}
 
-		public override void Read() {
+		public void Read() {
 			TypeDataReader r = CreateReader();
 
-			ReturnValueType = r.ReadIndexedType32Lazy();
-			CallingConvention = r.ReadEnum<CallingConvention>();
+			var ReturnValueType = r.ReadIndexedType32Lazy();
+			var CallingConvention = r.ReadEnum<CallingConvention>();
 			r.ReadByte(); //reserved
-			NumberOfParameters = r.ReadUInt16();
-			ArgumentListType = r.ReadIndexedType32Lazy();
+			var NumberOfParameters = r.ReadUInt16();
+			var ArgumentListType = r.ReadIndexedType32Lazy();
+
+			Data = new Data(
+				returnValueType: ReturnValueType,
+				callingConvention: CallingConvention,
+				numberOfParameters: NumberOfParameters,
+				argumentListType: ArgumentListType
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			TypeDataWriter w = CreateWriter(LeafType.LF_PROCEDURE);
-			w.WriteIndexedType(ReturnValueType);
-			w.Write<CallingConvention>(CallingConvention);
+			w.WriteIndexedType(data.ReturnValueType);
+			w.Write<CallingConvention>(data.CallingConvention);
 			w.WriteByte(0x00);
-			w.WriteUInt16(NumberOfParameters);
-			w.WriteIndexedType(ArgumentListType);
+			w.WriteUInt16(data.NumberOfParameters);
+			w.WriteIndexedType(data.ArgumentListType);
 			w.WriteHeader();
 		}
 	}

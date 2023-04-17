@@ -27,7 +27,12 @@ namespace Smx.PDBSharp
 
 		private ReadStringDelegate ReadString;
 
-		private void InitVariants() {
+		public SymbolDataReader(IServiceContainer ctx, SymbolHeader header, SpanStream stream) : base(ctx, stream) {
+			startOffset = stream.Position - Marshal.SizeOf<SymbolHeader>();
+			Header = header;
+			endOffset = startOffset + Header.Length;
+			CheckHeader();
+
 			switch (ctx.GetService<MSFReader>().FileType) {
 				case PDBType.Big:
 					ReadString = ReadString32;
@@ -35,15 +40,9 @@ namespace Smx.PDBSharp
 				case PDBType.Small:
 					ReadString = ReadString16;
 					break;
+				default:
+					throw new InvalidDataException();
 			}
-		}
-
-		public SymbolDataReader(IServiceContainer ctx, SymbolHeader header, SpanStream stream) : base(ctx, stream) {
-			startOffset = stream.Position - Marshal.SizeOf<SymbolHeader>();
-			Header = header;
-			endOffset = startOffset + Header.Length;
-			CheckHeader();
-			InitVariants();
 		}
 
 		public SymbolDataReader(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
@@ -51,7 +50,17 @@ namespace Smx.PDBSharp
 			Header = ReadHeader();
 			endOffset = startOffset + sizeof(UInt16) + Header.Length;
 			CheckHeader();
-			InitVariants();
+
+			switch (ctx.GetService<MSFReader>().FileType) {
+				case PDBType.Big:
+					ReadString = ReadString32;
+					break;
+				case PDBType.Small:
+					ReadString = ReadString16;
+					break;
+				default:
+					throw new InvalidDataException();
+			}
 		}
 
 		public bool HasMoreData => Position < (startOffset + Header.Length);
@@ -62,7 +71,7 @@ namespace Smx.PDBSharp
 			}
 		}
 
-		public Symbol ReadSymbol(IModule mod, uint offset) {
+		public ISymbolResolver? ReadSymbol(IModule mod, uint offset) {
 			if (offset == 0)
 				return null;
 
@@ -72,7 +81,7 @@ namespace Smx.PDBSharp
 
 
 			return cv.PerformAt(offset, () => {
-				return new SymbolsReader(ctx, mod, cv).ReadSymbol();
+				return new SymbolsReader(ctx, mod, cv).ReadSymbolDirect();
 			});
 		}
 

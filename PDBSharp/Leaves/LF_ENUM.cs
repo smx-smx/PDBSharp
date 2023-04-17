@@ -10,78 +10,109 @@ using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Leaves.LF_ENUM
 {
-
-	public class LF_ENUM : LeafBase
+	public class Data : ILeafData, ILeafType
 	{
 		public UInt16 NumElements { get; set; }
 		public TypeProperties Properties { get; set; }
 
-		public ILeafContainer UnderlyingType { get; set; }
-		public ILeafContainer FieldType { get; set; }
+		public ILeafResolver? UnderlyingType { get; set; }
+		public ILeafResolver? FieldType { get; set; }
 
 		public string Name { get; set; }
 
-		public override string UdtName => Name;
+		public Data(ushort numElements, TypeProperties properties, ILeafResolver? underlyingType, ILeafResolver? fieldType, string name) {
+			NumElements = numElements;
+			Properties = properties;
+			UnderlyingType = underlyingType;
+			FieldType = fieldType;
+			Name = name;
+		}
 
-		public override bool IsDefnUdt {
+
+		public string UdtName => Name;
+
+		public bool IsDefnUdt {
 			get {
 				return Properties.HasFlag(TypeProperties.IsForwardReference);
 			}
 		}
 
-		public override bool IsGlobalDefnUdt {
+		public bool IsGlobalDefnUdt {
 			get {
 				return (
 					Properties.HasFlag(TypeProperties.IsForwardReference) &&
 					Properties.HasFlag(TypeProperties.IsScoped) &&
-					!IsUdtAnon
+					!LeafTypeHelper.IsUdtAnon(this)
 				);
 			}
 		}
 
-		public override bool IsLocalDefnUdtWithUniqueName {
+		public bool IsLocalDefnUdtWithUniqueName {
 			get {
 				return (
 					!Properties.HasFlag(TypeProperties.IsForwardReference) &&
 					Properties.HasFlag(TypeProperties.IsScoped) &&
 					Properties.HasFlag(TypeProperties.HasUniqueName) &&
-					!IsUdtAnon
+					!LeafTypeHelper.IsUdtAnon(this)
 				);
 			}
 		}
 
-		public LF_ENUM(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+		public bool IsUdtSourceLine => throw new NotImplementedException();
+
+		public bool IsGlobalDefnUdtWithUniqueName => throw new NotImplementedException();
+	}
+
+	public class Serializer : LeafBase, ILeafSerializer
+	{
+		public Data? Data { get; set; }
+		public ILeafData? GetData() => Data;
+
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 		}
 
-		public override void Read() {
+		public void Read() {
 			TypeDataReader r = CreateReader();
 
-			NumElements = r.ReadUInt16();
-			Properties = r.ReadFlagsEnum<TypeProperties>();
-			UnderlyingType = r.ReadIndexedType32Lazy();
-			FieldType = r.ReadIndexedType32Lazy();
-			Name = r.ReadCString();
+			var NumElements = r.ReadUInt16();
+			var Properties = r.ReadFlagsEnum<TypeProperties>();
+			var UnderlyingType = r.ReadIndexedType32Lazy();
+			var FieldType = r.ReadIndexedType32Lazy();
+			var Name = r.ReadCString();
+
+			Data = new Data(
+				numElements: NumElements,
+				properties: Properties,
+				underlyingType: UnderlyingType,
+				fieldType: FieldType,
+				name: Name
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			TypeDataWriter w = CreateWriter(LeafType.LF_ENUM);
-			w.WriteUInt16(NumElements);
-			w.Write<TypeProperties>(Properties);
-			w.WriteIndexedType(UnderlyingType);
-			w.WriteIndexedType(FieldType);
-			w.WriteCString(Name);
+			w.WriteUInt16(data.NumElements);
+			w.Write<TypeProperties>(data.Properties);
+			w.WriteIndexedType(data.UnderlyingType);
+			w.WriteIndexedType(data.FieldType);
+			w.WriteCString(data.Name);
 			w.WriteHeader();
 		}
 
 		public override string ToString() {
-			return $"LF_ENUM[NumElemens='{NumElements}'," +
-				$"Properties='{Properties}', " +
-				$"UnderlyingType='{UnderlyingType}', " +
-				$"FieldType='{FieldType}', " +
-				$"FieldName='{Name}]";
+			var data = Data;
+			return $"LF_ENUM[NumElemens='{data?.NumElements}'," +
+				$"Properties='{data?.Properties}', " +
+				$"UnderlyingType='{data?.UnderlyingType}', " +
+				$"FieldType='{data?.FieldType}', " +
+				$"FieldName='{data?.Name}]";
 		}
 	}
 }

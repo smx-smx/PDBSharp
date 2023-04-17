@@ -12,6 +12,8 @@ using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.IO;
 using System.Text;
+using Smx.PDBSharp.BuiltinTypeLeaf;
+using Smx.PDBSharp.LeafResolver;
 
 namespace Smx.PDBSharp
 {
@@ -39,12 +41,17 @@ namespace Smx.PDBSharp
 			}
 		}
 
-		public ILeafContainer GetTypeByIndex(UInt32 TypeIndex) {
+		public ILeafResolver? GetTypeByIndex(UInt32 TypeIndex) {
 			if (!tpi.HasTi(TypeIndex)) {
 				if (tpi.IsBuiltinTi(TypeIndex)) {
-					ILeaf builtin = new BuiltinTypeLeaf(TypeIndex);
-					return new DirectLeafProvider(TypeIndex, LeafType.SPECIAL_BUILTIN, builtin);
+					var builtin = new BuiltinTypeLeaf.Data(TypeIndex);
+					return new DirectLeafData(new LeafContext(
+						typeIndex: TypeIndex,
+						type: LeafType.SPECIAL_BUILTIN,
+						data: builtin
+					));
 				}
+
 				return null;
 			}
 

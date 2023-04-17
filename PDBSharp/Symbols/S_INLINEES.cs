@@ -11,11 +11,11 @@ using Smx.SharpIO;
 using System.ComponentModel.Design;
 using System.IO;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_INLINEES
 {
-	public class S_INLINEES : FUNCTIONLIST
+	public class Serializer : Symbols.FUNCTIONLIST.Serializer
 	{
-		public S_INLINEES(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 		}
 	}
 }

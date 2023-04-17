@@ -27,7 +27,6 @@ namespace Smx.PDBSharp
 		public readonly StreamTableWriter StreamTable;
 
 		private SpanStream msf;
-
 		public Memory<byte> Memory => msf.Memory;
 
 		public uint PageSize {
@@ -38,9 +37,11 @@ namespace Smx.PDBSharp
 		public MSFWriter() {
 			hdr.Magic = PDBFile.BIG_MAGIC;
 			StreamTable = new StreamTableWriter(this);
+			msf = new SpanStream(new byte[(int)GetDataSize()]);
 		}
 
 		private void SeekPage(uint pageNum) {
+			if (msf == null) throw new InvalidOperationException();
 			msf.Position = pageNum * hdr.PageSize;
 		}
 
@@ -83,6 +84,8 @@ namespace Smx.PDBSharp
 		}
 
 		private unsafe void WritePage<T>(uint pageNum, T data) where T : unmanaged {
+			if (msf == null) throw new InvalidOperationException();
+			
 			if(sizeof(T) > hdr.PageSize) {
 				throw new ArgumentOutOfRangeException(typeof(T).Name + $" is bigger than PageSize {hdr.PageSize}");
 			}
@@ -104,6 +107,8 @@ namespace Smx.PDBSharp
 		}
 
 		public void WritePages(Dictionary<uint, byte[]> pages) {
+			if (msf == null) throw new InvalidOperationException();
+			
 			foreach (var pageNum in pages.Keys) {
 				msf.WriteUInt32(pageNum);
 			}
@@ -114,6 +119,8 @@ namespace Smx.PDBSharp
 		}
 
 		public void WritePage(uint pageNumber, byte[] pageData) {
+			if (msf == null) throw new InvalidOperationException();
+
 			Debug.Assert(pageData.Length == hdr.PageSize);
 
 			SeekPage(pageNumber);
@@ -123,6 +130,7 @@ namespace Smx.PDBSharp
 		//public void WriteStreamTable()
 
 		public uint GetNumPages(uint numBytes) {
+			if (hdr.PageSize == 0) return 0;
 			return (numBytes + hdr.PageSize - 1) / hdr.PageSize;
 		}
 	}

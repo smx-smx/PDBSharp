@@ -11,14 +11,14 @@ using Smx.SharpIO;
 using System.ComponentModel.Design;
 using System.IO;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_CONSTANT
 {
-	public class S_CONSTANT : ConstSymBase
+	public class Serializer : ConstSymSerializerBase
 	{
-		public S_CONSTANT(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 		}
 
-		public override void Write() {
+		public void Write() {
 			base.Write(SymbolType.S_CONSTANT);
 		}
 	}

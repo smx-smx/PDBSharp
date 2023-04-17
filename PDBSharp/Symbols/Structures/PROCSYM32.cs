@@ -10,62 +10,108 @@ using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
+using Smx.PDBSharp.Symbols.Structures;
 
-namespace Smx.PDBSharp.Symbols.Structures
+namespace Smx.PDBSharp.Symbols.ProcSym32
 {
-	public abstract class ProcSym32Base : SymbolBase
+	public class Data : ISymbolData {
+		public UInt32 ParentOffset { get; set; }
+		public UInt32 End { get;set; }
+		public UInt32 NextOffset { get;set; }
+		public UInt32 Length { get;set; }
+		public UInt32 DebugStartOffset { get;set; }
+		public UInt32 DebugEndOffset { get;set; }
+		public ILeafResolver? Type { get;set; }
+		public UInt32 Offset { get;set; }
+		public UInt16 Segment { get;set; }
+		public CV_PROCFLAGS Flags { get;set; }
+		public string Name { get;set; }
+		public ISymbolResolver? ParentSymbol { get;set; }
+		public ISymbolResolver? NextSymbol { get;set; }
+
+		public Data(uint parentOffset, uint end, uint nextOffset, uint length, uint debugStartOffset, uint debugEndOffset, ILeafResolver? type, uint offset, ushort segment, CV_PROCFLAGS flags, string name, ISymbolResolver? parentSymbol, ISymbolResolver? nextSymbol) {
+			ParentOffset = parentOffset;
+			End = end;
+			NextOffset = nextOffset;
+			Length = length;
+			DebugStartOffset = debugStartOffset;
+			DebugEndOffset = debugEndOffset;
+			Type = type;
+			Offset = offset;
+			Segment = segment;
+			Flags = flags;
+			Name = name;
+			ParentSymbol = parentSymbol;
+			NextSymbol = nextSymbol;
+		}
+	}
+
+	public abstract class SerializerBase : SymbolSerializerBase, ISymbolSerializer
 	{
-		private UInt32 ParentOffset;
-		public UInt32 End;
-		private UInt32 NextOffset;
-		public UInt32 Length;
-		public UInt32 DebugStartOffset;
-		public UInt32 DebugEndOffset;
-		public ILeafContainer Type;
-		public UInt32 Offset;
-		public UInt16 Segment;
-		public CV_PROCFLAGS Flags;
-		public string Name;
-
-		public Symbol ParentSymbol;
-		public Symbol NextSymbol;
-
-		public ProcSym32Base(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		public Data? Data { get; set; }
+		public void Write() {
+			throw new NotImplementedException();
 		}
 
-		public override void Read() {
+		public ISymbolData? GetData() => Data;
+
+		public SerializerBase(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		}
+
+		public void Read() {
 			var r = CreateReader();
 
-			ParentOffset = r.ReadUInt32();
-			ParentSymbol = r.ReadSymbol(Module, ParentOffset);
+			var ParentOffset = r.ReadUInt32();
+			var ParentSymbol = r.ReadSymbol(Module, ParentOffset);
 
-			End = r.ReadUInt32();
-			NextOffset = r.ReadUInt32();
-			NextSymbol = r.ReadSymbol(Module, NextOffset);
+			var End = r.ReadUInt32();
+			var NextOffset = r.ReadUInt32();
+			var NextSymbol = r.ReadSymbol(Module, NextOffset);
 
-			Length = r.ReadUInt32();
-			DebugStartOffset = r.ReadUInt32();
-			DebugEndOffset = r.ReadUInt32();
-			Type = r.ReadIndexedType32Lazy();
-			Offset = r.ReadUInt32();
-			Segment = r.ReadUInt16();
-			Flags = r.ReadFlagsEnum<CV_PROCFLAGS>();
-			Name = r.ReadSymbolString();
+			var Length = r.ReadUInt32();
+			var DebugStartOffset = r.ReadUInt32();
+			var DebugEndOffset = r.ReadUInt32();
+			var Type = r.ReadIndexedType32Lazy();
+			var Offset = r.ReadUInt32();
+			var Segment = r.ReadUInt16();
+			var Flags = r.ReadFlagsEnum<CV_PROCFLAGS>();
+			var Name = r.ReadSymbolString();
+
+			Data = new Data(
+				parentOffset: ParentOffset,
+				parentSymbol: ParentSymbol,
+				end: End,
+				nextOffset: NextOffset,
+				nextSymbol: NextSymbol,
+				length: Length,
+				debugStartOffset: DebugStartOffset,
+				debugEndOffset: DebugEndOffset,
+				type: Type,
+				offset: Offset,
+				segment: Segment,
+				flags: Flags,
+				name: Name
+			);
 		}
 
 		public void Write(SymbolType symbolType) {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			var w = CreateWriter(symbolType);
-			w.WriteUInt32(ParentOffset);
-			w.WriteUInt32(End);
-			w.WriteUInt32(NextOffset);
-			w.WriteUInt32(Length);
-			w.WriteUInt32(DebugStartOffset);
-			w.WriteUInt32(DebugEndOffset);
-			w.WriteIndexedType(Type);
-			w.WriteUInt32(Offset);
-			w.WriteUInt16(Segment);
-			w.Write<CV_PROCFLAGS>(Flags);
-			w.WriteSymbolString(Name);
+			w.WriteUInt32(data.ParentOffset);
+			w.WriteUInt32(data.End);
+			w.WriteUInt32(data.NextOffset);
+			w.WriteUInt32(data.Length);
+			w.WriteUInt32(data.DebugStartOffset);
+			w.WriteUInt32(data.DebugEndOffset);
+			w.WriteIndexedType(data.Type);
+			w.WriteUInt32(data.Offset);
+			w.WriteUInt16(data.Segment);
+			w.Write<CV_PROCFLAGS>(data.Flags);
+			w.WriteSymbolString(data.Name);
 
 			w.WriteHeader();
 		}

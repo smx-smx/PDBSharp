@@ -10,27 +10,55 @@ using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
+using Smx.PDBSharp.Leaves;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_INLINESITE
 {
-	public class S_INLINESITE : SymbolBase
-	{
-		private UInt32 InlinerParentOffset;
-		public Symbol Inliner;
-		public UInt32 End;
-		public ILeafContainer Inlinee;
-		public byte[] BinaryAnnotations;
+	public class Data : ISymbolData {
+		public UInt32 InlinerParentOffset { get; set; }
+		public ISymbolResolver? Inliner { get; set; }
+		public UInt32 End { get; set; }
+		public ILeafResolver? Inlinee { get; set; }
+		public byte[] BinaryAnnotations { get; set; }
 
-		public S_INLINESITE(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		public Data(uint inlinerParentOffset, ISymbolResolver? inliner, uint end, ILeafResolver? inlinee, byte[] binaryAnnotations) {
+			InlinerParentOffset = inlinerParentOffset;
+			Inliner = inliner;
+			End = end;
+			Inlinee = inlinee;
+			BinaryAnnotations = binaryAnnotations;
+		}
+	}
+
+	public class Serializer : SymbolSerializerBase, ISymbolSerializer
+	{
+		public Data? Data { get; set; }
+		public void Write() {
+			throw new NotImplementedException();
 		}
 
-		public override void Read() {
+		public ISymbolData? GetData() => Data;
+
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		}
+
+		public void Read() {
 			var r = CreateReader();
-			InlinerParentOffset = r.ReadUInt32();
-			Inliner = r.ReadSymbol(Module, InlinerParentOffset);
-			End = r.ReadUInt32();
-			Inlinee = r.ReadIndexedType32Lazy();
-			BinaryAnnotations = r.ReadRemaining();
+			var InlinerParentOffset = r.ReadUInt32();
+			var Inliner = r.ReadSymbol(Module, InlinerParentOffset);
+			var End = r.ReadUInt32();
+			var Inlinee = r.ReadIndexedType32Lazy();
+			var BinaryAnnotations = r.ReadRemaining();
+
+			Data = new Data(
+				inlinerParentOffset: InlinerParentOffset,
+				inliner: Inliner,
+				end: End,
+				inlinee: Inlinee,
+				binaryAnnotations: BinaryAnnotations
+			);
 		}
 	}
 }

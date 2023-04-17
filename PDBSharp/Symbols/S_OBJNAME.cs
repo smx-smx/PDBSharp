@@ -10,29 +10,47 @@ using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_OBJNAME
 {
 
-	public class S_OBJNAME : SymbolBase
-	{
+	public class Data : ISymbolData {
 		public UInt32 Signature { get; set; }
 		public string Name { get; set; }
 
-		public S_OBJNAME(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		public Data(uint signature, string name) {
+			Signature = signature;
+			Name = name;
+		}
+	}
+
+	public class Serializer : SymbolSerializerBase, ISymbolSerializer {
+		public Data? Data { get; set; }
+		public ISymbolData? GetData() => Data;
+
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 		}
 
-		public override void Read() {
+		public void Read() {
 			var r = CreateReader();
 
-			Signature = r.ReadUInt32();
-			Name = r.ReadSymbolString();
+			var Signature = r.ReadUInt32();
+			var Name = r.ReadSymbolString();
+			
+			Data = new Data(
+				signature: Signature,
+				name: Name
+			);
 		}
 
 		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			var w = CreateWriter(SymbolType.S_OBJNAME);
-			w.WriteUInt32(Signature);
-			w.WriteSymbolString(Name);
+			w.WriteUInt32(data.Signature);
+			w.WriteSymbolString(data.Name);
 
 			w.WriteHeader();
 		}

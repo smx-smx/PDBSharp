@@ -6,26 +6,39 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
+
+using System;
 using Smx.SharpIO;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
 
-namespace Smx.PDBSharp.Symbols
+namespace Smx.PDBSharp.Symbols.S_ENVBLOCK
 {
-	public class S_ENVBLOCK : SymbolBase
-	{
-		public string[] Data { get; set; }
-		//Reserved according to PDB docs, first bit is fEC tho
+	public class Data : ISymbolData {
+		public string[] EnvData { get; set; }
 		public byte Flags { get; set; }
+		
+		public Data(string[] envData, byte flags) {
+			EnvData = envData;
+			Flags = flags;
+		}
+	}
 
-		public S_ENVBLOCK(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) { 
+	public class Serializer : SymbolSerializerBase, ISymbolSerializer
+	{
+		private Data? Data { get; set; }
+
+		//Reserved according to PDB docs, first bit is fEC tho
+
+		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
 		}
 
-		public override void Read() {
+		public void Read() {
 			var r = CreateReader();
 
-			Flags = r.ReadByte(); //fEC -> reserved (1 bit)
+			var Flags = r.ReadByte(); //fEC -> reserved (1 bit)
 
 			List<string> strLst = new List<string>(); ;
 			while (r.HasMoreData) {
@@ -35,17 +48,25 @@ namespace Smx.PDBSharp.Symbols
 				strLst.Add(str);
 			}
 
-			Data = strLst.ToArray();
+			Data = new Data(
+				flags: Flags,
+				envData: strLst.ToArray()
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+			
 			var w = CreateWriter(SymbolType.S_ENVBLOCK);
-			w.WriteByte(Flags);
-			foreach (string str in Data) {
+			w.WriteByte(data.Flags);
+			foreach (string str in data.EnvData) {
 				w.WriteSymbolString(str);
 			}
 
 			w.WriteHeader();
 		}
+
+		public ISymbolData? GetData() => Data;
 	}
 }

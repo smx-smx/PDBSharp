@@ -10,23 +10,43 @@ using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Leaves.LF_ALIAS
 {
-	public class LF_ALIAS : LeafBase
-	{
-		public ILeafContainer UnderlyingType { get; set; }
+	public class Data : ILeafData {
+		public ILeafResolver? UnderlyingType { get; set; }
 		public string Name { get; set; }
 
-		public override string UdtName => Name;
+		public Data(ILeafResolver? underlyingType, string name) {
+			UnderlyingType = underlyingType;
+			Name = name;
+		}
+	}
 
-		public override void Read() {
+	public class Serializer : LeafBase, ILeafSerializer
+	{
+		public Data? Data { get; set; }
+		public ILeafData? GetData() => Data;
+
+		
+
+		public void Read() {
 			TypeDataReader r = CreateReader();
-			UnderlyingType = r.ReadIndexedType32Lazy();
-			Name = r.ReadCString();
+			var UnderlyingType = r.ReadIndexedType32Lazy();
+			var Name = r.ReadCString();
+
+			Data = new Data(
+				underlyingType: UnderlyingType,
+				name: Name
+			);
 		}
 
-		public LF_ALIAS(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+		public void Write() {
+			throw new NotImplementedException();
+		}
+
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 			
 		}
 	}

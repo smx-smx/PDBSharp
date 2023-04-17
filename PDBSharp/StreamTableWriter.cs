@@ -20,7 +20,7 @@ namespace Smx.PDBSharp
 
 		private readonly List<Memory<byte>> Streams = new List<Memory<byte>>();
 
-		private SpanStream st;
+		private SpanStream? st;
 
 		public StreamTableWriter(MSFWriter msf) {
 			this.msf = msf;
@@ -39,10 +39,13 @@ namespace Smx.PDBSharp
 		}
 
 		private void WriteStreamSizes() {
+			if (st == null) throw new InvalidOperationException();
 			Streams.ForEach(data => st.WriteUInt32((uint)data.Length));
 		}
 
 		private void WriteStream(Memory<byte> data) {
+			if (st == null) throw new InvalidOperationException();
+			
 			var numPages = msf.GetNumPages((uint)data.Length);
 
 			uint streamSize = numPages * msf.PageSize;

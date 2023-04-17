@@ -31,9 +31,9 @@ namespace Smx.PDBSharp
 		public readonly string FileName;
 
 
-		public event OnSymbolDataDelegate OnSymbolData;
+		public event OnSymbolDataDelegate? OnSymbolData;
 
-		public IEnumerable<Symbol> Symbols => Enumerable.Empty<Symbol>();
+		public IEnumerable<ISymbolResolver?> Symbols => Enumerable.Empty<ISymbolResolver?>();
 
 		public SourceFileModuleReader(IServiceContainer ctx, SpanStream stream) : base(stream) {
 			this.pdb = ctx.GetService<PDBFile>();

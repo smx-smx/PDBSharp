@@ -7,45 +7,74 @@
  */
 #endregion
 using Smx.SharpIO;
+using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Leaves.LF_VBCLASS
 {
-	public class LF_VBCLASS : LeafBase
-	{
+	public class Data : ILeafData {
 		public FieldAttributes Attributes { get; set; }
-		public ILeafContainer VirtualBaseClassType { get; set; }
-		public ILeafContainer VirtualBasePointerType { get; set; }
+		public ILeafResolver? VirtualBaseClassType { get; set; }
+		public ILeafResolver? VirtualBasePointerType { get; set; }
 
-		public ILeafContainer OffsetFromAddress { get; set; }
-		public ILeafContainer OffsetFromTable { get; set; }
+		public ILeafResolver? OffsetFromAddress { get; set; }
+		public ILeafResolver? OffsetFromTable { get; set; }
 
-		public override void Read() {
+		public Data(FieldAttributes attributes, ILeafResolver? virtualBaseClassType, ILeafResolver? virtualBasePointerType, ILeafResolver? offsetFromAddress, ILeafResolver? offsetFromTable) {
+			Attributes = attributes;
+			VirtualBaseClassType = virtualBaseClassType;
+			VirtualBasePointerType = virtualBasePointerType;
+			OffsetFromAddress = offsetFromAddress;
+			OffsetFromTable = offsetFromTable;
+		}
+	}
+
+	public class Serializer : LeafBase, ILeafSerializer
+	{
+		public Data? Data { get; set; }
+		public ILeafData? GetData() => Data;
+
+		
+
+
+		public void Read() {
 			TypeDataReader r = CreateReader();
 
-			Attributes = new FieldAttributes(r.ReadUInt16());
-			VirtualBaseClassType = r.ReadIndexedType32Lazy();
-			VirtualBasePointerType = r.ReadIndexedType32Lazy();
+			var Attributes = new FieldAttributes(r.ReadUInt16());
+			var VirtualBaseClassType = r.ReadIndexedType32Lazy();
+			var VirtualBasePointerType = r.ReadIndexedType32Lazy();
 
 
 			//virtual base pointer offset from address point
-			OffsetFromAddress = r.ReadVaryingType(out uint dynSize1);
+			var OffsetFromAddress = r.ReadVaryingType(out uint dynSize1);
 			//virtual base offset from vbtable
-			OffsetFromTable = r.ReadVaryingType(out uint dynSize2);
+			var OffsetFromTable = r.ReadVaryingType(out uint dynSize2);
+
+			Data = new Data(
+				attributes: Attributes,
+				virtualBaseClassType: VirtualBaseClassType,
+				virtualBasePointerType: VirtualBasePointerType,
+				offsetFromAddress: OffsetFromAddress,
+				offsetFromTable: OffsetFromTable
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			TypeDataWriter w = CreateWriter(LeafType.LF_IVBCLASS);
-			w.WriteUInt16((ushort)Attributes);
-			w.WriteIndexedType(VirtualBaseClassType);
-			w.WriteIndexedType(VirtualBasePointerType);
-			w.WriteVaryingType(OffsetFromAddress);
-			w.WriteVaryingType(OffsetFromTable);
+			w.WriteUInt16((ushort)data.Attributes);
+			w.WriteIndexedType(data.VirtualBaseClassType);
+			w.WriteIndexedType(data.VirtualBasePointerType);
+			w.WriteVaryingType(data.OffsetFromAddress);
+			w.WriteVaryingType(data.OffsetFromTable);
 			w.WriteHeader();
 		}
 
-		public LF_VBCLASS(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 			
 		}
 

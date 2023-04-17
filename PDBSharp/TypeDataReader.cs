@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
 
 namespace Smx.PDBSharp
 {
@@ -20,7 +21,7 @@ namespace Smx.PDBSharp
 	{
 
 		public delegate string ReadStringDelegate();
-		public new ReadStringDelegate ReadString16;
+		public new ReadStringDelegate ReadString16 = () => throw new InvalidOperationException();
 
 		public static readonly ReadOnlyDictionary<LeafType, uint> PrimitiveDataSizes = new ReadOnlyDictionary<LeafType, uint>(new Dictionary<LeafType, uint>() {
 			{ LeafType.LF_CHAR, 1 },
@@ -49,28 +50,32 @@ namespace Smx.PDBSharp
 					break;
 			}
 		}
+		
+		private readonly TypeResolver resolver;
 
 		public TypeDataReader(IServiceContainer ctx, SpanStream data) : base(data) {
 			this.ctx = ctx;
+			resolver = ctx.GetService<TypeResolver>();
 			InitVariants();
 		}
 
 		public TypeDataReader(IServiceContainer ctx, Memory<byte> data) : base(data) {
 			this.ctx = ctx;
+			resolver = ctx.GetService<TypeResolver>();
 			InitVariants();
 		}
 
-		public ILeafContainer ReadIndexedType32Lazy() {
+		public ILeafResolver? ReadIndexedType32Lazy() {
 			UInt32 TI = ReadUInt32();
-			return new LazyLeafProvider(ctx, TI);
+			return resolver.GetTypeByIndex(TI);
 		}
 
-		public ILeafContainer ReadIndexedType16Lazy() {
+		public ILeafResolver? ReadIndexedType16Lazy() {
 			UInt16 TI = ReadUInt16();
-			return new LazyLeafProvider(ctx, TI);
+			return resolver.GetTypeByIndex(TI);
 		}
 
-		public unsafe ILeafContainer ReadIndexedTypeLazy<T>() where T : unmanaged {
+		public unsafe ILeafResolver? ReadIndexedTypeLazy<T>() where T : unmanaged {
 			switch (sizeof(T)) {
 				case 2:
 					return ReadIndexedType16Lazy();
@@ -87,7 +92,7 @@ namespace Smx.PDBSharp
 		/// <param name="dataSize"></param>
 		/// <param name="leafType"></param>
 		/// <returns>true if we found a ILeaf, false if we found raw data marker</returns>
-		public ILeafContainer ReadVaryingType(out uint dataSize) {
+		public ILeafResolver? ReadVaryingType(out uint dataSize) {
 			UInt16 leafValue = ReadUInt16();
 			if (leafValue < (ushort)LeafType.LF_NUMERIC) {
 				// $TODO: ILeafValue is not a ILeaf marker, but it's still a valid ushort
@@ -105,7 +110,7 @@ namespace Smx.PDBSharp
 			Seek(-2, SeekOrigin.Current);
 
 			TypeDataReader rdr = new TypeDataReader(ctx, this);
-			ILeafContainer leaf = rdr.ReadTypeDirect(hasSize: false);
+			ILeafResolver? leaf = rdr.ReadTypeDirect(hasSize: false);
 			//ILeafContainer leaf = new TypeDataReader(ctx, this).ReadTypeDirect(hasSize: false);
 
 			// add leaf size
@@ -149,91 +154,91 @@ namespace Smx.PDBSharp
 			return;
 		}
 
-		private ILeaf CreateLeafStream(LeafType leafType) {
+		private ILeafSerializer CreateLeafSerializer(LeafType leafType) {
 			switch (leafType) {
 				case LeafType.LF_ALIAS:
-					return new LF_ALIAS(ctx, this);
+					return new Leaves.LF_ALIAS.Serializer(ctx, this);
 				case LeafType.LF_ARGLIST:
-					return new LF_ARGLIST(ctx, this);
+					return new Leaves.LF_ARGLIST.Serializer(ctx, this);
 				case LeafType.LF_ARRAY_16t:
-					return new LF_ARRAY<ushort>(ctx, this);
+					return new Leaves.LF_ARRAY.Serializer<ushort>(ctx, this);
 				case LeafType.LF_ARRAY:
-					return new LF_ARRAY<uint>(ctx, this);
+					return new Leaves.LF_ARRAY.Serializer<uint>(ctx, this);
 				case LeafType.LF_BCLASS:
-					return new LF_BCLASS(ctx, this);
+					return new Leaves.LF_BCLASS.Serializer(ctx, this);
 				case LeafType.LF_BITFIELD:
-					return new LF_BITFIELD(ctx, this);
+					return new Leaves.LF_BITFIELD.Serializer(ctx, this);
 				case LeafType.LF_CHAR:
-					return new LF_CHAR(ctx, this);
+					return new Leaves.LF_CHAR.Serializer(ctx, this);
 				case LeafType.LF_CLASS:
 				case LeafType.LF_STRUCTURE:
 				case LeafType.LF_INTERFACE:
-					return new LF_CLASS_STRUCTURE_INTERFACE(ctx, this);
+					return new Leaves.LF_CLASS_STRUCTURE_INTERFACE.Serializer(ctx, this);
 				case LeafType.LF_CLASS_16t:
 				case LeafType.LF_STRUCTURE_16t:
-					return new LF_CLASS_STRUCTURE_INTERFACE16(ctx, this);
+					return new Leaves.LF_CLASS_STRUCTURE_INTERFACE16.Serializer(ctx, this);
 				case LeafType.LF_ENUM:
-					return new LF_ENUM(ctx, this);
+					return new Leaves.LF_ENUM.Serializer(ctx, this);
 				case LeafType.LF_ENUMERATE:
 				case LeafType.LF_ENUMERATE_ST:
-					return new LF_ENUMERATE(ctx, this);
+					return new Leaves.LF_ENUMERATE.Serializer(ctx, this);
 				case LeafType.LF_FIELDLIST:
-					return new LF_FIELDLIST(ctx, this);
+					return new Leaves.LF_FIELDLIST.Serializer(ctx, this);
 				case LeafType.LF_INDEX:
-					return new LF_INDEX(ctx, this);
+					return new Leaves.LF_INDEX.Serializer(ctx, this);
 				case LeafType.LF_LONG:
-					return new LF_LONG(ctx, this);
+					return new Leaves.LF_LONG.Serializer(ctx, this);
 				case LeafType.LF_MEMBER:
-					return new LF_MEMBER(ctx, this);
+					return new Leaves.LF_MEMBER.Serializer(ctx, this);
 				case LeafType.LF_METHOD:
-					return new LF_METHOD(ctx, this);
+					return new Leaves.LF_METHOD.Serializer(ctx, this);
 				case LeafType.LF_METHODLIST:
-					return new LF_METHODLIST(ctx, this);
+					return new Leaves.LF_METHODLIST.Serializer(ctx, this);
 				case LeafType.LF_MODIFIER:
-					return new LF_MODIFIER(ctx, this);
+					return new Leaves.LF_MODIFIER.Serializer(ctx, this);
 				case LeafType.LF_MFUNCTION:
-					return new LF_MFUNCTION(ctx, this);
+					return new Leaves.LF_MFUNCTION.Serializer(ctx, this);
 				case LeafType.LF_NESTTYPE:
-					return new LF_NESTTYPE(ctx, this);
+					return new Leaves.LF_NESTTYPE.Serializer(ctx, this);
 				case LeafType.LF_ONEMETHOD:
-					return new LF_ONEMETHOD(ctx, this);
+					return new Leaves.LF_ONEMETHOD.Serializer(ctx, this);
 				case LeafType.LF_POINTER:
-					return new LF_POINTER(ctx, this);
+					return new Leaves.LF_POINTER.Serializer(ctx, this);
 				case LeafType.LF_POINTER_16t:
-					return new LF_POINTER16t(ctx, this);
+					return new Leaves.LF_POINTER16t.Serializer(ctx, this);
 				case LeafType.LF_PROCEDURE:
-					return new LF_PROCEDURE(ctx, this);
+					return new Leaves.LF_PROCEDURE.Serializer(ctx, this);
 				case LeafType.LF_QUADWORD:
-					return new LF_QUADWORD(ctx, this);
+					return new Leaves.LF_QUADWORD.Serializer(ctx, this);
 				case LeafType.LF_REAL32:
-					return new LF_REAL32(ctx, this);
+					return new Leaves.LF_REAL32.Serializer(ctx, this);
 				case LeafType.LF_REAL64:
-					return new LF_REAL64(ctx, this);
+					return new Leaves.LF_REAL64.Serializer(ctx, this);
 				case LeafType.LF_SHORT:
-					return new LF_SHORT(ctx, this);
+					return new Leaves.LF_SHORT.Serializer(ctx, this);
 				case LeafType.LF_STMEMBER:
-					return new LF_STMEMBER(ctx, this);
+					return new Leaves.LF_STMEMBER.Serializer(ctx, this);
 				case LeafType.LF_ULONG:
-					return new LF_ULONG(ctx, this);
+					return new Leaves.LF_ULONG.Serializer(ctx, this);
 				case LeafType.LF_UNION:
-					return new LF_UNION(ctx, this);
+					return new Leaves.LF_UNION.Serializer(ctx, this);
 				case LeafType.LF_UQUADWORD:
-					return new LF_UQUADWORD(ctx, this);
+					return new Leaves.LF_UQUADWORD.Serializer(ctx, this);
 				case LeafType.LF_USHORT:
-					return new LF_USHORT(ctx, this);
+					return new Leaves.LF_USHORT.Serializer(ctx, this);
 				case LeafType.LF_VARSTRING:
-					return new LF_VARSTRING(ctx, this);
+					return new Leaves.LF_VARSTRING.Serializer(ctx, this);
 				case LeafType.LF_VBCLASS:
 				case LeafType.LF_IVBCLASS:
-					return new LF_VBCLASS(ctx, this);
+					return new Leaves.LF_VBCLASS.Serializer(ctx, this);
 				case LeafType.LF_VFTABLE:
-					return new LF_VFTABLE(ctx, this);
+					return new Leaves.LF_VFTABLE.Serializer(ctx, this);
 				case LeafType.LF_VFTPATH_16t:
-					return new LF_VFTPATH_16t(ctx, this);
+					return new Leaves.LF_VFTPATH_16t.Serializer(ctx, this);
 				case LeafType.LF_VFUNCTAB:
-					return new LF_VFUNCTAB(ctx, this);
+					return new Leaves.LF_VFUNCTAB.Serializer(ctx, this);
 				case LeafType.LF_VTSHAPE:
-					return new LF_VTSHAPE(ctx, this);
+					return new Leaves.LF_VTSHAPE.Serializer(ctx, this);
 				case LeafType.SPECIAL_BUILTIN:
 					throw new InvalidDataException("SPECIAL_BUILTIN is a custom ILeaf marker, it can't be present in a valid ctx file");
 				default:
@@ -241,17 +246,18 @@ namespace Smx.PDBSharp
 			}
 		}
 
-		public ILeafContainer ReadTypeLazy(bool hasSize = true) {
+		public ILeafResolver? ReadTypeLazy(bool hasSize = true) {
 			long typePos = Position;
 
-			ILazy<ILeafContainer> delayedLeaf = LazyFactory.CreateLazy<ILeafContainer>(() => {
+			ILazy<ILeafResolver?> delayedLeaf = LazyFactory.CreateLazy<ILeafResolver?>(() => {
 				Position = typePos;
 				return ReadTypeDirect(hasSize);
 			});
-			return new LazyLeafProvider(ctx, delayedLeaf);
+
+			return new LazyLeafData(delayedLeaf);
 		}
 
-		public LeafContainerBase ReadTypeDirect(bool hasSize = true) {
+		public ILeafResolver? ReadTypeDirect(bool hasSize = true) {
 			long typeStartOffset = Position;
 
 			UInt16 size = 0;
@@ -263,10 +269,15 @@ namespace Smx.PDBSharp
 			}
 			LeafType leafType = ReadEnum<LeafType>();
 			
-			ILeaf typeSym = CreateLeafStream(leafType);
+			ILeafSerializer typeSym = CreateLeafSerializer(leafType);
 			typeSym.Read();
 
-			Position += (typeSym as LeafBase).Length;
+			var leafBase = typeSym as Leaves.LeafBase;
+			if (leafBase == null) {
+				throw new InvalidDataException("Failed to read leaf");
+			}
+			
+			Position += leafBase.Length;
 			ConsumePadding();
 			
 			// for PDB 1.0: hash collides with padding, and is not properly encoded sometimes
@@ -280,7 +291,11 @@ namespace Smx.PDBSharp
 			});
 #endif
 
-			return new DirectLeafProvider(0, leafType, typeSym);
+			return new DirectLeafData(new LeafContext(
+				typeIndex: 0,
+				type: leafType,
+				data: typeSym.GetData()
+			));
 		}
 	}
 }

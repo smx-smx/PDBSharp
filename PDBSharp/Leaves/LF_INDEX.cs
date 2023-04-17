@@ -7,26 +7,43 @@
  */
 #endregion
 using Smx.SharpIO;
+using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Leaves.LF_INDEX
 {
-	class LF_INDEX : LeafBase
+	public class Data : ILeafData {
+		public ILeafResolver? Referenced { get; set; }
+		public Data(ILeafResolver? referenced) {
+			Referenced = referenced;
+		}
+	}
+
+	public class Serializer : LeafBase, ILeafSerializer
 	{
-		public ILeafContainer Referenced { get; set; }
+		public Data? Data { get; set; }
+		public ILeafData? GetData() => Data;
+		
 
-		public LF_INDEX(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
 		}
 
-		public override void Read() {
+		public void Read() {
 			TypeDataReader r = CreateReader();
-			Referenced = r.ReadIndexedType32Lazy();
+			var Referenced = r.ReadIndexedType32Lazy();
+			Data = new Data(
+				referenced: Referenced
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			TypeDataWriter w = CreateWriter(LeafType.LF_INDEX);
-			w.WriteIndexedType(Referenced);
+			w.WriteIndexedType(data.Referenced);
 			w.WriteHeader();
 		}
 	}

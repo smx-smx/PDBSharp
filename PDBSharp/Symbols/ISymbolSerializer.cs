@@ -6,14 +6,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-using Smx.PDBSharp.Leaves;
+using System.IO;
+using Smx.PDBSharp.Symbols.S_SEPCODE;
 
-namespace Smx.PDBSharp
+namespace Smx.PDBSharp.Symbols
 {
-	public interface ILeafContainer
+	public interface ISymbolSerializer
 	{
-		uint TypeIndex { get; }
-		LeafType Type { get; }
-		ILeaf Data { get; }
+		void Read();
+		void Write();
+		ISymbolData? GetData();
 	}
 }

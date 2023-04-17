@@ -11,32 +11,54 @@ using System;
 using System.ComponentModel.Design;
 using System.IO;
 using System.Text;
+using Smx.PDBSharp.LeafResolver;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Leaves.LF_ENUMERATE
 {
 
-	public class LF_ENUMERATE : LeafBase
-	{
-		public FieldAttributes Attributes;
-		public ILeafContainer Value;
-		public string FieldName;
+	public class Data : ILeafData {
+		public FieldAttributes Attributes { get; set; }
+		public ILeafResolver? Value { get; set; }
+		public string FieldName { get; set; }
+		public Data(FieldAttributes attributes, ILeafResolver? value, string fieldName) {
+			Attributes = attributes;
+			Value = value;
+			FieldName = fieldName;
+		}
+	}
 
-		public LF_ENUMERATE(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
+	public class Serializer : LeafBase, ILeafSerializer
+	{
+		public Data? Data { get; set; }
+		public ILeafData? GetData() => Data;
+
+		
+
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
 		}
 
-		public override void Read() {
+		public void Read() {
 			TypeDataReader r = CreateReader();
 
-			Attributes = new FieldAttributes(r.ReadUInt16());
-			Value = r.ReadVaryingType(out uint ILeafSize);
-			FieldName = r.ReadCString();
+			var Attributes = new FieldAttributes(r.ReadUInt16());
+			var Value = r.ReadVaryingType(out uint ILeafSize);
+			var FieldName = r.ReadCString();
+			
+			Data = new Data(
+				attributes: Attributes,
+				value: Value,
+				fieldName: FieldName
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			TypeDataWriter w = CreateWriter(LeafType.LF_ENUMERATE);
-			w.WriteUInt16((ushort)Attributes);
-			w.WriteVaryingType(Value);
-			w.WriteCString(FieldName);
+			w.WriteUInt16((ushort)data.Attributes);
+			w.WriteVaryingType(data.Value);
+			w.WriteCString(data.FieldName);
 			w.WriteHeader();
 		}
 	}

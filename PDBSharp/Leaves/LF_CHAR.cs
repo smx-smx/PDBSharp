@@ -7,27 +7,44 @@
  */
 #endregion
 using Smx.SharpIO;
+using System;
 using System.ComponentModel.Design;
 using System.IO;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Leaves.LF_CHAR
 {
-	class LF_CHAR : LeafBase
-	{
-		public sbyte Value { get; set; }
+	public class Data : ILeafData {
+		public sbyte Value {  get; set;}
+		public Data(sbyte value) {
+			Value = value;
+		}
+	}
 
-		public LF_CHAR(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+	public class Serializer : LeafBase, ILeafSerializer
+	{
+		public Data? Data { get; set; }
+		public ILeafData? GetData() => Data;
+
+		
+
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 			
 		}
 
-		public override void Read() {
+		public void Read() {
 			TypeDataReader r = CreateReader();
-			Value = (sbyte)r.ReadByte();
+			var Value = (sbyte)r.ReadByte();
+			Data = new Data(
+				value: Value
+			);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			TypeDataWriter w = CreateWriter(LeafType.LF_CHAR);
-			w.WriteByte((byte)Value);
+			w.WriteByte((byte)data.Value);
 			w.WriteHeader();
 		}
 	}

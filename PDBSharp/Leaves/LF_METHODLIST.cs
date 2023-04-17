@@ -10,24 +10,44 @@ using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
+using Smx.PDBSharp.LeafResolver;
 
-namespace Smx.PDBSharp.Leaves
+namespace Smx.PDBSharp.Leaves.LF_METHODLIST
 {
-	public class LF_METHODLIST : LeafBase
-	{
-		public FieldAttributes Attributes { get; set; }
-		public ILeafContainer ProcedureTypeRecord { get; set; }
-
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <remarks>Struct `mlMethod`</remarks>
+	public class Data : ILeafData {
+		public FieldAttributes Attributes { get; set; } = new FieldAttributes(0);
+		public ILeafResolver? ProcedureTypeRecord { get; set; }
 		public UInt32 VBaseOffset { get; set; }
 
-		public LF_METHODLIST(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+		public Data(
+			FieldAttributes attributes,
+			ILeafResolver? procedureTypeRecord,
+			UInt32 vBaseOffset
+		) {
+			this.Attributes = attributes;
+			this.ProcedureTypeRecord = procedureTypeRecord;
+			this.VBaseOffset = vBaseOffset;
+		}
+	}
+
+	public class Serializer : LeafBase, ILeafSerializer
+	{
+		public Data? Data { get; set; }
+		public ILeafData? GetData() => Data;
+
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 		}
 
-		public override void Read() {
+		public void Read() {
 			TypeDataReader r = CreateReader();
 
-			Attributes = new FieldAttributes(r.ReadUInt16());
-			ProcedureTypeRecord = r.ReadIndexedType32Lazy();
+			var Attributes = new FieldAttributes(r.ReadUInt16());
+			var ProcedureTypeRecord = r.ReadIndexedType32Lazy();
+			var VBaseOffset = new UInt32();
 
 			switch (Attributes.MethodProperties) {
 				case MethodProperties.Intro:
@@ -38,23 +58,36 @@ namespace Smx.PDBSharp.Leaves
 					VBaseOffset = 0;
 					break;
 			}
+
+			Data = new Data(
+				attributes: Attributes,
+				procedureTypeRecord: ProcedureTypeRecord,
+				vBaseOffset: VBaseOffset);
 		}
 
-		public override void Write() {
+		public void Write() {
+			var data = Data;
+			if (data == null) throw new InvalidOperationException();
+
 			TypeDataWriter w = CreateWriter(LeafType.LF_METHODLIST);
-			w.WriteUInt16((ushort)Attributes);
-			w.WriteIndexedType(ProcedureTypeRecord);
-			switch (Attributes.MethodProperties) {
+			w.WriteUInt16((ushort)data.Attributes);
+			w.WriteIndexedType(data.ProcedureTypeRecord);
+			switch (data.Attributes.MethodProperties) {
 				case MethodProperties.Intro:
 				case MethodProperties.PureIntro:
-					w.WriteUInt32(VBaseOffset);
+					w.WriteUInt32(data.VBaseOffset);
 					break;
 			}
 			w.WriteHeader();
 		}
 
 		public override string ToString() {
-			return $"LF_METHODLIST[Attributes='{Attributes}', ProcedureTypeRecord='{ProcedureTypeRecord}', VBaseOffset='{VBaseOffset}']";
+			var data = Data;
+			return $"LF_METHODLIST[Attributes='{data?.Attributes}'" +
+				$", ProcedureTypeRecord='{data?.ProcedureTypeRecord}'" +
+				$", VBaseOffset='{data?.VBaseOffset}']";
 		}
+
+		
 	}
 }
