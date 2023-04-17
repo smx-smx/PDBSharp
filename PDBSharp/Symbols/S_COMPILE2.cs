@@ -6,13 +6,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-using Smx.PDBSharp.PE;
 using Smx.PDBSharp.Symbols.Structures;
 using Smx.SharpIO;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
-using System.IO;
 using Smx.PDBSharp.Symbols.S_SEPCODE;
 
 namespace Smx.PDBSharp.Symbols.S_COMPILE2
