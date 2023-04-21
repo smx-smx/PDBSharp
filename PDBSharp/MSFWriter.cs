@@ -68,7 +68,7 @@ namespace Smx.PDBSharp
 			uint directorySize = directoryPageListCount * PageSize;
 			uint maxDirectoryPages = directorySize / sizeof(UInt32);
 
-			hdr.DirectorySize = directorySize;
+			hdr.StreamTableSize = directorySize;
 			WriteHeader();
 			SeekPage(1);
 

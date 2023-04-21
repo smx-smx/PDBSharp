@@ -18,6 +18,6 @@ namespace Smx.PDBSharp
 		UInt32 PageSize { get; set; }
 		UInt32 FpmPageNumber { get; set; }
 		UInt32 NumPages { get; set; }
-		UInt32 DirectorySize { get; set; }
+		UInt32 StreamTableSize { get; set; }
 	}
 }

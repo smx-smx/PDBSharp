@@ -37,7 +37,7 @@ namespace Smx.PDBSharp
 		}
 
 		public override IEnumerable<byte[]> GetPages_StreamTable() {
-			var numPages = GetNumPages(Header.DirectorySize);
+			var numPages = GetNumPages(Header.StreamTableSize);
 			
 			long offset = Marshal.SizeOf(Header);
 			return GetPages(offset, numPages);

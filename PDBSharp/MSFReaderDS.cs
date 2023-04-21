@@ -25,14 +25,16 @@ namespace Smx.PDBSharp
 		/// Reads the page list, which can be split across multiple pages
 		/// </summary>
 		/// <returns></returns>
-		private IEnumerable<byte[]> GetPages_StreamTableList() {
+		private IEnumerable<byte[]> GetPages_StreamTablePagesList() {
 			// number of pages to represent the list of streams
-			var numStreamTablePages = GetNumPages(Header.DirectorySize);
+			var numStreamTablePages = GetNumPages(Header.StreamTableSize);
 
 			long offset = Marshal.SizeOf(Header);
 
-			// number of pages to represent the list of pages
-			var numListPages = GetNumPages(numStreamTablePages);
+			// the page list might span multiple pages itself
+			var numListPages = GetNumPages(numStreamTablePages * sizeof(uint));
+
+			// read in the page list
 			return GetPages(offset, numListPages);
 		}
 
@@ -41,14 +43,13 @@ namespace Smx.PDBSharp
 		/// </summary>
 		/// <returns></returns>
 		public override IEnumerable<byte[]> GetPages_StreamTable() {
-			Memory<byte> streamTableList = GetPages_StreamTableList()
+			Memory<byte> streamTablePageListData = GetPages_StreamTablePagesList()
 				.SelectMany(x => x)
 				.ToArray();
 
-			SpanStream stream = new SpanStream(streamTableList);
+			SpanStream stream = new SpanStream(streamTablePageListData);
 
-			var numStreamTablePages = GetNumPages(Header.DirectorySize);
-
+			var numStreamTablePages = GetNumPages(Header.StreamTableSize);
 			for (int i = 0; i < numStreamTablePages; i++) {
 				uint pageNum = stream.ReadUInt32();
 				yield return ReadPage(pageNum);

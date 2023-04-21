@@ -72,7 +72,7 @@ namespace Smx.PDBSharp
 			get => NumPages;
 			set => NumPages = (ushort)value;
 		}
-		uint IHeader.DirectorySize {
+		uint IHeader.StreamTableSize {
 			get => DirectorySize;
 			set => DirectorySize = value;
 		}
