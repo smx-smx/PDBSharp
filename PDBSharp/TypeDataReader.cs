@@ -116,8 +116,7 @@ namespace Smx.PDBSharp
 			//ILeafContainer leaf = new TypeDataReader(ctx, this).ReadTypeDirect(hasSize: false);
 
 			// add leaf size
-			this.Position += dataSize;
-			
+			this.Position += 2 + dataSize;
 			return leaf;
 
 		}

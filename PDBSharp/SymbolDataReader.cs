@@ -24,7 +24,9 @@ namespace Smx.PDBSharp
 		protected readonly long startOffset;
 		protected readonly long endOffset;
 
-		public new int Remaining => (int)(endOffset - startOffset + Position);
+		private long Length => endOffset - startOffset;
+
+		public new int Remaining => (int)(Length - Position);
 
 		private ReadStringDelegate ReadString;
 
