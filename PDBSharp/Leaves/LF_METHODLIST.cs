@@ -42,7 +42,7 @@ namespace Smx.PDBSharp.Leaves.LF_METHODLIST
 		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 		}
 
-		public void Read() {
+		public long Read() {
 			TypeDataReader r = CreateReader();
 
 			var Attributes = new FieldAttributes(r.ReadUInt16());
@@ -63,6 +63,8 @@ namespace Smx.PDBSharp.Leaves.LF_METHODLIST
 				attributes: Attributes,
 				procedureTypeRecord: ProcedureTypeRecord,
 				vBaseOffset: VBaseOffset);
+			
+			return r.Position;
 		}
 
 		public void Write() {

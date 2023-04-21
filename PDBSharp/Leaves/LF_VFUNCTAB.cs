@@ -32,7 +32,7 @@ namespace Smx.PDBSharp.Leaves.LF_VFUNCTAB
 
 		public ILeafData? GetData() => Data;
 
-		public void Read() {
+		public long Read() {
 			TypeDataReader r = CreateReader();
 
 			r.ReadUInt16(); //padding
@@ -41,6 +41,8 @@ namespace Smx.PDBSharp.Leaves.LF_VFUNCTAB
 			Data = new Data(
 				pointerType: PointerType
 			);
+
+			return r.Position;
 		}
 
 		public void Write() {

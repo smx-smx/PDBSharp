@@ -35,7 +35,7 @@ namespace Smx.PDBSharp.Leaves.LF_NESTTYPE
 
 		public ILeafData? GetData() => Data;
 
-		public void Read() {
+		public long Read() {
 			TypeDataReader r = CreateReader();
 
 			r.ReadUInt16(); //padding
@@ -45,6 +45,8 @@ namespace Smx.PDBSharp.Leaves.LF_NESTTYPE
 				nestedTypeDef: NestedTypeDef,
 				name: Name
 			);
+			
+			return r.Position;
 		}
 
 		public void Write() {

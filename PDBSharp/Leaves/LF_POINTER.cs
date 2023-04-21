@@ -60,7 +60,7 @@ namespace Smx.PDBSharp.Leaves.LF_POINTER
 		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
 		}
 
-		public void Read() {
+		public long Read() {
 			TypeDataReader r = CreateReader();
 
 			var UnderlyingType = r.ReadIndexedType32Lazy();
@@ -70,6 +70,8 @@ namespace Smx.PDBSharp.Leaves.LF_POINTER
 				underlyingType: UnderlyingType,
 				attributes: Attributes
 			);
+			
+			return r.Position;
 		}
 
 		public void Write() {

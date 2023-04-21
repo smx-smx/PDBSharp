@@ -14,7 +14,7 @@ namespace Smx.PDBSharp
 	public interface ILeafSerializer
 	{
 		ILeafData? GetData();
-		void Read();
+		long Read();
 		void Write();
 	}
 }

@@ -30,12 +30,14 @@ namespace Smx.PDBSharp.Leaves.LF_INDEX
 		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
 		}
 
-		public void Read() {
+		public long Read() {
 			TypeDataReader r = CreateReader();
 			var Referenced = r.ReadIndexedType32Lazy();
 			Data = new Data(
 				referenced: Referenced
 			);
+
+			return r.Position;
 		}
 
 		public void Write() {

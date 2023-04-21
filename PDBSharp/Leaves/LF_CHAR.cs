@@ -31,12 +31,14 @@ namespace Smx.PDBSharp.Leaves.LF_CHAR
 			
 		}
 
-		public void Read() {
+		public long Read() {
 			TypeDataReader r = CreateReader();
 			var Value = (sbyte)r.ReadByte();
 			Data = new Data(
 				value: Value
 			);
+
+			return r.Position;
 		}
 
 		public void Write() {

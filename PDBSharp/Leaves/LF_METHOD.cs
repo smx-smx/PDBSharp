@@ -36,7 +36,7 @@ namespace Smx.PDBSharp.Leaves.LF_METHOD
 		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
 		}
 
-		public void Read() {
+		public long Read() {
 			TypeDataReader r = CreateReader();
 
 			var NumberOfOccurrences = r.ReadUInt16();
@@ -48,6 +48,8 @@ namespace Smx.PDBSharp.Leaves.LF_METHOD
 				methodListRecord: MethodListRecord,
 				name: Name
 			);
+			
+			return r.Position;
 		}
 
 		public void Write() {

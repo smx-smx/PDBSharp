@@ -38,7 +38,7 @@ namespace Smx.PDBSharp.Leaves.LF_PROCEDURE
 		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
 		}
 
-		public void Read() {
+		public long Read() {
 			TypeDataReader r = CreateReader();
 
 			var ReturnValueType = r.ReadIndexedType32Lazy();
@@ -53,6 +53,8 @@ namespace Smx.PDBSharp.Leaves.LF_PROCEDURE
 				numberOfParameters: NumberOfParameters,
 				argumentListType: ArgumentListType
 			);
+			
+			return r.Position;
 		}
 
 		public void Write() {

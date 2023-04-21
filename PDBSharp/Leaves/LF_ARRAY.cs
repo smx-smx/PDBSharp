@@ -45,7 +45,7 @@ namespace Smx.PDBSharp.Leaves.LF_ARRAY
 		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 		}
 		
-		public void Read() {
+		public long Read() {
 			TypeDataReader r = CreateReader();
 
 			var ElementType = r.ReadIndexedTypeLazy<T>();
@@ -59,6 +59,8 @@ namespace Smx.PDBSharp.Leaves.LF_ARRAY
 				size: Size,
 				name: Name
 			);
+
+			return r.Position;
 		}
 
 		public void Write() {

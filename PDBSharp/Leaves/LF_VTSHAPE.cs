@@ -38,7 +38,7 @@ namespace Smx.PDBSharp.Leaves.LF_VTSHAPE
 		}
 
 
-		public void Read() {
+		public long Read() {
 			TypeDataReader r = CreateReader();
 
 			var NumberOfEntries = r.ReadUInt16();
@@ -67,6 +67,8 @@ namespace Smx.PDBSharp.Leaves.LF_VTSHAPE
 				numberOfEntries: NumberOfEntries,
 				descriptors: Descriptors
 			);
+			
+			return r.Position;
 		}
 
 		public void Write() {

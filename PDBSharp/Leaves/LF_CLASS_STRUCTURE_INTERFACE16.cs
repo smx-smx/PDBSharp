@@ -45,7 +45,7 @@ namespace Smx.PDBSharp.Leaves.LF_CLASS_STRUCTURE_INTERFACE16
 
 		public ILeafData? GetData() => Data;
 
-		public void Read() {
+		public long Read() {
 			TypeDataReader r = CreateReader();
 
 			var NumberOfElements = r.ReadUInt16();
@@ -66,6 +66,8 @@ namespace Smx.PDBSharp.Leaves.LF_CLASS_STRUCTURE_INTERFACE16
 				structSize: StructSize,
 				name: Name
 			);
+
+			return r.Position;
 		}
 
 		public void Write() {

@@ -115,8 +115,8 @@ namespace Smx.PDBSharp
 
 		}
 
-		private void ConsumePadding(long upToLength) {
-			long remaining = upToLength - Position;
+		private void ConsumePadding() {
+			long remaining = Length - Position;
 			if(remaining < 1) {
 				return;
 			}
@@ -265,17 +265,15 @@ namespace Smx.PDBSharp
 			LeafType leafType = ReadEnum<LeafType>();
 			
 			ILeafSerializer typeSym = CreateLeafSerializer(leafType);
-			typeSym.Read();
-
-			long typeEndOffset = Position;
-			long typeDataLength = typeEndOffset - typeStartOffset;
+			long dataLength = typeSym.Read();
+			this.Position += dataLength;
 
 			var leafBase = typeSym as Leaves.LeafBase;
 			if (leafBase == null) {
 				throw new InvalidDataException("Failed to read leaf");
 			}
 
-			ConsumePadding(typeDataLength);
+			ConsumePadding();
 			
 			// for PDB 1.0: hash collides with padding, and is not properly encoded sometimes
 			AlignStream(2);

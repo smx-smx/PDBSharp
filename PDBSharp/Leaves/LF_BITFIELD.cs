@@ -36,7 +36,7 @@ namespace Smx.PDBSharp.Leaves.LF_BITFIELD
 		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
 		}
 
-		public void Read() {
+		public long Read() {
 			TypeDataReader r = CreateReader();
 			var Type = r.ReadIndexedType32Lazy();
 			var Length = r.ReadByte();
@@ -47,6 +47,8 @@ namespace Smx.PDBSharp.Leaves.LF_BITFIELD
 				length: Length,
 				position: Position
 			);
+
+			return r.Position;
 		}
 
 		public void Write() {

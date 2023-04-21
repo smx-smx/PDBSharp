@@ -42,12 +42,13 @@ namespace Smx.PDBSharp.Leaves.LF_FIELDLIST
 			}
 		}
 
-		public void Read() {
+		public long Read() {
 			var r = CreateReader();
 			var fields = ReadFields(r).ToList();
 			Data = new Data(
 				fields: fields
 			);
+			return r.Position;
 		}
 
 		public void Write() {

@@ -31,12 +31,14 @@ namespace Smx.PDBSharp.Leaves.LF_SHORT
 		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 		}
 
-		public void Read() {
+		public long Read() {
 			TypeDataReader r = CreateReader();
 			var Value = r.ReadInt16();
 			Data = new Data(
 				value: Value
 			);
+			
+			return r.Position;
 		}
 
 		public void Write() {

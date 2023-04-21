@@ -35,7 +35,7 @@ namespace Smx.PDBSharp.Leaves.LF_MODIFIER
 
 		
 
-		public void Read() {
+		public long Read() {
 			TypeDataReader r = CreateReader();
 
 			var ModifiedType = r.ReadIndexedType32Lazy();
@@ -44,6 +44,8 @@ namespace Smx.PDBSharp.Leaves.LF_MODIFIER
 				modifiedType: ModifiedType,
 				flags: Flags
 			);
+			
+			return r.Position;
 		}
 
 		public void Write() {

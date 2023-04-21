@@ -81,7 +81,7 @@ namespace Smx.PDBSharp.Leaves.LF_CLASS_STRUCTURE_INTERFACE
 		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 		}
 
-		public void Read() {
+		public long Read() {
 			TypeDataReader r = CreateReader();
 
 			var NumberOfElements = r.ReadUInt16();
@@ -102,6 +102,8 @@ namespace Smx.PDBSharp.Leaves.LF_CLASS_STRUCTURE_INTERFACE
 				structSize: StructSize,
 				name: Name
 			);
+
+			return r.Position;
 		}
 
 		public void Write() {

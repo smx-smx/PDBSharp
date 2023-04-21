@@ -36,7 +36,7 @@ namespace Smx.PDBSharp.Leaves.LF_ARGLIST
 			
 		}
 
-		public void Read() {
+		public long Read() {
 			TypeDataReader r = CreateReader();
 
 			var NumberOfArguments = r.ReadUInt16();
@@ -49,6 +49,8 @@ namespace Smx.PDBSharp.Leaves.LF_ARGLIST
 				numberOfArguments: NumberOfArguments,
 				argumentTypes: ArgumentTypes
 			);
+
+			return r.Position;
 		}
 
 		public void Write() {

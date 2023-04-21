@@ -52,7 +52,7 @@ namespace Smx.PDBSharp.BuiltinTypeLeaf
 
 		public ILeafData? GetData() => Data;
 
-		public void Read() {}
+		public long Read() { return 0; }
 
 		public void Write() {
 			throw new NotImplementedException();

@@ -36,7 +36,7 @@ namespace Smx.PDBSharp.Leaves.LF_BCLASS
 			
 		}
 
-		public void Read() {
+		public long Read() {
 			TypeDataReader r = CreateReader();
 
 			var Attributes = new FieldAttributes(r.ReadUInt16());
@@ -47,6 +47,8 @@ namespace Smx.PDBSharp.Leaves.LF_BCLASS
 				baseClassType: BaseClassType,
 				offset: Offset
 			);
+
+			return r.Position;
 		}
 
 		public void Write() {

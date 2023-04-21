@@ -44,7 +44,7 @@ namespace Smx.PDBSharp.Leaves.LF_VFTABLE
 		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
 		}
 
-		public void Read() {
+		public long Read() {
 			TypeDataReader r = CreateReader();
 
 			var Type = r.ReadIndexedType32Lazy();
@@ -70,6 +70,8 @@ namespace Smx.PDBSharp.Leaves.LF_VFTABLE
 				namesSize: NamesSize,
 				names: Names
 			);
+			
+			return r.Position;
 		}
 
 		public void Write() {

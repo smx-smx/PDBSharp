@@ -121,7 +121,7 @@ namespace Smx.PDBSharp.Leaves.LF_POINTER16t
 		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 		}
 
-		public void Read() {
+		public long Read() {
 			TypeDataReader r = CreateReader();
 
 			//// header
@@ -165,6 +165,8 @@ namespace Smx.PDBSharp.Leaves.LF_POINTER16t
 				baseType: BaseType,
 				baseTypeName: BaseTypeName
 			);
+			
+			return r.Position;
 		}
 
 		public void Write() {

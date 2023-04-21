@@ -31,7 +31,7 @@ namespace Smx.PDBSharp.Leaves.LF_ALIAS
 
 		
 
-		public void Read() {
+		public long Read() {
 			TypeDataReader r = CreateReader();
 			var UnderlyingType = r.ReadIndexedType32Lazy();
 			var Name = r.ReadCString();
@@ -40,6 +40,8 @@ namespace Smx.PDBSharp.Leaves.LF_ALIAS
 				underlyingType: UnderlyingType,
 				name: Name
 			);
+
+			return r.Position;
 		}
 
 		public void Write() {

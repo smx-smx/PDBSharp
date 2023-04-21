@@ -35,7 +35,7 @@ namespace Smx.PDBSharp.Leaves.LF_VFTPATH_16t
 		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
 		}
 
-		public void Read() {
+		public long Read() {
 			TypeDataReader r = CreateReader();
 			var NumElements = r.ReadUInt16();
 			var Bases = r.ReadIndexedType16Lazy();
@@ -44,6 +44,8 @@ namespace Smx.PDBSharp.Leaves.LF_VFTPATH_16t
 				numElements: NumElements,
 				bases: Bases
 			);
+			
+			return r.Position;
 		}
 
 		public void Write() {
