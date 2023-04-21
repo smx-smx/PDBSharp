@@ -100,29 +100,23 @@ namespace Smx.PDBSharp
 				dataSize = 0;
 				return null;
 			}
-
-			if (!Enum.IsDefined(typeof(LeafType), leafValue)) {
-				throw new InvalidDataException($"Unknown ILeaf type {leafValue} while computing ILeaf data size");
-			}
-
-			LeafType leafType = (LeafType)leafValue;
-			dataSize = PrimitiveDataSizes[leafType];
 			Seek(-2, SeekOrigin.Current);
 
 			// "fork" the leaf stream
-			var subStream = SliceHere(2 + (int)dataSize);
+			var subStream = SliceHere();
 			TypeDataReader rdr = new TypeDataReader(ctx, subStream);
 			ILeafResolver? leaf = rdr.ReadTypeDirect(hasSize: false);
 			//ILeafContainer leaf = new TypeDataReader(ctx, this).ReadTypeDirect(hasSize: false);
 
 			// add leaf size
-			this.Position += 2 + dataSize;
+			dataSize = (uint)rdr.Position;
+			this.Position += rdr.Position;
 			return leaf;
 
 		}
 
-		private void ConsumePadding() {
-			long remaining = Length - Position;
+		private void ConsumePadding(long upToLength) {
+			long remaining = upToLength - Position;
 			if(remaining < 1) {
 				return;
 			}
@@ -273,13 +267,15 @@ namespace Smx.PDBSharp
 			ILeafSerializer typeSym = CreateLeafSerializer(leafType);
 			typeSym.Read();
 
+			long typeEndOffset = Position;
+			long typeDataLength = typeEndOffset - typeStartOffset;
+
 			var leafBase = typeSym as Leaves.LeafBase;
 			if (leafBase == null) {
 				throw new InvalidDataException("Failed to read leaf");
 			}
-			
-			Position += leafBase.Length;
-			ConsumePadding();
+
+			ConsumePadding(typeDataLength);
 			
 			// for PDB 1.0: hash collides with padding, and is not properly encoded sometimes
 			AlignStream(2);
