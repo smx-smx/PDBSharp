@@ -20,11 +20,14 @@ namespace Smx.PDBSharp
 	public class TypeResolver : IPDBService
 	{
 		private readonly TPI.Serializer tpi;
-		private readonly TPIHashReader tpiHash;
+		private readonly TPIHash.Data tpiHash;
 
 		private (uint, uint) GetClosestTIOFF(UInt32 typeIndex) {
-			bool hasPrec = tpiHash.TypeIndexToOffset.TryPredecessor(typeIndex, out var prec);
-			bool hasSucc = tpiHash.TypeIndexToOffset.TrySuccessor(typeIndex, out var succ);
+			var typeIndexToOffset = tpiHash.TypeIndexToOffset;
+			if (typeIndexToOffset == null) throw new InvalidOperationException();
+
+			bool hasPrec = typeIndexToOffset.TryPredecessor(typeIndex, out var prec);
+			bool hasSucc = typeIndexToOffset.TrySuccessor(typeIndex, out var succ);
 
 			if (hasPrec && hasSucc) {
 				//[prev] <this> [next]
@@ -55,9 +58,12 @@ namespace Smx.PDBSharp
 				return null;
 			}
 
+			var typeIndexToOffset = tpiHash.TypeIndexToOffset;
+			if (typeIndexToOffset == null) throw new InvalidOperationException();
+
 			UInt32 typeOffset;
-			if (tpiHash.TypeIndexToOffset.Contains(TypeIndex)) {
-				typeOffset = tpi.Data.Header.HeaderSize + tpiHash.TypeIndexToOffset[TypeIndex];
+			if (typeIndexToOffset.Contains(TypeIndex)) {
+				typeOffset = tpi.Data.Header.HeaderSize + typeIndexToOffset[TypeIndex];
 				return tpi.ReadType(typeOffset);
 			} else {
 				(var closestTi, var closestOff) = GetClosestTIOFF(TypeIndex);
@@ -65,18 +71,18 @@ namespace Smx.PDBSharp
 				uint curOffset = closestOff;
 				for (uint ti = closestTi; ti <= TypeIndex; ti++) {
 					uint offset;
-					if (tpiHash.TypeIndexToOffset.Contains(ti)) {
+					if (typeIndexToOffset.Contains(ti)) {
 						// use existing TIOff
-						offset = tpiHash.TypeIndexToOffset[ti];
+						offset = typeIndexToOffset[ti];
 						curOffset += tpi.GetLeafSize(offset);
 					} else {
-						tpiHash.TypeIndexToOffset[ti] = curOffset;
+						typeIndexToOffset[ti] = curOffset;
 						curOffset += tpi.GetLeafSize(curOffset);
 					}
 				}
 
 				//safety
-				if (!tpiHash.TypeIndexToOffset.Contains(TypeIndex)) {
+				if (!typeIndexToOffset.Contains(TypeIndex)) {
 					throw new InvalidDataException($"Type Index {TypeIndex} not found");
 				}
 
@@ -86,7 +92,7 @@ namespace Smx.PDBSharp
 
 		public TypeResolver(IServiceContainer ctx) {
 			tpi = ctx.GetService<TPI.Serializer>();
-			tpiHash = ctx.GetService<TPIHashReader>();
+			tpiHash = ctx.GetService<TPIHash.Data>();
 		}
 	}
 }

@@ -163,14 +163,15 @@ namespace Smx.PDBSharp
 			}
 			Services.AddService<TPI.Serializer>(tpi);
 
-			TPIHashReader? tpiHash = null;
+			TPIHash.Serializer? tpiHash = null;
 			// init TPIHash
 			if(streamTable != null) {
 				var tpiHeader = tpi.Data.Header;
 				if(tpiHeader.Hash.StreamNumber != -1) {
 					byte[] tpiHashData = streamTable.GetStream(tpi.Data.Header.Hash.StreamNumber);
-					tpiHash = new TPIHashReader(Services, tpiHashData);
-					Services.AddService<TPIHashReader>(tpiHash);
+					tpiHash = new TPIHash.Serializer(tpi, new SpanStream(tpiHashData));
+					tpiHash.Read();
+					Services.AddService<TPIHash.Data>(tpiHash.Data);
 				}
 			}
 

@@ -23,7 +23,7 @@ namespace Smx.PDBSharp
 		public UInt32 Size;
 	}
 
-	public struct TPIHash
+	public struct TPIHashData
 	{
 		public Int16 StreamNumber;
 		public UInt16 AuxHashStreamNumber;
@@ -54,7 +54,7 @@ namespace Smx.PDBSharp
 		public UInt32 MaxTypeIndex;
 
 		public UInt32 GpRecSize;
-		public TPIHash Hash;
+		public TPIHashData Hash;
 	}
 
 	public enum TPIVersion : UInt32

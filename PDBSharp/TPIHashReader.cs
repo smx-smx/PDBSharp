@@ -23,49 +23,72 @@ namespace Smx.PDBSharp
 		public UInt32 Offset;
 	}
 
-	public class TPIHashReader : SpanStream, IPDBService
-	{
-		public readonly TreeDictionary<UInt32, UInt32> TypeIndexToOffset = new TreeDictionary<uint, uint>();
-		public Dictionary<UInt32, UInt32> HashValueToTypeIndex = new Dictionary<uint, uint>();
-		public Dictionary<uint, uint>? NameIndexToTypeIndex { get; private set; }
+	namespace TPIHash {
+		public class Data : IPDBService {
+			public TreeDictionary<uint, uint>? TypeIndexToOffset;
+			public Dictionary<uint, uint>? NameIndexToTypeIndex;
+			public uint[]? RecordHashValues;
+		}
+		public class Serializer {
+			public Data Data = new Data();
 
+			private TPI.Serializer tpi;
+			private readonly SpanStream stream;
 
-		public readonly uint[]? RecordHashValues;
-
-		public TPIHashReader(IServiceContainer ctx, byte[] hashData) : base(hashData) {
-			TPI.Serializer tpi = ctx.GetService<TPI.Serializer>();
-			TPIHash hash = tpi.Data.Header.Hash;
-
-			switch (hash.HashKeySize) {
-				case sizeof(UInt16):
-				case sizeof(UInt32):
-					break;
-				default:
-					throw new InvalidDataException();
+			public Serializer(TPI.Serializer tpi, SpanStream stream) {
+				this.tpi = tpi;
+				this.stream = stream;
 			}
 
-			if(hash.TypeOffsets.Size > 0) {
-				Position = hash.TypeOffsets.Offset;
-				uint NumTiPairs = (uint)(hash.TypeOffsets.Size / Marshal.SizeOf<TIOffset>());
-				for (int i = 1; i < NumTiPairs; i++) {
-					TIOffset tiOff = Read<TIOffset>();
-					TypeIndexToOffset.Add(tiOff.TypeIndex, tiOff.Offset);
+			public Data Read() {
+				// read hash header info
+				TPIHashData hash = tpi.Data.Header.Hash;
+
+				TreeDictionary<uint, uint>? TypeIndexToOffset = null;
+				Dictionary<uint, uint>? NameIndexToTypeIndex = null;
+				uint[]? RecordHashValues = null;
+
+				switch (hash.HashKeySize) {
+					case sizeof(UInt16):
+					case sizeof(UInt32):
+						break;
+					default:
+						throw new InvalidDataException();
 				}
-			}
 
-			if(hash.HashValues.Size > 0) {
-				Position = hash.HashValues.Offset;
-				uint NumHashValues = hash.HashValues.Size / sizeof(UInt32);
-				RecordHashValues = PerformAt(hash.HashValues.Offset, () => {
-					return Enumerable.Range(1, (int)NumHashValues)
-						.Select(_ => ReadUInt32())
-						.ToArray();
-				});
-			}
+				if (hash.TypeOffsets.Size > 0) {
+					TypeIndexToOffset = new TreeDictionary<uint, uint>();
 
-			if (hash.HashHeadList.Size > 0) {
-				Position = hash.HashHeadList.Offset;
-				NameIndexToTypeIndex = Deserializers.ReadMap<UInt32, UInt32>(this);
+					stream.Position = hash.TypeOffsets.Offset;
+					uint NumTiPairs = (uint)(hash.TypeOffsets.Size / Marshal.SizeOf<TIOffset>());
+					for (int i = 1; i < NumTiPairs; i++) {
+						TIOffset tiOff = stream.Read<TIOffset>();
+						TypeIndexToOffset.Add(tiOff.TypeIndex, tiOff.Offset);
+					}
+				}
+
+				if (hash.HashValues.Size > 0) {
+					stream.Position = hash.HashValues.Offset;
+					uint NumHashValues = hash.HashValues.Size / sizeof(UInt32);
+					RecordHashValues = stream.PerformAt(hash.HashValues.Offset, () => {
+						return Enumerable.Range(1, (int)NumHashValues)
+							.Select(_ => stream.ReadUInt32())
+							.ToArray();
+					});
+				}
+
+				if (hash.HashHeadList.Size > 0) {
+					stream.Position = hash.HashHeadList.Offset;
+					NameIndexToTypeIndex = Deserializers.ReadMap<UInt32, UInt32>(stream);
+				}
+
+				Data = new Data {
+					TypeIndexToOffset = TypeIndexToOffset,
+					RecordHashValues = RecordHashValues,
+					NameIndexToTypeIndex = NameIndexToTypeIndex
+				};
+
+				return Data;
 			}
 		}
 	}
