@@ -147,7 +147,7 @@ namespace Smx.PDBSharp.Dumper
 			}*/
 
 			TPIHashReader tpiHash = sc.GetService<TPIHashReader>();
-			UdtNameTableReader udtNameTable = sc.GetService<UdtNameTableReader>();
+			UdtNameTable.Accessor udtNameTable = sc.GetService<UdtNameTable.Accessor>();
 			TypeResolver resolver = sc.GetService<TypeResolver>();
 			if (tpiHash != null && tpiHash.NameIndexToTypeIndex != null && udtNameTable != null) {
 				foreach (var pair in tpiHash.NameIndexToTypeIndex) {

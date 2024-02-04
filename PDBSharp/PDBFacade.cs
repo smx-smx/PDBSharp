@@ -36,7 +36,7 @@ namespace Smx.PDBSharp
 		}
 	}
 
-	public class PDBFacade
+	public class PDBFacade : IPDBService
 	{
 		private readonly IServiceContainer sc;
 		public PDBFacade(IServiceContainer sc) {

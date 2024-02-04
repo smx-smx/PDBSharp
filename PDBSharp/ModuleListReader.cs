@@ -211,7 +211,7 @@ namespace Smx.PDBSharp
 			public IEnumerable<ModuleInfo> Modules = Enumerable.Empty<ModuleInfo>();
 		}
 
-		public class Serializer {
+		public class Serializer : IPDBService {
 			public Data Data = new Data();
 
 			private IServiceContainer sc;

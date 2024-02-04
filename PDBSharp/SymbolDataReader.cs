@@ -56,7 +56,7 @@ namespace Smx.PDBSharp
 			endOffset = startOffset + sizeof(UInt16) + Header.Length;
 			CheckHeader();
 
-			var pdb = ctx.GetService<PdbStreamReader>();
+			var pdb = ctx.GetService<PDBStream.Data>();
 			useUnicodeStrings = pdb.Version >= PDBPublicVersion.VC70;
 			
 			switch (ctx.GetService<MSFReader>().FileType) {

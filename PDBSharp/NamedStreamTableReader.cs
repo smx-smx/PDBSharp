@@ -13,19 +13,19 @@ using System.Text;
 
 namespace Smx.PDBSharp
 {
-	public class NamedStreamTableReader
+	public class NamedStreamTableReader : IPDBService
 	{
 		private readonly StreamTable.Serializer streamTable;
-		private readonly PdbStreamReader? streamReader;
+		private readonly PDBStream.Data pdbStream;
 
 		public NamedStreamTableReader(IServiceContainer ctx) {
-			streamReader = ctx.GetService<PdbStreamReader>();
+			pdbStream = ctx.GetService<PDBStream.Data>();
 			streamTable = ctx.GetService<StreamTable.Serializer>();
 		}
 
 		public byte[]? GetStreamByName(string streamName) {
 			uint streamNumber = 0;
-			var res = streamReader?.NameTable?.GetIndex(streamName, out streamNumber) ?? false;
+			var res = pdbStream.NameTable?.GetIndex(streamName, out streamNumber) ?? false;
 			if (!res) {
 				return null;
 			}

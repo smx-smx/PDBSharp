@@ -13,7 +13,7 @@ using System.Text;
 
 namespace Smx.PDBSharp
 {
-	public unsafe struct JGHeaderOld {
+	public unsafe struct JGHeaderOld : IPDBService {
 		public const int MAGIC_SIZE = 44;
 
 		public fixed byte _magic[MAGIC_SIZE];

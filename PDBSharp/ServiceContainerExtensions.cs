@@ -6,17 +6,19 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.Design;
 
 namespace Smx.PDBSharp
 {
 	public static class IServiceContainerExtensions
 	{
-		public static void AddService<T>(this IServiceContainer @this, object instance) {
+		public static void AddService<T>(this IServiceContainer @this, object instance) where T : IPDBService {
 			@this.AddService(typeof(T), instance);
 		}
 
-		public static T GetService<T>(this IServiceContainer @this) {
+		public static T GetService<T>(this IServiceContainer @this) where T : IPDBService {
 			return (T)@this.GetService(typeof(T));
 		}
 	}

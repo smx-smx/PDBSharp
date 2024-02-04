@@ -177,7 +177,7 @@ namespace Smx.PDBSharp
 
 	namespace DBI
 	{
-		public class Data
+		public class Data : IPDBService
 		{
 			public IDBIHeader Header { get; internal set; } = new DBIHeaderNew();
 

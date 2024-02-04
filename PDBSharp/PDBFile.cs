@@ -40,7 +40,7 @@ namespace Smx.PDBSharp
 	public delegate void OnTpiInitDelegate(TPI.Serializer TPI);
 	public delegate void OnDbiInitDelegate(DBI.Serializer DBI);
 
-	public class PDBFile : IDisposable
+	public class PDBFile : IDisposable, IPDBService
 	{
 		public event OnTpiInitDelegate? OnTpiInit;
 		public event OnDbiInitDelegate? OnDbiInit;
@@ -187,8 +187,9 @@ namespace Smx.PDBSharp
 				{ // init NameMap
 					byte[] nameMapData = streamTable.GetStream(DefaultStreams.PDB);
 
-					PdbStreamReader nameMap = new PdbStreamReader(nameMapData);
-					Services.AddService<PdbStreamReader>(nameMap);
+					PDBStream.Serializer nameMap = new PDBStream.Serializer(new SpanStream(nameMapData));
+					nameMap.Read();
+					Services.AddService<PDBStream.Data>(nameMap.Data);
 				}
 
 				NamedStreamTableReader namedStreamTable = new NamedStreamTableReader(Services);
@@ -197,8 +198,10 @@ namespace Smx.PDBSharp
 				{ // init UdtNameMap
 					byte[]? namesData = namedStreamTable.GetStreamByName("/names");
 					if (namesData != null) {
-						UdtNameTableReader udtNameTable = new UdtNameTableReader(Services, namesData);
-						Services.AddService<UdtNameTableReader>(udtNameTable);
+						UdtNameTable.Serializer reader = new UdtNameTable.Serializer(new SpanStream(namesData));
+						reader.Read();
+						var udtNameTable = new UdtNameTable.Accessor(Services, reader);
+						Services.AddService<UdtNameTable.Accessor>(udtNameTable);
 					}
 				}
 			}

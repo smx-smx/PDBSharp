@@ -17,7 +17,7 @@ using Smx.PDBSharp.LeafResolver;
 
 namespace Smx.PDBSharp
 {
-	public class TypeResolver
+	public class TypeResolver : IPDBService
 	{
 		private readonly TPI.Serializer tpi;
 		private readonly TPIHashReader tpiHash;

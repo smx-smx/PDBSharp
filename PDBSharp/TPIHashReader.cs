@@ -23,7 +23,7 @@ namespace Smx.PDBSharp
 		public UInt32 Offset;
 	}
 
-	public class TPIHashReader : SpanStream
+	public class TPIHashReader : SpanStream, IPDBService
 	{
 		public readonly TreeDictionary<UInt32, UInt32> TypeIndexToOffset = new TreeDictionary<uint, uint>();
 		public Dictionary<UInt32, UInt32> HashValueToTypeIndex = new Dictionary<uint, uint>();

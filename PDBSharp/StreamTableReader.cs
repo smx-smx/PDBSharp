@@ -21,7 +21,7 @@ namespace Smx.PDBSharp
 			public uint[] StreamSizes = new uint[0];
 		}
 
-		public class Serializer {
+		public class Serializer : IPDBService {
 			private MSFReader msf;
 			private PDBSpanStream stream;
 

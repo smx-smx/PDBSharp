@@ -32,45 +32,59 @@ namespace Smx.PDBSharp
 		MinimalDebugInfo = 0x494E494D //MINI
 	}
 
-	public class PdbStreamReader : SpanStream
+	namespace PDBStream
 	{
-		public readonly PDBPublicVersion Version;
-		public readonly UInt32 Signature;
-		public readonly UInt32 NumberOfUpdates; //AGE
+		public class Data : IPDBService {
+			public PDBPublicVersion Version;
+			public UInt32 Signature;
+			public UInt32 NumberOfUpdates; //AGE
 
-		public readonly Guid? NewSignature;
-		public readonly NameIndexTable.Lookup? NameTable;
+			public Guid? NewSignature;
+			public NameIndexTable.Lookup? NameTable;
+		}
 
-		private readonly bool ContainsIdStream;
+		public class Serializer(SpanStream stream) {
+			public Data Data = new Data();
+			public Data Read() {
+				var Version = stream.ReadEnum<PDBPublicVersion>();
+				var Signature = stream.ReadUInt32();
+				var NumberOfUpdates = stream.ReadUInt32();
 
-		public PdbStreamReader(byte[] nameMapData) : base(nameMapData) {
-			Version = ReadEnum<PDBPublicVersion>();
-			Signature = ReadUInt32();
-			NumberOfUpdates = ReadUInt32();
-
-			if (Version < PDBPublicVersion.VC4 || Version > PDBPublicVersion.VC140) {
-				return;
-			}
-
-			if (Version > PDBPublicVersion.VC70Dep) {
-				NewSignature = Read<Guid>();
-			}
-
-			NameTable = new NameIndexTable.Lookup(Deserializers.ReadNameIndexTable(this));
-
-			bool flagContinue = true;
-			while (flagContinue && Position + sizeof(uint) < Length) {
-				UInt32 signature = ReadUInt32();
-				if (Enum.IsDefined(typeof(PDBPublicVersion), signature)) {
-					PDBPublicVersion version = (PDBPublicVersion)signature;
-					switch (version) {
-						case PDBPublicVersion.VC110:
-						case PDBPublicVersion.VC140:
-							flagContinue = false;
-							break;
-					}
-				} else if (Enum.IsDefined(typeof(PDBFeature), signature)) {
+				if (Version < PDBPublicVersion.VC4 || Version > PDBPublicVersion.VC140) {
+					throw new NotImplementedException();
 				}
+
+				Guid? NewSignature = null;
+				if (Version > PDBPublicVersion.VC70Dep) {
+					NewSignature = stream.Read<Guid>();
+				}
+
+				var NameTable = new NameIndexTable.Lookup(Deserializers.ReadNameIndexTable(stream));
+
+				bool flagContinue = true;
+				while (flagContinue && stream.Position + sizeof(uint) < stream.Length) {
+					UInt32 signature = stream.ReadUInt32();
+					if (Enum.IsDefined(typeof(PDBPublicVersion), signature)) {
+						PDBPublicVersion version = (PDBPublicVersion)signature;
+						switch (version) {
+							case PDBPublicVersion.VC110:
+							case PDBPublicVersion.VC140:
+								flagContinue = false;
+								break;
+						}
+					} else if (Enum.IsDefined(typeof(PDBFeature), signature)) {
+					}
+				}
+
+				Data = new Data {
+					Version = Version,
+					Signature = Signature,
+					NumberOfUpdates = NumberOfUpdates,
+					NewSignature = NewSignature,
+					NameTable = NameTable
+				};
+
+				return Data;
 			}
 		}
 	}

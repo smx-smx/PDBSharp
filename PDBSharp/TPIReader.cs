@@ -76,7 +76,7 @@ namespace Smx.PDBSharp
 			public TPIHeader Header = new TPIHeader();
 		}
 
-		public class Serializer : ISerializer<Data> {
+		public class Serializer : ISerializer<Data>, IPDBService {
 			private readonly IServiceContainer sc;
 			private readonly PDBFile pdb;
 			private readonly SpanStream stream;

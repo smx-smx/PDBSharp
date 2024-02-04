@@ -20,7 +20,7 @@ namespace Smx.PDBSharp
 	/// <summary>
 	/// MultiStreamFile implementation
 	/// </summary>
-	public unsafe abstract class MSFReader
+	public unsafe abstract class MSFReader : IPDBService
 	{
 		private byte[]? streamTable;
 

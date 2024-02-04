@@ -14,7 +14,7 @@ using System.Text;
 
 namespace Smx.PDBSharp
 {
-	public class HasherV2
+	public class HasherV2 : IPDBService
 	{
 		private readonly TPI.Serializer Tpi;
 
