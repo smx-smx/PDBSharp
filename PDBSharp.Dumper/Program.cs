@@ -111,8 +111,8 @@ namespace Smx.PDBSharp.Dumper
 			IServiceContainer sc = pdb.Services;
 
 			DBI.Data dbi = sc.GetService<DBI.Data>();
-			TPIReader tpi = sc.GetService<TPIReader>();
-			StreamTableReader streamTable = sc.GetService<StreamTableReader>();
+			TPI.Serializer tpi = sc.GetService<TPI.Serializer>();
+			StreamTable.Serializer streamTable = sc.GetService<StreamTable.Serializer>();
 
 			PDBFacade facade = sc.GetService<PDBFacade>();
 
@@ -133,7 +133,7 @@ namespace Smx.PDBSharp.Dumper
 
 			if (OptDumpStreams) {
 				DirectoryInfo dumpDir = Directory.CreateDirectory(Path.GetFileNameWithoutExtension(PdbFilePath));
-				for(int i=1; i< streamTable.NumStreams; i++) {
+				for(int i=1; i< streamTable.Data.NumStreams; i++) {
 					string dumpPath = Path.Combine(dumpDir.ToString(), $"stream{i}.bin");
 
 					byte[] stream = streamTable.GetStream(i);
@@ -168,7 +168,7 @@ namespace Smx.PDBSharp.Dumper
 					}
 				}
 
-				DebugReader debug = dbi.DebugInfo;
+				DebugData.Accessor debug = dbi.DebugInfo;
 				if (debug != null && OptPrintFpo && debug.FPO != null) {
 					foreach (var frame in debug.FPO.Frames) {
 						ObjectDumper.Dump(frame);
@@ -212,7 +212,7 @@ namespace Smx.PDBSharp.Dumper
 			Console.WriteLine($"Finished in {sw.Elapsed.TotalSeconds} seconds");
 		}
 
-		private static void Pdb_OnDbiInit(DBI.Stream DBI) {
+		private static void Pdb_OnDbiInit(DBI.Serializer DBI) {
 			if (OptDumpModules) {
 				DBI.OnModuleData += DBI_OnModuleData;
 				DBI.OnModuleReaderInit += DBI_OnModuleReaderInit;
@@ -228,7 +228,7 @@ namespace Smx.PDBSharp.Dumper
 			data.HexDump();
 		}
 
-		private static void Pdb_OnTpiInit(TPIReader TPI) {
+		private static void Pdb_OnTpiInit(TPI.Serializer TPI) {
 			TPI.OnLeafData += TPI_OnLeafData;
 		}
 

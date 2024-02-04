@@ -39,7 +39,7 @@ namespace Smx.PDBSharp
 		private readonly Dictionary<string?, uint> String_NameIndex = new Dictionary<string?, uint>();
 		private readonly Dictionary<uint, string> NameIndex_String = new Dictionary<uint, string>();
 
-		private readonly TPIReader Tpi;
+		private readonly TPI.Serializer Tpi;
 
 		private readonly TypeResolver resolver;
 
@@ -47,8 +47,8 @@ namespace Smx.PDBSharp
 
 		//$TODO(work in progress): fix the NI -> TI mapping
 		private void BuildTypeMap() {
-			uint minTi = Tpi.Header.MinTypeIndex;
-			uint maxTi = minTi + Tpi.Header.MaxTypeIndex - 1;
+			uint minTi = Tpi.Data.Header.MinTypeIndex;
+			uint maxTi = minTi + Tpi.Data.Header.MaxTypeIndex - 1;
 
 			for (uint ti = minTi; ti <= maxTi; ti++) {
 				var leafC = resolver.GetTypeByIndex(ti);
@@ -132,7 +132,7 @@ namespace Smx.PDBSharp
 		}
 
 		public UdtNameTableReader(IServiceContainer ctx, byte[] namesData) : base(namesData) {
-			this.Tpi = ctx.GetService<TPIReader>();
+			this.Tpi = ctx.GetService<TPI.Serializer>();
 			this.resolver = ctx.GetService<TypeResolver>();
 
 			Magic = ReadUInt32();

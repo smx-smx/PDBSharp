@@ -39,7 +39,7 @@ namespace Smx.PDBSharp
 		public readonly UInt32 NumberOfUpdates; //AGE
 
 		public readonly Guid? NewSignature;
-		public readonly NameIndexTableReader? NameTable;
+		public readonly NameIndexTable.Lookup? NameTable;
 
 		private readonly bool ContainsIdStream;
 
@@ -56,7 +56,7 @@ namespace Smx.PDBSharp
 				NewSignature = Read<Guid>();
 			}
 
-			NameTable = Deserializers.ReadNameIndexTable(this);
+			NameTable = new NameIndexTable.Lookup(Deserializers.ReadNameIndexTable(this));
 
 			bool flagContinue = true;
 			while (flagContinue && Position + sizeof(uint) < Length) {

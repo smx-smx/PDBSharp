@@ -19,7 +19,7 @@ namespace Smx.PDBSharp
 {
 	public class TypeResolver
 	{
-		private readonly TPIReader tpi;
+		private readonly TPI.Serializer tpi;
 		private readonly TPIHashReader tpiHash;
 
 		private (uint, uint) GetClosestTIOFF(UInt32 typeIndex) {
@@ -35,7 +35,7 @@ namespace Smx.PDBSharp
 				return (prec.Key, prec.Value);
 			} else if (hasSucc) {
 				//BEGIN <this> [next]
-				return (tpi.Header.MinTypeIndex, 0);
+				return (tpi.Data.Header.MinTypeIndex, 0);
 			} else {
 				throw new InvalidDataException();
 			}
@@ -57,7 +57,7 @@ namespace Smx.PDBSharp
 
 			UInt32 typeOffset;
 			if (tpiHash.TypeIndexToOffset.Contains(TypeIndex)) {
-				typeOffset = tpi.Header.HeaderSize + tpiHash.TypeIndexToOffset[TypeIndex];
+				typeOffset = tpi.Data.Header.HeaderSize + tpiHash.TypeIndexToOffset[TypeIndex];
 				return tpi.ReadType(typeOffset);
 			} else {
 				(var closestTi, var closestOff) = GetClosestTIOFF(TypeIndex);
@@ -85,7 +85,7 @@ namespace Smx.PDBSharp
 		}
 
 		public TypeResolver(IServiceContainer ctx) {
-			tpi = ctx.GetService<TPIReader>();
+			tpi = ctx.GetService<TPI.Serializer>();
 			tpiHash = ctx.GetService<TPIHashReader>();
 		}
 	}

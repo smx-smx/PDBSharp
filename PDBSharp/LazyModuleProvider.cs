@@ -27,7 +27,7 @@ namespace Smx.PDBSharp
 
 		private readonly IServiceContainer ctx;
 
-		private readonly StreamTableReader StreamTable;
+		private readonly StreamTable.Serializer StreamTable;
 
 		private IModule? ReadModule() {
 			if (Info.StreamNumber < 0) {
@@ -53,7 +53,7 @@ namespace Smx.PDBSharp
 
 		public LazyModuleProvider(IServiceContainer ctx, ModuleInfo mod) {
 			this.ctx = ctx;
-			this.StreamTable = ctx.GetService<StreamTableReader>();
+			this.StreamTable = ctx.GetService<StreamTable.Serializer>();
 
 			this.Info = mod;
 			this.lazyModule = LazyFactory.CreateLazy(ReadModule);

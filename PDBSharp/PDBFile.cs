@@ -37,8 +37,8 @@ namespace Smx.PDBSharp
 		IPI = 4
 	}
 
-	public delegate void OnTpiInitDelegate(TPIReader TPI);
-	public delegate void OnDbiInitDelegate(DBI.Stream DBI);
+	public delegate void OnTpiInitDelegate(TPI.Serializer TPI);
+	public delegate void OnDbiInitDelegate(DBI.Serializer DBI);
 
 	public class PDBFile : IDisposable
 	{
@@ -52,7 +52,7 @@ namespace Smx.PDBSharp
 		public const string SMALL_MAGIC = "Microsoft C/C++ program database 2.00\r\n\x1a" + "JG";
 		public const string BIG_MAGIC   = "Microsoft C/C++ MSF 7.00\r\n\x1a" + "DS";
 
-		private readonly StreamTableReader StreamTable;
+		private readonly StreamTable.Serializer StreamTable;
 
 		public readonly PDBType Type;
 
@@ -62,7 +62,7 @@ namespace Smx.PDBSharp
 
 		public IEnumerable<byte[]> Streams {
 			get {
-				for (int i = 0; i < StreamTable.NumStreams; i++) {
+				for (int i = 0; i < StreamTable.Data.NumStreams; i++) {
 					yield return StreamTable.GetStream(i);
 				}
 			}
@@ -98,7 +98,7 @@ namespace Smx.PDBSharp
 		private PDBFile(Memory<byte> mem, IList<IDisposable>? disposables = null) {
 			this.disposables = disposables ?? new List<IDisposable>();
 
-			this.StreamTable = Services.GetService<StreamTableReader>();
+			this.StreamTable = Services.GetService<StreamTable.Serializer>();
 			Services.AddService<PDBFile>(this);
 
 			var span = mem.Span;
@@ -106,7 +106,7 @@ namespace Smx.PDBSharp
 			this.Type = MSFReader.DetectPdbType(span);
 
 			MSFReader msf;
-			StreamTableReader? streamTable = null;
+			StreamTable.Serializer? streamTable = null;
 
 			if(Type != PDBType.Old) {
 				switch (Type) {
@@ -124,23 +124,25 @@ namespace Smx.PDBSharp
 				// init stream table
 				{
 					byte[] streamTableData = msf.StreamTable();
-					streamTable = new StreamTableReader(Services, streamTableData);
+					streamTable = new StreamTable.Serializer(Services, new PDBSpanStream(streamTableData, msf.FileType));
+					streamTable.Read();
 				}
-				Services.AddService<StreamTableReader>(streamTable);
+				Services.AddService<StreamTable.Serializer>(streamTable);
 
-				DBI.Stream? dbi = null;
+				DBI.Serializer? dbi = null;
 				// init DBI
 				{
 					byte[] dbiData = streamTable.GetStream(DefaultStreams.DBI);
 					if (dbiData.Length > 0) {
-						dbi = new DBI.Stream(Services, dbiData);
+						dbi = new DBI.Serializer(Services, new SpanStream(dbiData));
+						dbi.Read();
 						OnDbiInit?.Invoke(dbi);
 						Services.AddService<DBI.Data>(dbi.Data);
 					}
 				}
 			}
 
-			TPIReader tpi;
+			TPI.Serializer tpi;
 
 			// init TPI
 			{
@@ -155,17 +157,18 @@ namespace Smx.PDBSharp
 
 					tpiStream = new SpanStream(span.Slice(header.SIZE).ToArray());					
 				}
-				tpi = new TPIReader(Services, tpiStream);
+				tpi = new TPI.Serializer(Services, tpiStream);
+				tpi.Read();
 				OnTpiInit?.Invoke(tpi);
 			}
-			Services.AddService<TPIReader>(tpi);
+			Services.AddService<TPI.Serializer>(tpi);
 
 			TPIHashReader? tpiHash = null;
 			// init TPIHash
 			if(streamTable != null) {
-				var tpiHeader = tpi.Header;
+				var tpiHeader = tpi.Data.Header;
 				if(tpiHeader.Hash.StreamNumber != -1) {
-					byte[] tpiHashData = streamTable.GetStream(tpi.Header.Hash.StreamNumber);
+					byte[] tpiHashData = streamTable.GetStream(tpi.Data.Header.Hash.StreamNumber);
 					tpiHash = new TPIHashReader(Services, tpiHashData);
 					Services.AddService<TPIHashReader>(tpiHash);
 				}

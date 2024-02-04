@@ -206,35 +206,43 @@ namespace Smx.PDBSharp
 		}
 	}
 
-	public class ModuleListReader : SpanStream
-	{
-		private readonly long listStartOffset;
-		private readonly long listEndOffset;
-
-		private readonly uint listSize;
-
-		private readonly IServiceContainer ctx;
-
-		public ModuleListReader(IServiceContainer ctx, SpanStream __stream, uint moduleListSize) : base(__stream) {
-			this.ctx = ctx;
-
-			listStartOffset = Position;
-			listSize = moduleListSize;
-			listEndOffset = listStartOffset + listSize;
-
-			Modules = new CachedEnumerable<ModuleInfo>(ReadModules());
+	namespace ModuleList {
+		public class Data {
+			public IEnumerable<ModuleInfo> Modules = Enumerable.Empty<ModuleInfo>();
 		}
 
-		public readonly IEnumerable<ModuleInfo> Modules;
+		public class Serializer {
+			public Data Data = new Data();
 
+			private IServiceContainer sc;
+			private SpanStream stream;
+			private long listStartOffset;
+			private long moduleListSize;
+			private long listEndOffset;
 
-		private IEnumerable<ModuleInfo> ReadModules() {
-			for(int modIndex=0; Position < listEndOffset; modIndex++) {
-				ModuleInfo mod = new ModuleInfo(ctx, this, modIndex);
+			public Serializer(IServiceContainer sc, SpanStream stream, uint moduleListSize) {
+				this.sc = sc;
+				this.stream = stream;
+				this.moduleListSize = moduleListSize;
+				listStartOffset = stream.Position;
+				listEndOffset = listStartOffset + moduleListSize;
+			}
 
-				Position += mod.Size;
-				AlignStream(sizeof(int));
-				yield return mod;
+			
+
+			private IEnumerable<ModuleInfo> ReadModules() {
+				for (int modIndex = 0; stream.Position < listEndOffset; modIndex++) {
+					ModuleInfo mod = new ModuleInfo(sc, stream, modIndex);
+
+					stream.Position += mod.Size;
+					stream.AlignStream(sizeof(int));
+					yield return mod;
+				}
+			}
+
+			public Data Read() {
+				Data.Modules = new CachedEnumerable<ModuleInfo>(ReadModules());
+				return Data;
 			}
 		}
 	}

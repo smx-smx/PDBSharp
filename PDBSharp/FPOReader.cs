@@ -10,6 +10,7 @@ using Smx.SharpIO;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace Smx.PDBSharp
@@ -23,72 +24,83 @@ namespace Smx.PDBSharp
 		Std = 3
 	}
 
-	public struct FPOData
+	namespace FPO
 	{
-		public readonly UInt32 StartOffset;
-		public readonly UInt32 FunctionSize;
-		public readonly UInt32 SizeLocalsDwords;
-		public readonly UInt16 SizeParamsDwords;
-		public readonly byte PrologSize;
-		private readonly byte flags;
+		namespace Frame
+		{
+			public class Data
+			{
+				public UInt32 StartOffset;
+				public UInt32 FunctionSize;
+				public UInt32 SizeLocalsDwords;
+				public UInt16 SizeParamsDwords;
+				public byte PrologSize;
+				public byte Flags;
 
-		// frame type determined by size
-		public FPOFrameType FrameType => (FPOFrameType)FrameSize;
+				// frame type determined by size
+				public FPOFrameType FrameType => (FPOFrameType)FrameSize;
 
-		public byte NumberSavedRegisters => (byte)(flags & 3);
-		public bool HasSEH => ((flags >> 3) & 1) == 1;
-		public bool UsesBasePointer => ((flags >> 4) & 1) == 1;
-		// bit 5 is reserved
-		public byte FrameSize => (byte)((flags >> 6) & 2);
-	}
+				public byte NumberSavedRegisters => (byte)(Flags & 3);
+				public bool HasSEH => ((Flags >> 3) & 1) == 1;
+				public bool UsesBasePointer => ((Flags >> 4) & 1) == 1;
+				// bit 5 is reserved
+				public byte FrameSize => (byte)((Flags >> 6) & 2);
 
-	public class _FPOData : SpanStream
-	{
-		public readonly UInt32 StartOffset;
-		public readonly UInt32 FunctionSize;
-		public readonly UInt32 SizeLocalsDwords;
-		public readonly UInt16 SizeParamsDwords;
-		public readonly byte PrologSize;
-		private readonly byte flags;
 
-		// frame type determined by size
-		public FPOFrameType FrameType => (FPOFrameType)FrameSize;
+				public const int SIZE = 16;
+			}
 
-		public byte NumberSavedRegisters => (byte)(flags & 3);
-		public bool HasSEH => ((flags >> 3) & 1) == 1;
-		public bool UsesBasePointer => ((flags >> 4) & 1) == 1;
-		// bit 5 is reserved
-		public byte FrameSize => (byte)((flags >> 6) & 2);
+			public class Serializer(SpanStream stream)
+			{
+				public Data Data = new Data();
+				public Data Read() {
+					var StartOffset = stream.ReadUInt32();
+					var FunctionSize = stream.ReadUInt32();
+					var SizeLocalsDwords = stream.ReadUInt32();
+					var SizeParamsDwords = stream.ReadUInt16();
+					var PrologSize = stream.ReadByte();
+					var flags = stream.ReadByte();
 
-		public _FPOData(SpanStream stream) : base(stream) {
-			StartOffset = ReadUInt32();
-			FunctionSize = ReadUInt32();
-			SizeLocalsDwords = ReadUInt32();
-			SizeParamsDwords = ReadUInt16();
-			PrologSize = ReadByte();
-			flags = ReadByte();
-		}
-
-		public const int SIZE = 16;
-	}
-
-	public unsafe class FPOReader : SpanStream
-	{
-		public readonly IEnumerable<FPOData> Frames;
-
-		private readonly int itemSize = sizeof(FPOData);
-
-		private IEnumerable<FPOData> ReadFrames() {
-			while (Position < Length) {
-				this.Span.Slice((int)Position, itemSize);
-				yield return Span.Read<FPOData>((int)Position);
-				Position += itemSize;
+					Data = new Data {
+						StartOffset = StartOffset,
+						FunctionSize = FunctionSize,
+						SizeLocalsDwords = SizeLocalsDwords,
+						SizeParamsDwords = SizeParamsDwords,
+						PrologSize = PrologSize,
+						Flags = flags,
+					};
+					return Data;
+				}
 			}
 		}
 
-		public FPOReader(byte[] data) : base(data) {
-			Frames = new CachedEnumerable<FPOData>(ReadFrames());
+		namespace Stream
+		{
+			public class Data
+			{
+				public IEnumerable<Frame.Data> Frames = Enumerable.Empty<Frame.Data>();
+			}
+
+			public class Serializer(SpanStream stream)
+			{
+				public Data Data = new Data();
+
+				private IEnumerable<Frame.Data> ReadFrames() {
+					while (stream.Position < stream.Length) {
+						var frame = new Frame.Serializer(stream.SliceHere(Frame.Data.SIZE)).Read();
+						yield return frame;
+						stream.Position += Frame.Data.SIZE;
+					}
+				}
+
+				public Data Read() {
+					var Frames = new CachedEnumerable<Frame.Data>(ReadFrames());
+					Data = new Data {
+						Frames = Frames
+					};
+					return Data;
+				}
+			}
 		}
 	}
-
 }

@@ -16,10 +16,10 @@ namespace Smx.PDBSharp
 {
 	public class HasherV2
 	{
-		private readonly TPIReader Tpi;
+		private readonly TPI.Serializer Tpi;
 
 		public HasherV2(IServiceContainer ctx) {
-			this.Tpi = ctx.GetService<TPIReader>();
+			this.Tpi = ctx.GetService<TPI.Serializer>();
 		}
 
 		private static UInt32 HashUlong(uint number) {
@@ -32,12 +32,12 @@ namespace Smx.PDBSharp
 
 		public UInt32 HashTypeIndex(uint typeIndex) {
 			byte[] data = BitConverter.GetBytes(typeIndex);
-			return HashData(data, Tpi.Header.Hash.NumHashBuckets);
+			return HashData(data, Tpi.Data.Header.Hash.NumHashBuckets);
 		}
 
 		public UInt32 HashString(string str) {
 			byte[] data = Encoding.ASCII.GetBytes(str);
-			return HashData(data, Tpi.Header.Hash.NumHashBuckets);
+			return HashData(data, Tpi.Data.Header.Hash.NumHashBuckets);
 		}
 
 		public static UInt32 HashData(byte[] data, uint modulo) {

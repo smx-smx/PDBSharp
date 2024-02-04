@@ -10,6 +10,7 @@ using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace Smx.PDBSharp
 {
@@ -30,43 +31,60 @@ namespace Smx.PDBSharp
 		DebugTypeMax
 	}
 
-	public class DebugReader : SpanStream
+	namespace DebugData
 	{
-		public readonly Int16[] DebugStreams = new short[(int)DebugType.DebugTypeMax];
-
-		private readonly StreamTableReader StreamTable;
-
-		public FPOReader? FPO => lazyFPO.Value;
-		private readonly ILazy<FPOReader?> lazyFPO;
-
-		public byte[]? GetStream(DebugType type) {
-			if (!HasStream(type))
-				return null;
-
-			int streamNumber = DebugStreams[(int)type];
-			return StreamTable.GetStream(streamNumber);
+		public class Data {
+			public short[] DebugStreams = new short[(int)DebugType.DebugTypeMax];
 		}
 
-		public bool HasStream(DebugType type) {
-			return DebugStreams[(int)type] != -1;
-		}
+		public class Accessor {
+			private readonly StreamTable.Serializer streamTable;
+			private readonly Data data;
+			
+			private ILazy<FPO.Stream.Data?> FPOLazy;
+			public FPO.Stream.Data? FPO => FPOLazy.Value;
 
-		private FPOReader? CreateFPOReader() {
-			byte[]? fpo = GetStream(DebugType.FPO);
-			if (fpo == null)
-				return null;
-
-			return new FPOReader(fpo);
-		}
-
-		public DebugReader(IServiceContainer ctx, SpanStream stream) : base(stream) {
-			this.StreamTable = ctx.GetService<StreamTableReader>();
-
-			for (int i = 0; i < (int)DebugType.DebugTypeMax; i++) {
-				DebugStreams[i] = ReadInt16();
+			public Accessor(IServiceContainer sc, Data data) {
+				streamTable = sc.GetService<StreamTable.Serializer>();
+				this.data = data;
+				FPOLazy = LazyFactory.CreateLazy(GetFPOStream);
 			}
 
-			lazyFPO = LazyFactory.CreateLazy(CreateFPOReader);
+			public bool HasStream(DebugType type) {
+				return data.DebugStreams[(int)type] != -1;
+			}
+
+			public byte[]? GetStream(DebugType type) {
+				if (!HasStream(type))
+					return null;
+
+				int streamNumber = data.DebugStreams[(int)type];
+				return streamTable.GetStream(streamNumber);
+			}
+
+			private FPO.Stream.Data? GetFPOStream() {
+				byte[]? fpo = GetStream(DebugType.FPO);
+				if (fpo == null)
+					return null;
+
+				return new FPO.Stream.Serializer(new SpanStream(fpo)).Read();
+			}
+		}
+
+		public class Serializer(SpanStream stream) {
+			public Data Data = new Data();
+			public Data Read() {
+				var DebugStreams = new short[(int)DebugType.DebugTypeMax];
+
+				for (int i = 0; i < (int)DebugType.DebugTypeMax; i++) {
+					DebugStreams[i] = stream.ReadInt16();
+				}
+
+				Data = new Data {
+					DebugStreams = DebugStreams
+				};
+				return Data;
+			}
 		}
 	}
 }

@@ -15,8 +15,8 @@ namespace Smx.PDBSharp
 {
 	public class Deserializers
 	{
-		public static NameIndexTableReader ReadNameIndexTable(SpanStream r) {
-			return new NameIndexTableReader(r);
+		public static NameIndexTable.Data ReadNameIndexTable(SpanStream r) {
+			return new NameIndexTable.Serializer(r).Read();
 		}
 
 		public static NameTable.Data ReadNameTable(SpanStream r) {

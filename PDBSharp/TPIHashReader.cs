@@ -33,8 +33,8 @@ namespace Smx.PDBSharp
 		public readonly uint[]? RecordHashValues;
 
 		public TPIHashReader(IServiceContainer ctx, byte[] hashData) : base(hashData) {
-			TPIReader tpi = ctx.GetService<TPIReader>();
-			TPIHash hash = tpi.Header.Hash;
+			TPI.Serializer tpi = ctx.GetService<TPI.Serializer>();
+			TPIHash hash = tpi.Data.Header.Hash;
 
 			switch (hash.HashKeySize) {
 				case sizeof(UInt16):

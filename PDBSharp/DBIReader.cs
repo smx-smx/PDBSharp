@@ -181,66 +181,92 @@ namespace Smx.PDBSharp
 		{
 			public IDBIHeader Header { get; internal set; } = new DBIHeaderNew();
 
-			public DebugReader? DebugInfo { get; internal set; }
+			public DebugData.Accessor? DebugInfo { get; internal set; }
 			public SectionContribsReader? SectionContribs { get; internal set; }
 
-			public ECReader? EC { get; internal set; }
+			public EC.Data? EC { get; internal set; }
 			public TypeServerMapReader? TypeServerMap { get; internal set; }
 			public CachedEnumerable<IModuleContainer> Modules { get; internal set; } = new CachedEnumerable<IModuleContainer>(Enumerable.Empty<IModuleContainer>());
 		}
 
-
-		public class Stream : SpanStream
-		{
-			public Data Data = new DBI.Data();
-
-			private readonly StreamTableReader StreamTable;
+		public class Serializer {
+			private IServiceContainer sc;
+			private StreamTable.Serializer streamTable;
+			private SpanStream stream;
 
 			public event OnModuleDataDelegate? OnModuleData;
 			public event OnModuleReaderInitDelegate? OnModuleReaderInit;
 
-			private readonly IServiceContainer ctx;
+			public Serializer(IServiceContainer sc, SpanStream stream) {
+				this.sc = sc;
+				this.streamTable = sc.GetService<StreamTable.Serializer>();
+				this.stream = stream;
+			}
+
+			public Data Data = new Data();
 
 			private bool IsValidStreamNumber(ushort sn) {
 				// snNil, allowed
 				if ((short)sn == -1) return true;
-				return sn < StreamTable.NumStreams;
+				return sn < streamTable.Data.NumStreams;
 			}
 
-			/**
-			 * Layout of the DBI stream
-			 * -> Header 
-			 * -> ModuleList
-			 * -> SectionContributions
-			 * -> SectionMap
-			 * -> FileInfo
-			 * -> TypeServerMap
-			 * -> EcSubstream
-			 * -> DebugHeader
-			 **/
-			public Stream(IServiceContainer ctx, byte[] data) : base(data) {
-				this.ctx = ctx;
 
-				if (Length < Math.Min(Marshal.SizeOf<DBIHeaderOld>(), Marshal.SizeOf<DBIHeaderNew>())) {
+			private IEnumerable<IModuleContainer> ReadModules() {
+				stream.Position = Marshal.SizeOf<DBIHeaderNew>();
+
+				ModuleList.Serializer rdr = sc.GetService<ModuleList.Serializer>();
+				if (rdr == null) {
+					rdr = new ModuleList.Serializer(sc, stream, Data.Header.ModuleListSize);
+					rdr.Read();
+					sc.AddService<ModuleList.Serializer>(rdr);
+				}
+
+				IEnumerable<ModuleInfo> moduleInfoList = rdr.Data.Modules;
+				foreach (ModuleInfo mod in moduleInfoList) {
+					LazyModuleProvider provider = new LazyModuleProvider(sc, mod);
+
+					if (OnModuleReaderInit != null) {
+						provider.OnModuleReaderInit += OnModuleReaderInit;
+					}
+					if (OnModuleData != null) {
+						provider.OnModuleData += OnModuleData;
+					}
+					yield return provider;
+				}
+			}
+
+			public Data Read() {
+				/**
+				 * Layout of the DBI stream
+				 * -> Header 
+				 * -> ModuleList
+				 * -> SectionContributions
+				 * -> SectionMap
+				 * -> FileInfo
+				 * -> TypeServerMap
+				 * -> EcSubstream
+				 * -> DebugHeader
+				 **/
+
+				if (stream.Length < Math.Min(Marshal.SizeOf<DBIHeaderOld>(), Marshal.SizeOf<DBIHeaderNew>())) {
 					throw new InvalidDataException();
 				}
 
 				{
-					int signature = PerformAt(0, ReadInt32); // invalid GSSyms, used to detect new header
+					int signature = stream.PerformAt(0, stream.ReadInt32); // invalid GSSyms, used to detect new header
 					if (signature == -1) {
-						DBIHeaderNew header = Read<DBIHeaderNew>();
+						DBIHeaderNew header = stream.Read<DBIHeaderNew>();
 						if (!Enum.IsDefined(typeof(DBIVersion), (uint)header.Version)) {
 							throw new NotSupportedException();
 						}
 						Data.Header = header;
 					} else {
-						Data.Header = Read<DBIHeaderOld>();
+						Data.Header = stream.Read<DBIHeaderOld>();
 					}
 				}
 
-				this.StreamTable = ctx.GetService<StreamTableReader>();
-
-				uint nStreams = StreamTable.NumStreams;
+				uint nStreams = streamTable.Data.NumStreams;
 				if (!IsValidStreamNumber(Data.Header.GsSymbolsStreamNumber)
 					|| !IsValidStreamNumber(Data.Header.PsSymbolsStreamNumber)
 					|| !IsValidStreamNumber(Data.Header.SymbolRecordsStreamNumber)
@@ -249,32 +275,35 @@ namespace Smx.PDBSharp
 				}
 
 				Data.Modules = new CachedEnumerable<IModuleContainer>(ReadModules());
-				Position += Data.Header.ModuleListSize;
+				stream.Position += Data.Header.ModuleListSize;
 
 				if (Data.Header.SectionContributionSize > 0) {
-					Data.SectionContribs = new SectionContribsReader(ctx, Data.Header.SectionContributionSize, this);
+					Data.SectionContribs = new SectionContribsReader(sc, Data.Header.SectionContributionSize, stream);
 				}
-				Position += Data.Header.SectionContributionSize;
+				stream.Position += Data.Header.SectionContributionSize;
 
-				Position += Data.Header.SectionMapSize;
+				stream.Position += Data.Header.SectionMapSize;
 
 				if (Data.Header is DBIHeaderNew DSHeader) {
-					Position += DSHeader.FileInfoSize;
+					stream.Position += DSHeader.FileInfoSize;
 
 					if (DSHeader.TypeServerMapSize > 0) {
-						Data.TypeServerMap = new TypeServerMapReader(this);
+						Data.TypeServerMap = new TypeServerMapReader(stream);
 					}
-					Position += DSHeader.TypeServerMapSize;
+					stream.Position += DSHeader.TypeServerMapSize;
 
 					if (DSHeader.EcSubstreamSize > 0) {
-						Data.EC = new ECReader(this);
+						Data.EC = new EC.Serializer(stream).Read();
 					}
-					Position += DSHeader.EcSubstreamSize;
+					stream.Position += DSHeader.EcSubstreamSize;
 
 					if (DSHeader.DebugHeaderSize > 0) {
-						Data.DebugInfo = new DebugReader(ctx, this);
+						var debugData = new DebugData.Serializer(stream).Read();
+						Data.DebugInfo = new DebugData.Accessor(sc, debugData);
 					}
 				}
+
+				return Data;
 			}
 
 			public IModuleContainer? GetModuleByFileOffset(int sectionIndex, long fileOffset) {
@@ -285,29 +314,6 @@ namespace Smx.PDBSharp
 					.FirstOrDefault();
 
 				return sc?.Module;
-			}
-
-			private IEnumerable<IModuleContainer> ReadModules() {
-				Position = Marshal.SizeOf<DBIHeaderNew>();
-
-				ModuleListReader rdr = ctx.GetService<ModuleListReader>();
-				if (rdr == null) {
-					rdr = new ModuleListReader(ctx, this, Data.Header.ModuleListSize);
-					ctx.AddService<ModuleListReader>(rdr);
-				}
-
-				IEnumerable<ModuleInfo> moduleInfoList = rdr.Modules;
-				foreach (ModuleInfo mod in moduleInfoList) {
-					LazyModuleProvider provider = new LazyModuleProvider(ctx, mod);
-
-					if (OnModuleReaderInit != null) {
-						provider.OnModuleReaderInit += OnModuleReaderInit;
-					}
-					if (OnModuleData != null) {
-						provider.OnModuleData += OnModuleData;
-					}
-					yield return provider;
-				}
 			}
 		}
 	}

@@ -15,12 +15,12 @@ namespace Smx.PDBSharp
 {
 	public class NamedStreamTableReader
 	{
-		private readonly StreamTableReader streamTable;
+		private readonly StreamTable.Serializer streamTable;
 		private readonly PdbStreamReader? streamReader;
 
 		public NamedStreamTableReader(IServiceContainer ctx) {
 			streamReader = ctx.GetService<PdbStreamReader>();
-			streamTable = ctx.GetService<StreamTableReader>();
+			streamTable = ctx.GetService<StreamTable.Serializer>();
 		}
 
 		public byte[]? GetStreamByName(string streamName) {

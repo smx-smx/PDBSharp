@@ -22,6 +22,34 @@ namespace Smx.PDBSharp
 		public int PN_SIZE { get; private set; }
 		public int SI_PERSIST_SIZE { get; private set; }
 
+		public static int Get_PN_Size(PDBType type) {
+			int PN_SIZE = 0;
+			switch (type) {
+				case PDBType.Big:
+					PN_SIZE = sizeof(UInt32);
+					break;
+				case PDBType.Small:
+					PN_SIZE = sizeof(UInt16);
+					break;
+			}
+			return PN_SIZE;
+		}
+
+		public static int Get_SI_PERSIST_Size(PDBType type) {
+			int SI_PERSIST_SIZE = 0;
+			switch (type) {
+				case PDBType.Big:
+					//only CB is stored
+					SI_PERSIST_SIZE = CB_SIZE;
+					break;
+				case PDBType.Small:
+					// CB + pageOf(map<SPN,PN>)
+					SI_PERSIST_SIZE = CB_SIZE + sizeof(UInt32);
+					break;
+			}
+			return SI_PERSIST_SIZE;
+		}
+
 		private void SetDataTypeSizes() {
 			switch (type) {
 				case PDBType.Big:

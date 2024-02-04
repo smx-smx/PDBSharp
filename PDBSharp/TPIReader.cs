@@ -69,103 +69,90 @@ namespace Smx.PDBSharp
 
 	public delegate void OnLeafDataDelegate(byte[] data);
 
-	public class TPIReader : SpanStream
-	{
-		public readonly TPIHeader Header;
+	namespace TPI {
+		delegate ILeafResolver? ReadTypeDelegate(out long dataSize);
 
-		private readonly IServiceContainer ctx;
-
-		public event OnLeafDataDelegate? OnLeafData;
-
-		public ILazy<IEnumerable<ILeafResolver?>> lazyLeafContainers;
-
-		public IEnumerable<ILeafResolver?>? Types => lazyLeafContainers.Value;
-
-		private delegate ILeafResolver? ReadTypeDelegate(out long dataSize);
-		private readonly ReadTypeDelegate TypeReader;
-
-		public uint GetLeafSize(UInt32 offset) {
-			return PerformAt(Header.HeaderSize + offset, () => {
-				return (uint)ReadUInt16() + sizeof(UInt16);
-			});
+		public class Data {
+			public TPIHeader Header = new TPIHeader();
 		}
 
-		public bool HasTi(UInt32 TypeIndex) {
-			return TypeIndex >= Header.MinTypeIndex && TypeIndex < Header.MaxTypeIndex;
-		}
+		public class Serializer : ISerializer<Data> {
+			private readonly IServiceContainer sc;
+			private readonly PDBFile pdb;
+			private readonly SpanStream stream;
+			private readonly ReadTypeDelegate TypeReader;
 
-		public bool IsBuiltinTi(UInt32 TypeIndex) {
-			return TypeIndex <= ((uint)SpecialTypeMode.NearPointer128 | 0xFF);
-		}
 
-		private static TPIHeader ImportJGOld(JGHeaderOld oldHeader) {
-			TPIHeader hdr = new TPIHeader() {
-				MinTypeIndex = oldHeader.MinTi,
-				MaxTypeIndex = oldHeader.MaxTi,
-				GpRecSize = oldHeader.GpRecSize
-			};
-			return hdr;
-		}
+			public event OnLeafDataDelegate? OnLeafData;
+			public ILazy<IEnumerable<ILeafResolver?>> lazyLeafContainers;
+			public IEnumerable<ILeafResolver?>? Types => lazyLeafContainers.Value;
 
-		public TPIReader(IServiceContainer ctx, SpanStream stream) : base(stream) {
-			this.ctx = ctx;
-
-			PDBFile pdb = ctx.GetService<PDBFile>();
-			if(pdb.Type == PDBType.Old) {
-				TypeReader = ReadTypeOld;
-				JGHeaderOld oldHdr = ctx.GetService<JGHeaderOld>();
-				Header = ImportJGOld(oldHdr);
-			} else {
-				Header = Read<TPIHeader>();
-				if (Header.HeaderSize != Marshal.SizeOf<TPIHeader>()) {
-					throw new InvalidDataException();
+			public Serializer(IServiceContainer sc, SpanStream stream) {
+				this.sc = sc;
+				this.pdb = sc.GetService<PDBFile>();
+				this.stream = stream;
+				switch (pdb.Type) {
+					case PDBType.Old:
+						TypeReader = ReadTypeOld;
+						break;
+					default:
+						TypeReader = ReadType;
+						break;
 				}
 
-				if (!Enum.IsDefined(typeof(TPIVersion), Header.Version)) {
-					throw new InvalidDataException();
+				lazyLeafContainers = LazyFactory.CreateLazy(ReadTypes);
+			}
+
+			public Data Data = new Data();
+
+			private static TPIHeader ImportJGOld(JGHeaderOld oldHeader) {
+				TPIHeader hdr = new TPIHeader() {
+					MinTypeIndex = oldHeader.MinTi,
+					MaxTypeIndex = oldHeader.MaxTi,
+					GpRecSize = oldHeader.GpRecSize
+				};
+				return hdr;
+			}
+
+			private ILeafResolver? ReadTypeOld(out long dataSize) {
+				uint hash = stream.ReadUInt32();
+
+				// we have no length, so we just pass all memory (after the hash)
+				SpanStream memStream = new SpanStream(stream.Memory.Slice((int)stream.Position));
+				TypeDataReader rdr = new TypeDataReader(sc, memStream);
+
+				// without a length, and with a small amount of data, we can just read this directly
+				ILeafResolver? leaf = rdr.ReadTypeDirect(false);
+
+				// hash + type data
+				dataSize = stream.Position + rdr.Position;
+
+				stream.Position += rdr.Position;
+				return leaf;
+			}
+
+
+			public ILeafResolver? ReadType(uint typeOffset) {
+				return stream.PerformAt(typeOffset, () => ReadType(out long datSize));
+			}
+
+
+			private IEnumerable<ILeafResolver?> ReadTypes() {
+				long processed = 0;
+				while (processed < Data.Header.GpRecSize) {
+					yield return TypeReader(out long dataSize);
+					processed += dataSize;
 				}
-				TypeReader = ReadType;
 			}
 
-
-#if false
-			if(Header.Version != TPIVersion.V80) {
-				throw new NotImplementedException($"TPI Version {Header.Version} not supported yet");
-			}
-#endif
-
-			lazyLeafContainers = LazyFactory.CreateLazy(ReadTypes);
-		}
-
-		public ILeafResolver? ReadType(uint typeOffset) {
-			return PerformAt(typeOffset, () => ReadType(out long datSize));
-		}
-
-		private ILeafResolver? ReadTypeOld(out long dataSize) {
-			uint hash = ReadUInt32();
-
-			// we have no length, so we just pass all memory (after the hash)
-			SpanStream memStream = new SpanStream(Memory.Slice((int)Position));
-			TypeDataReader rdr = new TypeDataReader(ctx, memStream);
-
-			// without a length, and with a small amount of data, we can just read this directly
-			ILeafResolver? leaf = rdr.ReadTypeDirect(false);
-
-			// hash + type data
-			dataSize = Position + rdr.Position;
-			
-			Position += rdr.Position;
-			return leaf;
-		}
-
-		private ILeafResolver? ReadType(out long dataSize) {
-			ushort length = ReadUInt16();
-			if (length == 0) {
-				dataSize = sizeof(ushort);
-				return null;
-			}
-			dataSize = sizeof(ushort) + length;
-			Position -= sizeof(ushort);
+			private ILeafResolver? ReadType(out long dataSize) {
+				ushort length = stream.ReadUInt16();
+				if (length == 0) {
+					dataSize = sizeof(ushort);
+					return null;
+				}
+				dataSize = sizeof(ushort) + length;
+				stream.Position -= sizeof(ushort);
 
 #if false //$TODO
 			{
@@ -178,20 +165,56 @@ namespace Smx.PDBSharp
 			}
 #endif
 
-			//OnLeafData?.Invoke(leafDataBuf);
+				//OnLeafData?.Invoke(leafDataBuf);
 
-			var typeSpan = Memory.Slice((int)Position, (int)dataSize);
-			TypeDataReader rdr = new TypeDataReader(ctx, new SpanStream(typeSpan));
-			Position += dataSize;
+				var typeSpan = stream.Memory.Slice((int)stream.Position, (int)dataSize);
+				TypeDataReader rdr = new TypeDataReader(sc, new SpanStream(typeSpan));
+				stream.Position += dataSize;
 
-			return rdr.ReadTypeLazy();
-		}
+				return rdr.ReadTypeLazy();
+			}
 
-		private IEnumerable<ILeafResolver?> ReadTypes() {
-			long processed = 0;
-			while (processed < Header.GpRecSize) {
-				yield return TypeReader(out long dataSize);
-				processed += dataSize;
+			public Data Read() {
+				if (pdb.Type == PDBType.Old) {
+					
+					JGHeaderOld oldHdr = sc.GetService<JGHeaderOld>();
+					Data.Header = ImportJGOld(oldHdr);
+				} else {
+					Data.Header = stream.Read<TPIHeader>();
+					if (Data.Header.HeaderSize != Marshal.SizeOf<TPIHeader>()) {
+						throw new InvalidDataException();
+					}
+
+					if (!Enum.IsDefined(typeof(TPIVersion), Data.Header.Version)) {
+						throw new InvalidDataException();
+					}
+				}
+
+				#if false
+				if(Data.Header.Version!= TPIVersion.V80) {
+					throw new NotImplementedException($"TPI Version {Header.Version} not supported yet");
+				}
+				#endif
+
+				return Data;
+			}
+
+			public void Write(Data Data) {
+				throw new NotImplementedException();
+			}
+
+			public uint GetLeafSize(uint offset) {
+				return stream.PerformAt(Data.Header.HeaderSize + offset, () => {
+					return (uint)stream.ReadUInt16() + sizeof(UInt16);
+				});
+			}
+
+			public bool HasTi(UInt32 TypeIndex) {
+				return TypeIndex >= Data.Header.MinTypeIndex && TypeIndex < Data.Header.MaxTypeIndex;
+			}
+
+			public bool IsBuiltinTi(UInt32 TypeIndex) {
+				return TypeIndex <= ((uint)SpecialTypeMode.NearPointer128 | 0xFF);
 			}
 		}
 	}
