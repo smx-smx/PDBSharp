@@ -24,54 +24,72 @@ namespace Smx.PDBSharp
 
 	public delegate uint HashFunc(byte[] data, uint modulo);
 
-	public class NameTableReader
+	namespace NameTable
 	{
-		private const UInt32 MAGIC = 0xeffeeffe;
+		public class Data {
+			public SpanStream? Strings;
+			public NameTableVersion Version;
 
-		public readonly NameTableVersion Version;
+			public uint NumberOfElements;
+			public uint[] Indices = new uint[0];
 
-		private readonly SpanStream rdr;
+			public HashFunc? Hasher { get; internal set; }
 
-		public readonly uint NumberOfElements;
-		public readonly uint[] Indices;
-
-		private HashFunc? hasher;
-
-		public uint HashName(string name) {
-			Debug.Assert(hasher != null);
-			byte[] data = Encoding.ASCII.GetBytes(name);
-			return hasher(data, unchecked((uint)-1));
-		}
-
-		public string GetString(uint index) {
-			rdr.Position = index;
-			return rdr.ReadCString();
-		}
-
-		public NameTableReader(SpanStream r) {
-			UInt32 magic = r.ReadUInt32();
-			if (magic != MAGIC) {
-				throw new InvalidDataException($"Invalid verHdr magic 0x{magic:X}");
+			public uint HashName(string name) {
+				Debug.Assert(Hasher != null);
+				byte[] data = Encoding.ASCII.GetBytes(name);
+				return Hasher(data, unchecked((uint)-1));
 			}
 
-			Version = r.ReadEnum<NameTableVersion>();
-			switch (Version) {
-				case NameTableVersion.Hash:
-					hasher = HasherV1.HashData;
-					break;
-				case NameTableVersion.HashV2:
-					hasher = HasherV2.HashData;
-					break;
-				default:
-					throw new InvalidDataException();
-					break;
+			public string GetString(uint index) {
+				Debug.Assert(Strings != null);
+				Strings.Position = index;
+				return Strings.ReadCString();
 			}
-
-			byte[] buf = Deserializers.ReadBuffer(r);
-			rdr = new SpanStream(buf);
-
-			Indices = Deserializers.ReadArray<UInt32>(r);
-			NumberOfElements = r.ReadUInt32();
 		}
+
+		public class Serializer(SpanStream stream) {
+			private const uint MAGIC = 0xeffeeffe;
+
+			public Data Data = new Data();
+
+			public Data Read() {
+				var magic = stream.ReadUInt32();
+				if (magic != MAGIC) {
+					throw new InvalidDataException($"Invalid verHdr magic 0x{magic:X}");
+				}
+
+				HashFunc? hashFunc;
+
+				var Version = stream.ReadEnum<NameTableVersion>();
+				switch (Version) {
+					case NameTableVersion.Hash:
+						hashFunc = HasherV1.HashData;
+						break;
+					case NameTableVersion.HashV2:
+						hashFunc = HasherV2.HashData;
+						break;
+					default:
+						throw new InvalidDataException();
+				}
+
+				var buf = Deserializers.ReadBuffer(stream);
+				var stringsData = new SpanStream(buf);
+
+				var Indices = Deserializers.ReadArray<uint>(stream);
+				var NumberOfElements = stream.ReadUInt32();
+
+				Data = new Data {
+					Version = Version,
+					Indices = Indices,
+					NumberOfElements = NumberOfElements,
+					Strings = stringsData,
+					Hasher = hashFunc,
+				};
+
+				return Data;
+			}
+		}
+
 	}
 }

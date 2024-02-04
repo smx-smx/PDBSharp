@@ -13,7 +13,7 @@ namespace Smx.PDBSharp
 {
 	public class ECReader : SpanStream
 	{
-		public readonly NameTableReader NameTable;
+		public readonly NameTable.Data NameTable;
 
 		public ECReader(SpanStream stream) : base(stream) {
 			NameTable = Deserializers.ReadNameTable(this);
