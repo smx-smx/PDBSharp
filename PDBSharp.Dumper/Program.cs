@@ -110,7 +110,7 @@ namespace Smx.PDBSharp.Dumper
 			PDBFile pdb = PDBFile.Open(PdbFilePath);
 			IServiceContainer sc = pdb.Services;
 
-			DBIReader dbi = sc.GetService<DBIReader>();
+			DBI.Data dbi = sc.GetService<DBI.Data>();
 			TPIReader tpi = sc.GetService<TPIReader>();
 			StreamTableReader streamTable = sc.GetService<StreamTableReader>();
 
@@ -212,7 +212,7 @@ namespace Smx.PDBSharp.Dumper
 			Console.WriteLine($"Finished in {sw.Elapsed.TotalSeconds} seconds");
 		}
 
-		private static void Pdb_OnDbiInit(DBIReader DBI) {
+		private static void Pdb_OnDbiInit(DBI.Stream DBI) {
 			if (OptDumpModules) {
 				DBI.OnModuleData += DBI_OnModuleData;
 				DBI.OnModuleReaderInit += DBI_OnModuleReaderInit;

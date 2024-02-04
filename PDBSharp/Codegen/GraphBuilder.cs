@@ -14,10 +14,10 @@ namespace Smx.PDBSharp.Codegen
 {
 	public class GraphBuilder
 	{
-		private readonly DBIReader Dbi;
+		private readonly DBI.Data Dbi;
 
 		public GraphBuilder(IServiceContainer ctx) {
-			this.Dbi = ctx.GetService<DBIReader>();
+			this.Dbi = ctx.GetService<DBI.Data>();
 		}
 
 		private IEnumerable<SymbolNode> BuildGraph(IModuleContainer module) {

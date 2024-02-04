@@ -38,7 +38,7 @@ namespace Smx.PDBSharp
 	}
 
 	public delegate void OnTpiInitDelegate(TPIReader TPI);
-	public delegate void OnDbiInitDelegate(DBIReader DBI);
+	public delegate void OnDbiInitDelegate(DBI.Stream DBI);
 
 	public class PDBFile : IDisposable
 	{
@@ -128,14 +128,14 @@ namespace Smx.PDBSharp
 				}
 				Services.AddService<StreamTableReader>(streamTable);
 
-				DBIReader? dbi = null;
+				DBI.Stream? dbi = null;
 				// init DBI
 				{
 					byte[] dbiData = streamTable.GetStream(DefaultStreams.DBI);
 					if (dbiData.Length > 0) {
-						dbi = new DBIReader(Services, dbiData);
+						dbi = new DBI.Stream(Services, dbiData);
 						OnDbiInit?.Invoke(dbi);
-						Services.AddService<DBIReader>(dbi);
+						Services.AddService<DBI.Data>(dbi.Data);
 					}
 				}
 			}

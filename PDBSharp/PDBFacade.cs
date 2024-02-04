@@ -9,10 +9,10 @@ namespace Smx.PDBSharp
 {
 	public class PDBPeSession {
 		private PEFile pe;
-		private readonly DBIReader dbi;
+		private readonly DBI.Data dbi;
 		public PDBPeSession(IServiceContainer sc, string peFilePath) {
 			this.pe = PEFile.Open(peFilePath);
-			this.dbi = sc.GetService<DBIReader>();
+			this.dbi = sc.GetService<DBI.Data>();
 		}
 
 		public bool TryGetSymbolByName(string name, out uint virtualAddress) {

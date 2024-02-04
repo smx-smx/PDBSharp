@@ -69,7 +69,7 @@ namespace Smx.PDBSharp
 			ReadUInt16();
 
 			////////
-			DBIReader dbi = ctx.GetService<DBIReader>();
+			DBI.Data dbi = ctx.GetService<DBI.Data>();
 
 			moduleLazy = LazyFactory.CreateLazy(() => ModuleIndex == -1
 				? null
@@ -135,7 +135,7 @@ namespace Smx.PDBSharp
 		public readonly IEnumerable<SectionContrib40>? SectionContribs;
 
 		public readonly int ModuleIndex;
-		private readonly DBIReader dbi;
+		private readonly DBI.Data dbi;
 
 		public int ExternalModuleIndex => ModuleIndex + 1;
 
@@ -157,8 +157,7 @@ namespace Smx.PDBSharp
 			long savedPosition = Position;
 
 			this.ModuleIndex = modIndex;
-			DBIReader dbi = ctx.GetService<DBIReader>();
-			this.dbi = dbi;
+			this.dbi = ctx.GetService<DBI.Data>();
 
 			MSFReader msf = ctx.GetService<MSFReader>();
 
