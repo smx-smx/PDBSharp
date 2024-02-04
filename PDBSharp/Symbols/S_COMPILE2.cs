@@ -110,7 +110,7 @@ namespace Smx.PDBSharp.Symbols.S_COMPILE2
 
 		public override string ToString() {
 			var data = Data;
-			return $"S_COMPILE2[" +
+			return $"S_COMPILE2(" +
 				$"Flags='{data?.Flags}', " +
 				$"Machine='{data?.Machine}', " +
 				$"FrontendVersionMajor='{data?.FrontendVersionMajor}', " +
@@ -120,7 +120,7 @@ namespace Smx.PDBSharp.Symbols.S_COMPILE2
 				$"BackendVersionMinor='{data?.BackendVersionMinor}', " +
 				$"BackendVersionBuild='{data?.BackendVersionBuild}'" +
 				$"VersionString='{data?.VersionString}'" +
-			"]";
+			")";
 		}
 	}
 }

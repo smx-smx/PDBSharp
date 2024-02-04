@@ -32,7 +32,7 @@ namespace Smx.PDBSharp.Symbols.Structures.UdtSym
 			throw new NotImplementedException();
 		}
 
-		public ISymbolData? GetData() => Data;
+		public ISymbolData? GetData() { return Data; }
 
 		public UdtSym(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
 		}

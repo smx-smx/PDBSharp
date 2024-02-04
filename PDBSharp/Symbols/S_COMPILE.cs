@@ -56,9 +56,9 @@ namespace Smx.PDBSharp.Symbols.S_COMPILE
 
 		public override string ToString() {
 			var data = Data;
-			return $"S_COMPILE[Flags='{data?.Flags}'" +
+			return $"S_COMPILE(Flags='{data?.Flags}'" +
 				$", Machine='{data?.Machine}'" +
-				$", VersionString='{data?.VersionString}']";
+				$", VersionString='{data?.VersionString}')";
 		}
 	}
 }

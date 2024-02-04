@@ -199,6 +199,9 @@ namespace Smx.PDBSharp
 					}
 				}
 			}
+
+			var facade = new PDBFacade(Services);
+			Services.AddService<PDBFacade>(facade);
 		}
 	}
 }

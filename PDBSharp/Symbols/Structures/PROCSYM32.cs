@@ -25,13 +25,13 @@ namespace Smx.PDBSharp.Symbols.ProcSym32
 		public UInt32 DebugEndOffset { get;set; }
 		public ILeafResolver? Type { get;set; }
 		public UInt32 Offset { get;set; }
-		public UInt16 Segment { get;set; }
+		public short Segment { get;set; }
 		public CV_PROCFLAGS Flags { get;set; }
 		public string Name { get;set; }
 		public ISymbolResolver? ParentSymbol { get;set; }
 		public ISymbolResolver? NextSymbol { get;set; }
 
-		public Data(uint parentOffset, uint end, uint nextOffset, uint length, uint debugStartOffset, uint debugEndOffset, ILeafResolver? type, uint offset, ushort segment, CV_PROCFLAGS flags, string name, ISymbolResolver? parentSymbol, ISymbolResolver? nextSymbol) {
+		public Data(uint parentOffset, uint end, uint nextOffset, uint length, uint debugStartOffset, uint debugEndOffset, ILeafResolver? type, uint offset, short segment, CV_PROCFLAGS flags, string name, ISymbolResolver? parentSymbol, ISymbolResolver? nextSymbol) {
 			ParentOffset = parentOffset;
 			End = end;
 			NextOffset = nextOffset;
@@ -45,6 +45,13 @@ namespace Smx.PDBSharp.Symbols.ProcSym32
 			Name = name;
 			ParentSymbol = parentSymbol;
 			NextSymbol = nextSymbol;
+		}
+
+		public override string ToString() {
+			return $"PROCSYM32(" +
+				$"Type={Type?.Ctx}, Name={Name}," +
+				$"Segment={Segment}, Offset=0x{Offset.ToString("X")}, Length={Length}" +
+				$")";
 		}
 	}
 
@@ -75,7 +82,7 @@ namespace Smx.PDBSharp.Symbols.ProcSym32
 			var DebugEndOffset = r.ReadUInt32();
 			var Type = r.ReadIndexedType32Lazy();
 			var Offset = r.ReadUInt32();
-			var Segment = r.ReadUInt16();
+			var Segment = r.ReadInt16();
 			var Flags = r.ReadFlagsEnum<CV_PROCFLAGS>();
 			var Name = r.ReadSymbolString();
 
@@ -109,7 +116,7 @@ namespace Smx.PDBSharp.Symbols.ProcSym32
 			w.WriteUInt32(data.DebugEndOffset);
 			w.WriteIndexedType(data.Type);
 			w.WriteUInt32(data.Offset);
-			w.WriteUInt16(data.Segment);
+			w.WriteInt16(data.Segment);
 			w.Write<CV_PROCFLAGS>(data.Flags);
 			w.WriteSymbolString(data.Name);
 

@@ -86,7 +86,7 @@ namespace Smx.PDBSharp.Leaves.LF_POINTER
 
 		public override string ToString() {
 			var data = Data;
-			return $"LF_POINTER[UnderlyingType='{data?.UnderlyingType}', Attributes='{data?.Attributes}']";
+			return $"LF_POINTER(UnderlyingType='{data?.UnderlyingType}', Attributes='{data?.Attributes}')";
 		}
 	}
 }

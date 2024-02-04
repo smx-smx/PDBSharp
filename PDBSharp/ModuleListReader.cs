@@ -116,7 +116,7 @@ namespace Smx.PDBSharp
 	public class ModuleInfo : SpanStream
 	{
 		public readonly UInt32 OpenModuleHandle;
-		public readonly ISectionContrib? SectionContribution;
+		public readonly ISectionContrib? FirstSectionContribution;
 		public readonly ModuleInfoFlags Flags;
 		public readonly Int16 StreamNumber;
 		public readonly UInt32 SymbolsSize;
@@ -166,11 +166,11 @@ namespace Smx.PDBSharp
 
 			switch (msf.FileType) {
 				case PDBType.Big:
-					SectionContribution = new SectionContrib(ctx, this);
+					FirstSectionContribution = new SectionContrib(ctx, this);
 					Position += SectionContrib.SIZE;
 					break;
 				case PDBType.Small:
-					SectionContribution = new SectionContrib40(ctx, this);
+					FirstSectionContribution = new SectionContrib40(ctx, this);
 					Position += SectionContrib40.SIZE;
 					break;
 			}

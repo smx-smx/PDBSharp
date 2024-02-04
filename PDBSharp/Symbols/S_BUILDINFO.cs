@@ -51,7 +51,7 @@ namespace Smx.PDBSharp.Symbols.S_BUILDINFO
 
 		public override string ToString() {
 			var data = Data;
-			return $"S_BUILDINFO[ItemID='{data?.ItemID}']";
+			return $"S_BUILDINFO(ItemID='{data?.ItemID}')";
 		}
 	}
 }

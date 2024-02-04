@@ -90,14 +90,14 @@ namespace Smx.PDBSharp.Leaves.LF_MFUNCTION
 
 		public override string ToString() {
 			var data = Data;
-			return $"LF_MFUNCTION[ReturnValueType='{data?.ReturnValueType}', " +
+			return $"LF_MFUNCTION(ReturnValueType='{data?.ReturnValueType}', " +
 				$"ContainingClassType='{data?.ContainingClassType}', " +
 				$"ThisPointerType='{data?.ThisPointerType}', " +
 				$"CallingConvention='{data?.CallingConvention}', " +
 				$"Attributes='{data?.Attributes}', " +
 				$"NumberOfParameters='{data?.NumberOfParameters}', " +
 				$"ArgumentListType='{data?.ArgumentListType}', " +
-				$"ThisAdjustor='{data?.ThisAdjustor}']";
+				$"ThisAdjustor='{data?.ThisAdjustor}')";
 		}
 	}
 }

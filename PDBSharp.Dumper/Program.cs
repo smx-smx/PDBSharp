@@ -19,6 +19,7 @@ using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Reflection;
 using Smx.PDBSharp.LeafResolver;
+using Smx.PDBSharp.PE;
 
 namespace Smx.PDBSharp.Dumper
 {
@@ -30,6 +31,7 @@ namespace Smx.PDBSharp.Dumper
 		public static bool OptDumpStreams = false;
 		public static bool OptPrintDecls = false;
 		public static string PdbFilePath = null;
+		public static string ExeFilePath = null;
 
 		public static bool OptPrintFpo = false;
 		public static bool OptPrintSc = false;
@@ -72,8 +74,12 @@ namespace Smx.PDBSharp.Dumper
 						OptDumpSymbols = true;
 						break;
 					default:
-						PdbFilePath = arg;
-						return;
+						if (PdbFilePath == null) {
+							PdbFilePath = arg;
+						} else {
+							ExeFilePath = arg;
+						}
+						break;
 				}
 			}
 		}
@@ -83,7 +89,7 @@ namespace Smx.PDBSharp.Dumper
 
 			if (PdbFilePath == null) {
 				Console.Error.WriteLine(@"PDBSharp.Dumper
-  Usage: PDBSharp.Dumper <options> <file.pdb>
+  Usage: PDBSharp.Dumper <options> <file.pdb> [<file.exe|dll>]
     [-dump]            Save individual PDB Streams to files
     [-dump-modules]    Verbose output for DBI Modules
     [-dump-leaves]     Verbose output for TPI Leaves
@@ -107,6 +113,8 @@ namespace Smx.PDBSharp.Dumper
 			DBIReader dbi = sc.GetService<DBIReader>();
 			TPIReader tpi = sc.GetService<TPIReader>();
 			StreamTableReader streamTable = sc.GetService<StreamTableReader>();
+
+			PDBFacade facade = sc.GetService<PDBFacade>();
 
 			if (OptPrintDecls) {
 				var tree = new GraphBuilder(sc).Build();
@@ -193,6 +201,11 @@ namespace Smx.PDBSharp.Dumper
 				if (OptPrintTypes) {
 					Console.WriteLine(type.Ctx.Data);
 				}
+			}
+
+			if(ExeFilePath != null) {
+				using var pe = PEFile.Open(ExeFilePath);
+				// $TODO
 			}
 
 			sw.Stop();

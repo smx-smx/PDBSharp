@@ -70,10 +70,10 @@ namespace Smx.PDBSharp.Leaves.LF_ARGLIST
 
 		public override string ToString() {
 			var data = Data;
-			return $"LF_ARGLIST[NumberOfArguments='{data?.NumberOfArguments}', " +
+			return $"LF_ARGLIST(NumberOfArguments='{data?.NumberOfArguments}', " +
 				$"ArgumentTypes='{string.Join(", ",
 					data?.ArgumentTypes.Select(a => data.ToString()) ?? Array.Empty<string>())
-				}']";
+				}')";
 		}
 	}
 }

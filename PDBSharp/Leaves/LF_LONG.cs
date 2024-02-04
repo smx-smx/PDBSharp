@@ -51,7 +51,7 @@ namespace Smx.PDBSharp.Leaves.LF_LONG
 
 		public override string ToString() {
 			var data = Data;
-			return $"LF_LONG[{data?.Value}]";
+			return $"LF_LONG({data?.Value})";
 		}
 	}
 }

@@ -189,7 +189,13 @@ namespace Smx.PDBSharp.Dumper
 						shouldGetValue = false;
 						break;
 				}
-			
+
+				var objT = prop.PropertyType;
+				if(objT.IsGenericType && typeof(Span<>).Equals(objT.GetGenericTypeDefinition())){
+					shouldGetValue = false;
+				}
+
+
 				if (shouldGetValue) {
 					value = prop.GetValue(obj);
 				}

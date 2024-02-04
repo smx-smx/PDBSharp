@@ -16,6 +16,37 @@ using System.Runtime.InteropServices;
 
 namespace Smx.PDBSharp
 {
+	namespace RSDSI {
+		public class Data {
+			public string Signature = "RSDS";
+			public Guid GuidSignature;
+			public uint Age;
+			public string PdbName = string.Empty;
+		}
+
+		public class Serializer(SpanStream stream) {
+			public Data Data = new Data();
+			public Data Read() {
+				var Signature = stream.ReadString(4, System.Text.Encoding.ASCII);
+				if(Signature != "RSDS") {
+					throw new InvalidDataException();
+				}
+
+				var GuidSignature = stream.ReadStruct<Guid>();
+				var Age = stream.ReadUInt32();
+				var PdbName = stream.ReadCString(System.Text.Encoding.UTF8);
+
+				Data = new Data {
+					Signature = Signature,
+					GuidSignature = GuidSignature,
+					Age = Age,
+					PdbName	= PdbName
+				};
+				return Data;
+			}
+		}
+	}
+
 	public enum DBIVersion : UInt32
 	{
 		V41 = 930803,

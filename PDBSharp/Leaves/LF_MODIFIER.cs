@@ -60,7 +60,7 @@ namespace Smx.PDBSharp.Leaves.LF_MODIFIER
 
 		public override string ToString() {
 			var data = Data;
-			return $"LF_MODIFIER[ModifiedType='{data?.ModifiedType}', Flags='{data?.Flags}']";
+			return $"LF_MODIFIER(ModifiedType='{data?.ModifiedType}', Flags='{data?.Flags}')";
 		}
 	}
 }

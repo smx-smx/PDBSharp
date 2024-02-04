@@ -32,5 +32,9 @@ namespace Smx.PDBSharp
 			}
 			throw new NotImplementedException();
 		}
+
+		public override string ToString() {
+			return $"[LeafContext] {Data}";
+		}
 	}
 }

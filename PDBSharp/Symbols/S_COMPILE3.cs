@@ -101,7 +101,7 @@ namespace Smx.PDBSharp.Symbols.S_COMPILE3
 
 		public override string ToString() {
 			var data = Data;
-			return $"S_COMPILE3[" +
+			return $"S_COMPILE3(" +
 				$"Flags='{data?.Flags}', " +
 				$"Machine='{data?.Machine}', " +
 				$"FrontendVersionMajor='{data?.FrontendVersionMajor}', " +
@@ -113,7 +113,7 @@ namespace Smx.PDBSharp.Symbols.S_COMPILE3
 				$"BackendVersionBuild='{data?.BackendVersionBuild}', " +
 				$"BackendQFEVersion='{data?.BackendQFEVersion}', " +
 				$"VersionString='{data?.VersionString}'" +
-			"]";
+			")";
 		}
 	}
 }

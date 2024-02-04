@@ -17,6 +17,6 @@ public class DirectSymbolData : ISymbolResolver
 	}
 
 	public override string ToString() {
-		return $"[DirectSymbolData]: {Data}";
+		return $"[DirectSymbolData] -> {Data}";
 	}
 }

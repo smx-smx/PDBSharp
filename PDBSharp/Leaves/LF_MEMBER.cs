@@ -71,10 +71,10 @@ namespace Smx.PDBSharp.Leaves.LF_MEMBER
 
 		public override string ToString() {
 			var data = Data;
-			return $"LF_MEMBER[Attributes='{data?.Attributes}'" +
+			return $"LF_MEMBER(Attributes='{data?.Attributes}'" +
 				$", FieldType='{data?.FieldType}'" +
 				$", Offset='{data?.Offset}'" +
-				$", Name='{data?.Name}']";
+				$", Name='{data?.Name}')";
 		}
 	}
 }

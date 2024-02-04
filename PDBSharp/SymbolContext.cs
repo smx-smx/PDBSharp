@@ -29,6 +29,6 @@ public class SymbolContext
 	}
 
 	public override string ToString() {
-		return $"Symbol: {Data}";
+		return $"[SymbolContext] -> {Data}";
 	}
 }

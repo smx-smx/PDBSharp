@@ -85,9 +85,9 @@ namespace Smx.PDBSharp.Leaves.LF_METHODLIST
 
 		public override string ToString() {
 			var data = Data;
-			return $"LF_METHODLIST[Attributes='{data?.Attributes}'" +
+			return $"LF_METHODLIST(Attributes='{data?.Attributes}'" +
 				$", ProcedureTypeRecord='{data?.ProcedureTypeRecord}'" +
-				$", VBaseOffset='{data?.VBaseOffset}']";
+				$", VBaseOffset='{data?.VBaseOffset}')";
 		}
 
 		
