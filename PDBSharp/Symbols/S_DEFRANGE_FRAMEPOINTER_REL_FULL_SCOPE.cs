@@ -14,7 +14,7 @@ namespace Smx.PDBSharp.Symbols.S_DEFRANGE_FRAMEPOINTER_REL_FULL_SCOPE
 {
 	public class Serializer : Symbols.S_DEFRANGE_FRAMEPOINTER_REL.Serializer
 	{
-		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
 
 		}
 

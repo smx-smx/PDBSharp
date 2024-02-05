@@ -50,19 +50,19 @@ namespace Smx.PDBSharp.Symbols.S_THUNK32
 		public ISymbolData? GetData() => Data;
 
 
-		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
 		}
 
 		public void Read() {
 			var r = CreateReader();
 
 			var ParentOffset = r.ReadUInt32();
-			var Parent = r.ReadSymbol(Module, ParentOffset);
+			var Parent = r.ReadSymbol(ParentOffset);
 
 			var End = r.ReadUInt32();
 
 			var NextOffset = r.ReadUInt32();
-			var Next = r.ReadSymbol(Module, NextOffset);
+			var Next = r.ReadSymbol(NextOffset);
 
 			var Offset = r.ReadUInt32();
 			var Segment = r.ReadUInt16();
@@ -87,6 +87,7 @@ namespace Smx.PDBSharp.Symbols.S_THUNK32
 		}
 
 		public void Write() {
+			/*
 			var data = Data;
 			if (data == null) throw new InvalidOperationException();
 
@@ -102,6 +103,7 @@ namespace Smx.PDBSharp.Symbols.S_THUNK32
 			data.Thunk.Write(w);
 
 			w.WriteHeader();
+			*/
 		}
 	}
 }

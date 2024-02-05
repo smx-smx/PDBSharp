@@ -38,13 +38,13 @@ namespace Smx.PDBSharp.Symbols.S_WITH32
 	{
 		private Data? Data;
 
-		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 		}
 
 		public void Read() {
 			var r = CreateReader();
 			var ParentOffset = r.ReadUInt32();
-			var Parent = r.ReadSymbol(Module, ParentOffset);
+			var Parent = r.ReadSymbol(ParentOffset);
 			var EndOffset = r.ReadUInt32();
 			var Length = r.ReadUInt32();
 			var SegmentOffset = r.ReadUInt32();

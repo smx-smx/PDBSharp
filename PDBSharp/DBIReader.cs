@@ -66,9 +66,9 @@ namespace Smx.PDBSharp
 
 	public interface IDBIHeader
 	{
-		UInt16 GsSymbolsStreamNumber { get; set; }
-		UInt16 PsSymbolsStreamNumber { get; set; }
-		UInt16 SymbolRecordsStreamNumber { get; set; }
+		short GsSymbolsStreamNumber { get; set; }
+		short PsSymbolsStreamNumber { get; set; }
+		short SymbolRecordsStreamNumber { get; set; }
 		UInt32 ModuleListSize { get; set; }
 		UInt32 SectionContributionSize { get; set; }
 		UInt32 SectionMapSize { get; set; }
@@ -79,24 +79,24 @@ namespace Smx.PDBSharp
 	/// </summary>
 	public struct DBIHeaderOld : IDBIHeader
 	{
-		public UInt16 GsSymbolsStreamNumber;
-		public UInt16 PsSymbolsStreamNumber;
-		public UInt16 SymbolRecordsStreamNumber;
+		public short GsSymbolsStreamNumber;
+		public short PsSymbolsStreamNumber;
+		public short SymbolRecordsStreamNumber;
 		public UInt32 ModuleListSize;
 		public UInt32 SectionContributionSize;
 		public UInt32 SectionMapSize;
 
-		ushort IDBIHeader.GsSymbolsStreamNumber {
+		short IDBIHeader.GsSymbolsStreamNumber {
 			get => GsSymbolsStreamNumber;
 			set => GsSymbolsStreamNumber = value;
 		}
 
-		ushort IDBIHeader.PsSymbolsStreamNumber {
+		short IDBIHeader.PsSymbolsStreamNumber {
 			get => PsSymbolsStreamNumber;
 			set => PsSymbolsStreamNumber = value;
 		}
 
-		ushort IDBIHeader.SymbolRecordsStreamNumber {
+		short IDBIHeader.SymbolRecordsStreamNumber {
 			get => SymbolRecordsStreamNumber;
 			set => SymbolRecordsStreamNumber = value;
 		}
@@ -123,11 +123,11 @@ namespace Smx.PDBSharp
 		public DBIVersion Version;
 		public UInt32 Age;
 
-		public UInt16 GsSymbolsStreamNumber;
+		public short GsSymbolsStreamNumber;
 		public UInt16 InternalVersion;
-		public UInt16 PsSymbolsStreamNumber;
+		public short PsSymbolsStreamNumber;
 		public UInt16 PdbDllVersion;
-		public UInt16 SymbolRecordsStreamNumber;
+		public short SymbolRecordsStreamNumber;
 		public UInt16 RbldVersion;
 
 		public UInt32 ModuleListSize;
@@ -144,17 +144,17 @@ namespace Smx.PDBSharp
 		public UInt16 MachineType;
 		public UInt32 Reserved;
 
-		ushort IDBIHeader.GsSymbolsStreamNumber {
+		short IDBIHeader.GsSymbolsStreamNumber {
 			get => GsSymbolsStreamNumber;
 			set => GsSymbolsStreamNumber = value;
 		}
 
-		ushort IDBIHeader.PsSymbolsStreamNumber {
+		short IDBIHeader.PsSymbolsStreamNumber {
 			get => PsSymbolsStreamNumber;
 			set => PsSymbolsStreamNumber = value;
 		}
 
-		ushort IDBIHeader.SymbolRecordsStreamNumber {
+		short IDBIHeader.SymbolRecordsStreamNumber {
 			get => SymbolRecordsStreamNumber;
 			set => SymbolRecordsStreamNumber = value;
 		}
@@ -184,9 +184,12 @@ namespace Smx.PDBSharp
 			public DebugData.Accessor? DebugInfo { get; internal set; }
 			public SectionContribsReader? SectionContribs { get; internal set; }
 
+			public PublicSymbolsStream.Data? PublicSymbols { get; internal set; }
+
 			public EC.Data? EC { get; internal set; }
 			public TypeServerMapReader? TypeServerMap { get; internal set; }
 			public CachedEnumerable<IModuleContainer> Modules { get; internal set; } = new CachedEnumerable<IModuleContainer>(Enumerable.Empty<IModuleContainer>());
+			public IEnumerable<ISymbolResolver>? SymbolRecords { get; internal set; }
 		}
 
 		public class Serializer {
@@ -205,9 +208,9 @@ namespace Smx.PDBSharp
 
 			public Data Data = new Data();
 
-			private bool IsValidStreamNumber(ushort sn) {
+			private bool IsValidStreamNumber(short sn) {
 				// snNil, allowed
-				if ((short)sn == -1) return true;
+				if (sn == -1) return true;
 				return sn < streamTable.Data.NumStreams;
 			}
 
@@ -288,18 +291,33 @@ namespace Smx.PDBSharp
 					stream.Position += DSHeader.FileInfoSize;
 
 					if (DSHeader.TypeServerMapSize > 0) {
-						Data.TypeServerMap = new TypeServerMapReader(stream);
+						Data.TypeServerMap = new TypeServerMapReader(stream.SliceHere());
 					}
 					stream.Position += DSHeader.TypeServerMapSize;
 
 					if (DSHeader.EcSubstreamSize > 0) {
-						Data.EC = new EC.Serializer(stream).Read();
+						Data.EC = new EC.Serializer(stream.SliceHere()).Read();
 					}
 					stream.Position += DSHeader.EcSubstreamSize;
 
 					if (DSHeader.DebugHeaderSize > 0) {
-						var debugData = new DebugData.Serializer(stream).Read();
+						var debugData = new DebugData.Serializer(stream.SliceHere()).Read();
 						Data.DebugInfo = new DebugData.Accessor(sc, debugData);
+					}
+					stream.Position += DSHeader.DebugHeaderSize;
+
+					if(IsValidStreamNumber(DSHeader.SymbolRecordsStreamNumber) && DSHeader.SymbolRecordsStreamNumber != -1) {
+						var symRecsData = streamTable.GetStream(DSHeader.SymbolRecordsStreamNumber);
+						var deser = new SymbolRecordsStreamReader.Serializer(sc, new SpanStream(symRecsData));
+						var symbolRecordsData = deser.Read();
+						Data.SymbolRecords = symbolRecordsData;
+					}
+
+					if(IsValidStreamNumber(DSHeader.PsSymbolsStreamNumber) && DSHeader.PsSymbolsStreamNumber != -1) {
+						var psData = streamTable.GetStream(DSHeader.PsSymbolsStreamNumber);
+						var deser = new PublicSymbolsStream.Serializer(new SpanStream(psData));
+						var publicSymbolsData = deser.Read();
+						Data.PublicSymbols = publicSymbolsData;
 					}
 				}
 

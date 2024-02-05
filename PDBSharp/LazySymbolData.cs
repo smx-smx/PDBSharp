@@ -15,7 +15,7 @@ public class LazySymbolData : ISymbolResolver
 {
 	private readonly ILazy<ISymbolResolver?> lazy;
 
-	public SymbolContext? Data {
+	public SymbolContext Data {
 		get {
 			Debug.Assert(lazy.Value != null);
 			return lazy.Value.Data;

@@ -20,7 +20,7 @@ namespace Smx.PDBSharp.Symbols.S_UDT
 	public class Serializer : UdtSym
 	{
 		
-		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 		}
 
 		public void Write() {

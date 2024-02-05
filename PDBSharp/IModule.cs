@@ -13,6 +13,6 @@ namespace Smx.PDBSharp
 	public interface IModule
 	{
 		event OnSymbolDataDelegate OnSymbolData;
-		IEnumerable<ISymbolResolver?> Symbols { get; }
+		IEnumerable<ISymbolResolver> Symbols { get; }
 	}
 }

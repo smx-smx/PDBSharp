@@ -19,9 +19,9 @@ namespace Smx.PDBSharp.Symbols.S_DEFRANGE_REGISTER
 		public UInt16 Register { get; set; }
 		public RangeAttributes Attributes { get; set; }
 		public CV_LVAR_ADDR_RANGE Range { get; set; }
-		public CV_LVAR_ADDR_GAP[] Gaps { get; set; }
+		public Structures.CV_LVAR_ADDR_GAP.Data[] Gaps { get; set; }
 
-		public Data(ushort register, RangeAttributes attributes, CV_LVAR_ADDR_RANGE range, CV_LVAR_ADDR_GAP[] gaps) {
+		public Data(ushort register, RangeAttributes attributes, CV_LVAR_ADDR_RANGE range, Structures.CV_LVAR_ADDR_GAP.Data[] gaps) {
 			Register = register;
 			Attributes = attributes;
 			Range = range;
@@ -33,15 +33,15 @@ namespace Smx.PDBSharp.Symbols.S_DEFRANGE_REGISTER
 	{
 		public Data? Data { get; set; }
 
-		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
 		}
 
 		public void Read() {
-			var r = new SymbolDataReader(ctx, stream);
+			var r = new SymbolData.Reader(ctx, stream);
 			var Register = r.ReadUInt16();
 			var Attributes = r.ReadFlagsEnum<RangeAttributes>();
 			var Range = new CV_LVAR_ADDR_RANGE(stream);
-			var Gaps = CV_LVAR_ADDR_GAP.ReadGaps(r);
+			var Gaps = Structures.CV_LVAR_ADDR_GAP.Serializer.ReadGaps(r);
 
 			Data = new Data(
 				register: Register,
@@ -52,6 +52,7 @@ namespace Smx.PDBSharp.Symbols.S_DEFRANGE_REGISTER
 		}
 
 		public void Write() {
+			/*
 			var data = Data;
 			if (data == null) throw new InvalidOperationException();
 
@@ -59,11 +60,12 @@ namespace Smx.PDBSharp.Symbols.S_DEFRANGE_REGISTER
 			w.WriteUInt16(data.Register);
 			w.Write<RangeAttributes>(data.Attributes);
 			data.Range.Write(w);
-			foreach (CV_LVAR_ADDR_GAP gap in data.Gaps) {
+			foreach (Structures.CV_LVAR_ADDR_GAP.Data gap in data.Gaps) {
 				gap.Write(w);
 			}
 
 			w.WriteHeader();
+			*/
 		}
 
 		public ISymbolData? GetData() => Data;

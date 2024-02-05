@@ -32,7 +32,7 @@ namespace Smx.PDBSharp.Symbols.S_ENVBLOCK
 
 		//Reserved according to PDB docs, first bit is fEC tho
 
-		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 		}
 
 		public void Read() {

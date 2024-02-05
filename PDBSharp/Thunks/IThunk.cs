@@ -10,8 +10,5 @@
 namespace Smx.PDBSharp.Thunks
 {
 	public interface IThunk
-	{
-		void Write(SymbolDataWriter w);
-	}
-
+	{ }
 }

@@ -14,16 +14,42 @@ using System.IO;
 
 namespace Smx.PDBSharp.Thunks
 {
-	public class VCALL : SymbolDataReader, IThunk
-	{
-		public readonly UInt16 VTableOffset;
-
-		public VCALL(IServiceContainer ctx, SymbolHeader header, SpanStream stream) : base(ctx, header, stream) {
-			VTableOffset = ReadUInt16();
+	namespace VCALL {
+		public class Data : IThunk {
+			public ushort VTableOffset;
 		}
+		public class Serializer : ISerializer<Data> {
+			public Serializer(IServiceContainer sc, SymbolHeader header, SpanStreamEx stream) {
+				this.sc = sc;
+				this.header = header;
+				this.stream = new SpanStreamEx(stream);
+				reader = new SymbolData.Reader(sc, stream);
+			}
 
-		public void Write(SymbolDataWriter w) {
-			w.WriteUInt16(VTableOffset);
+			public Data Data = new Data();
+			private readonly IServiceContainer sc;
+			private readonly SymbolHeader header;
+			private SpanStreamEx stream;
+			private readonly SymbolData.Reader reader;
+
+
+			public Data Read() {
+				reader.Initialize(header);
+
+				var VTableOffset = stream.ReadUInt16();
+				
+				Data = new Data {
+					VTableOffset = VTableOffset
+				};
+				return Data;
+			}
+
+
+			public void Write(Data data) {
+				/*
+				w.WriteUInt16(Data.VTableOffset);
+				*/
+			}
 		}
 	}
 }

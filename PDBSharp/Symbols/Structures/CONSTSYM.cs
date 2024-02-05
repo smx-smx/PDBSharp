@@ -32,7 +32,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 	{
 		public ConstSymData? Data { get; set; }
 
-		public ConstSymSerializerBase(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		public ConstSymSerializerBase(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
 		}
 
 		public void Read() {

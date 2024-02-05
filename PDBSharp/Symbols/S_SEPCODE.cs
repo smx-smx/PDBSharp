@@ -43,14 +43,14 @@ namespace Smx.PDBSharp.Symbols.S_SEPCODE
 		private Data? Data { get; set; }
 		public ISymbolData? GetData() => Data;
 
-		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 		}
 
 		public void Read() {
 			var r = CreateReader();
 
 			var ParentSymOffset = r.ReadUInt32();
-			var Parent = r.ReadSymbol(Module, ParentSymOffset);
+			var Parent = r.ReadSymbol(ParentSymOffset);
 			var End = r.ReadUInt32();
 			var Size = r.ReadUInt32();
 			var Flags = r.ReadFlagsEnum<CV_SEPCODEFLAGS>();

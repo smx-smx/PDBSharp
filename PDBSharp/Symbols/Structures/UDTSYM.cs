@@ -34,7 +34,7 @@ namespace Smx.PDBSharp.Symbols.Structures.UdtSym
 
 		public ISymbolData? GetData() { return Data; }
 
-		public UdtSym(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		public UdtSym(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
 		}
 
 		public void Read() {

@@ -13,12 +13,20 @@ using System.IO;
 
 namespace Smx.PDBSharp.Thunks
 {
-	public class PCODE : SymbolDataReader, IThunk
+	namespace PCODE
 	{
-		public PCODE(IServiceContainer ctx, SymbolHeader header, SpanStream stream) : base(ctx, header, stream) {
-		}
+		public class Data : IThunk { }
+		public class Serializer : ISerializer<Data>
+		{
+			public Serializer(IServiceContainer sc, SymbolHeader header, SpanStreamEx stream) { }
 
-		public void Write(SymbolDataWriter w) {
+			public Data Data = new Data();
+			public Data Read() {
+				return Data;
+			}
+			public void Write(Data data) {
+
+			}
 		}
 	}
 }

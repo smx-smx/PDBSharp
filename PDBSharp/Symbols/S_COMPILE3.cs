@@ -47,7 +47,7 @@ namespace Smx.PDBSharp.Symbols.S_COMPILE3
 	{
 		private Data? Data { get; set; }
 
-		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 		}
 
 		public void Read() {

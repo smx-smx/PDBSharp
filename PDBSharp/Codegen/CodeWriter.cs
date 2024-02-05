@@ -30,11 +30,13 @@ namespace Smx.PDBSharp.Codegen
 
 		private Dictionary<SpecialType, string> SpecialTypeMaps = new Dictionary<SpecialType, string>() {
 			{ SpecialType.None, "" },
+			{ SpecialType.Boolean8, "bool" },
 			{ SpecialType.SByte, "int8_t" },
 			{ SpecialType.Byte, "uint8_t" },
 			{ SpecialType.UInt16, "uint16_t" },
 			{ SpecialType.Int16Short, "int16_t" },
 			{ SpecialType.UInt16Short, "uint16_t" },
+			{ SpecialType.Int32, "int32_t" },
 			{ SpecialType.UInt32, "uint32_t" },
 			{ SpecialType.Int32Long, "int32_t" },
 			{ SpecialType.UInt32Long, "uint32_t" },
@@ -135,7 +137,10 @@ namespace Smx.PDBSharp.Codegen
 					WriteType(lfProc.ArgumentListType);
 					break;
 				case Leaves.LF_MFUNCTION.Data lfMfunc:
-					throw new NotImplementedException();
+					WriteType(lfMfunc.ReturnValueType);
+					itw.Write($" {gproc.Name}");
+					WriteType(lfMfunc.ArgumentListType);
+					break;
 			}
 
 			itw.Write(";");

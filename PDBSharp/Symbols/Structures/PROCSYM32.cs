@@ -64,18 +64,18 @@ namespace Smx.PDBSharp.Symbols.ProcSym32
 
 		public ISymbolData? GetData() => Data;
 
-		public SerializerBase(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		public SerializerBase(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 		}
 
 		public void Read() {
 			var r = CreateReader();
 
 			var ParentOffset = r.ReadUInt32();
-			var ParentSymbol = r.ReadSymbol(Module, ParentOffset);
+			var ParentSymbol = r.ReadSymbol(ParentOffset);
 
 			var End = r.ReadUInt32();
 			var NextOffset = r.ReadUInt32();
-			var NextSymbol = r.ReadSymbol(Module, NextOffset);
+			var NextSymbol = r.ReadSymbol(NextOffset);
 
 			var Length = r.ReadUInt32();
 			var DebugStartOffset = r.ReadUInt32();

@@ -41,13 +41,13 @@ namespace Smx.PDBSharp.Symbols.S_INLINESITE
 
 		public ISymbolData? GetData() => Data;
 
-		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
 		}
 
 		public void Read() {
 			var r = CreateReader();
 			var InlinerParentOffset = r.ReadUInt32();
-			var Inliner = r.ReadSymbol(Module, InlinerParentOffset);
+			var Inliner = r.ReadSymbol(InlinerParentOffset);
 			var End = r.ReadUInt32();
 			var Inlinee = r.ReadIndexedType32Lazy();
 			var BinaryAnnotations = r.ReadRemaining();

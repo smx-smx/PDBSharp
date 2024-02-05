@@ -39,13 +39,13 @@ namespace Smx.PDBSharp.Symbols.S_BLOCK32
 		public Data? Data { get; set; }
 		public ISymbolData? GetData() => Data;
 
-		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 		}
 
 		public void Read() {
-			SymbolDataReader r = CreateReader();
+			SymbolData.Reader r = CreateReader();
 			var ParentOffset = r.ReadUInt32();
-			var Parent = r.ReadSymbol(Module, ParentOffset);
+			var Parent = r.ReadSymbol(ParentOffset);
 
 			var End = r.ReadUInt32();
 			var Length = r.ReadUInt32();

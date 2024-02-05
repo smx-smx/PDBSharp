@@ -14,14 +14,15 @@ using System.Data.Common;
 using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Smx.PDBSharp.Downloader
+namespace Smx.PDBSharp.Tools
 {
-	public class Downloader
+	public class PdbDownloader
 	{
-		private string GetPdbUrlPath(string pePath) {
+		public string GetPdbUrlForExecutable(string pePath) {
 			using var peFile = PEFile.Open(pePath);
 			var data = peFile.DebugDirectory;
 			if (data == null || data.x_Data is not RSDSI.Data rsdsi) return string.Empty;
@@ -34,12 +35,11 @@ namespace Smx.PDBSharp.Downloader
 			return sb.ToString();
 		}
 
-		public async Task<HttpContent> DownloadPDBFromExecutable(string pePath) {
-			var url = GetPdbUrlPath(pePath);
+		public async Task<HttpContent?> DownloadForExecutable(string pePath) {
+			var url = GetPdbUrlForExecutable(pePath);
 			if (string.IsNullOrEmpty(url)) return null;
 
 			using var client = new HttpClient();
-			Console.WriteLine($"Downloading {url}");
 			var res = await client.GetAsync(url);
 			return res.Content;
 		}

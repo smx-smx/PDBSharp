@@ -33,7 +33,7 @@ namespace Smx.PDBSharp.Symbols.S_OEM
 		public Data? Data { get; set; }
 		public ISymbolData? GetData() => Data;
 
-		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
 		}
 
 		public void Read() {

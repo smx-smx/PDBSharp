@@ -1,3 +1,11 @@
+#region License
+/*
+ * Copyright (C) 2024 Stefano Moioli <smxdev4@gmail.com>
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+#endregion
 using Smx.PDBSharp.PE;
 using System;
 using System.Collections.Generic;
@@ -20,8 +28,8 @@ namespace Smx.PDBSharp
 			foreach (var mod in dbi.Modules) {
 				if (mod == null || mod.Module == null) continue;
 				var sym = mod.Module.Symbols.SingleOrDefault(
-					s => s?.Data?.Data is Symbols.ProcSym32.Data data && data.Name == name)
-					?.Data?.Data as Symbols.ProcSym32.Data;
+					s => s.Data.Data is Symbols.ProcSym32.Data data && data.Name == name)
+					.Data.Data as Symbols.ProcSym32.Data;
 				if (sym == null) continue;
 
 				

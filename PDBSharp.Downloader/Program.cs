@@ -6,6 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
+using Smx.PDBSharp.Tools;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,8 +21,8 @@ namespace Smx.PDBSharp.Downloader
 			if(args.Length < 2) {
 				Console.Error.WriteLine("Usage: [exePath] [outPath]");
 			}
-			var dl = new Downloader();
-			var content = await dl.DownloadPDBFromExecutable(args[0]);
+			var dl = new PdbDownloader();
+			var content = await dl.DownloadForExecutable(args[0]);
 			if(content == null) {
 				Console.Error.WriteLine("Cannot find PDB");
 				Environment.Exit(1);

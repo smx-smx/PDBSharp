@@ -13,12 +13,14 @@ using System.IO;
 
 namespace Smx.PDBSharp.Thunks
 {
-	public class NOTYPE : IThunk
-	{
-		public NOTYPE(IServiceContainer pdb, SymbolHeader symHeader, SpanStream stream) {
-		}
+	namespace NOTYPE {
+		public class Data : IThunk { }
+		public class Serializer {
+			public Data Data = new Data();
 
-		public void Write(SymbolDataWriter w) {
+			public Serializer(IServiceContainer sc, SymbolHeader header, SpanStreamEx stream) { }
+
+			public Data Read() { return Data;  }
 		}
 	}
 }

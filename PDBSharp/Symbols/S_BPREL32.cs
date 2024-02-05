@@ -33,11 +33,11 @@ namespace Smx.PDBSharp.Symbols.S_BPREL32
 		public Data? Data { get; set; }
 		public ISymbolData? GetData() => Data;
 
-		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 		}
 
 		public void Read() {
-			SymbolDataReader r = CreateReader();
+			SymbolData.Reader r = CreateReader();
 			var Offset = r.ReadUInt32();
 			var Type = r.ReadIndexedType32Lazy();
 			var Name = r.ReadSymbolString();

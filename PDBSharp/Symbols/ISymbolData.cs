@@ -6,7 +6,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #endregion
-﻿namespace Smx.PDBSharp.Symbols.S_SEPCODE;
+﻿namespace Smx.PDBSharp.Symbols;
 
 public interface ISymbolData
 {

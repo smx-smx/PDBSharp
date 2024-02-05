@@ -26,7 +26,7 @@ namespace Smx.PDBSharp.Dumper
 	public class Program
 	{
 		public static bool OptDumpModules = false;
-		public static bool OptDumpLeaves = false;
+		public static bool OptPrintLeaves = false;
 		public static bool OptDumpSymbols = false;
 		public static bool OptDumpStreams = false;
 		public static bool OptPrintDecls = false;
@@ -61,14 +61,14 @@ namespace Smx.PDBSharp.Dumper
 					case "-print-decls":
 						OptPrintDecls = true;
 						break;
+					case "-print-leaves":
+						OptPrintLeaves = true;
+						break;
 					case "-dump":
 						OptDumpStreams = true;
 						break;
 					case "-dump-modules":
 						OptDumpModules = true;
-						break;
-					case "-dump-leaves":
-						OptDumpLeaves = true;
 						break;
 					case "-dump-syms":
 						OptDumpSymbols = true;
@@ -92,12 +92,12 @@ namespace Smx.PDBSharp.Dumper
   Usage: PDBSharp.Dumper <options> <file.pdb> [<file.exe|dll>]
     [-dump]            Save individual PDB Streams to files
     [-dump-modules]    Verbose output for DBI Modules
-    [-dump-leaves]     Verbose output for TPI Leaves
     [-dump-syms]       Verbose output for DBI Symbols
     [-print-decls]     Extract and print type definitions
     [-print-fpo]       Print FPO entries
     [-print-sc]        Print Section Contribution entries
     [-print-syms]      Print symbol entries
+    [-print-leaves]    Verbose output for TPI Leaves
     [-print-types]     Print type
     [-print-tpihash]   Print TPIHash");
 				Environment.Exit(1);
@@ -124,7 +124,7 @@ namespace Smx.PDBSharp.Dumper
 				}
 			}
 
-			if (OptDumpLeaves) {
+			if (OptPrintLeaves) {
 				pdb.OnTpiInit += Pdb_OnTpiInit;
 			}
 			if (OptDumpModules || OptDumpSymbols) {
@@ -197,6 +197,13 @@ namespace Smx.PDBSharp.Dumper
 				}
 			}
 
+			if(OptPrintSyms && dbi.SymbolRecords != null) {
+				Console.WriteLine("=== Symbol Records ===");
+				foreach(var sym in dbi.SymbolRecords) {
+					Console.WriteLine(sym);
+				}
+			}
+
 			foreach(var type in tpi.Types) {
 				if (OptPrintTypes) {
 					Console.WriteLine(type.Ctx.Data);
@@ -232,9 +239,9 @@ namespace Smx.PDBSharp.Dumper
 			TPI.OnLeafData += TPI_OnLeafData;
 		}
 
-		private static void TPI_OnLeafData(byte[] data) {
+		private static void TPI_OnLeafData(LeafContext ctx) {
 			Console.WriteLine("=> LEAF");
-			data.HexDump();
+			ObjectDumper.Dump(ctx.Data);
 		}
 
 		private static void DBI_OnModuleData(ModuleInfo modInfo, byte[] data) {

@@ -67,7 +67,7 @@ namespace Smx.PDBSharp
 		V80 = 20040203
 	}
 
-	public delegate void OnLeafDataDelegate(byte[] data);
+	public delegate void OnLeafDataDelegate(LeafContext ctx);
 
 	namespace TPI {
 		delegate ILeafResolver? ReadTypeDelegate(out long dataSize);
@@ -84,8 +84,8 @@ namespace Smx.PDBSharp
 
 
 			public event OnLeafDataDelegate? OnLeafData;
-			public ILazy<IEnumerable<ILeafResolver?>> lazyLeafContainers;
-			public IEnumerable<ILeafResolver?>? Types => lazyLeafContainers.Value;
+			public ILazy<IEnumerable<ILeafResolver>> lazyLeafContainers;
+			public IEnumerable<ILeafResolver>? Types => lazyLeafContainers.Value;
 
 			public Serializer(IServiceContainer sc, SpanStream stream) {
 				this.sc = sc;
@@ -137,10 +137,15 @@ namespace Smx.PDBSharp
 			}
 
 
-			private IEnumerable<ILeafResolver?> ReadTypes() {
+			private IEnumerable<ILeafResolver> ReadTypes() {
 				long processed = 0;
 				while (processed < Data.Header.GpRecSize) {
-					yield return TypeReader(out long dataSize);
+					var leaf = TypeReader(out long dataSize);
+					if(leaf == null) {
+						throw new Exception("Failed to read leaf");
+					}
+					OnLeafData?.Invoke(leaf.Ctx);
+					yield return leaf;
 					processed += dataSize;
 				}
 			}
@@ -164,8 +169,6 @@ namespace Smx.PDBSharp
 				Position -= sizeof(ushort) + length;
 			}
 #endif
-
-				//OnLeafData?.Invoke(leafDataBuf);
 
 				var typeSpan = stream.Memory.Slice((int)stream.Position, (int)dataSize);
 				TypeDataReader rdr = new TypeDataReader(sc, new SpanStream(typeSpan));

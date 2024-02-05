@@ -252,7 +252,7 @@ namespace Smx.PDBSharp
 			return new LazyLeafData(delayedLeaf);
 		}
 
-		public ILeafResolver? ReadTypeDirect(bool hasSize = true) {
+		public ILeafResolver ReadTypeDirect(bool hasSize = true) {
 			long typeStartOffset = Position;
 
 			UInt16 size = 0;

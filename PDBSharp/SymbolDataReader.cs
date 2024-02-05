@@ -14,118 +14,122 @@ using System.ComponentModel.Design;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using static Smx.PDBSharp.TypeDataReader;
 
 namespace Smx.PDBSharp
 {
-	public class SymbolDataReader : TypeDataReader
+	namespace SymbolData
 	{
-		protected readonly SymbolHeader Header;
+		public class State
+		{
+			public bool UseUnicodeStrings { get; internal set; }
+			public long EndOffset { get; internal set; }
+			public long StartOffset { get; internal set; }
+		}
+		public class Reader : TypeDataReader {
 
-		protected readonly long startOffset;
-		protected readonly long endOffset;
+			public State State = new State();
+			private readonly IServiceContainer sc;
+			private readonly PDBStream.Data pdbStream;
+			private readonly ReadStringDelegate ReadString;
 
-		private long Length => endOffset - startOffset;
+			private long Length => State.EndOffset - State.StartOffset;
+			public new int Remaining => (int)(Length - Position);
+			public bool HasMoreData => Position < (State.StartOffset + Header.Length);
 
-		public new int Remaining => (int)(Length - Position);
+			protected SymbolHeader Header;
 
-		private ReadStringDelegate ReadString;
+			public Reader(IServiceContainer sc, SpanStream stream) : base(sc, stream) {
+				this.sc = sc;
+				this.pdbStream = sc.GetService<PDBStream.Data>();
 
-		public SymbolDataReader(IServiceContainer ctx, SymbolHeader header, SpanStream stream) : base(ctx, stream) {
-			startOffset = stream.Position - Marshal.SizeOf<SymbolHeader>();
-			Header = header;
-			endOffset = startOffset + Header.Length;
-			CheckHeader();
+				switch (sc.GetService<MSFReader>().FileType) {
+					case PDBType.Big:
+						ReadString = ReadString32;
+						break;
+					case PDBType.Small:
+						ReadString = ReadString16;
+						break;
+					default:
+						throw new InvalidDataException();
+				}
+			}
 
-			switch (ctx.GetService<MSFReader>().FileType) {
-				case PDBType.Big:
-					ReadString = ReadString32;
-					break;
-				case PDBType.Small:
-					ReadString = ReadString16;
-					break;
-				default:
+			private SymbolHeader ReadHeader() {
+				return Read<SymbolHeader>();
+			}
+
+			private static void CheckHeader(SymbolHeader header) {
+				if (!Enum.IsDefined(typeof(SymbolType), header.Type)) {
+					throw new InvalidDataException($"Invalid Symbol Type {header.Type}");
+				}
+			}
+
+			public ISymbolResolver? ReadSymbol(uint offset) {
+				if (offset == 0)
+					return null;
+
+				return new SymbolsReader(sc, this).ReadSymbolDirect();
+			}
+
+			public string ReadSymbolString() {
+				if (State.UseUnicodeStrings) {
+					return ReadCString(Encoding.UTF8);
+				} else {
+					return ReadString();
+				}
+			}
+
+			public IThunk ReadThunk(ThunkType type) {
+				if (!Enum.IsDefined(typeof(ThunkType), type)) {
 					throw new InvalidDataException();
-			}
-		}
+				}
 
-		private readonly bool useUnicodeStrings;
-		
-		public SymbolDataReader(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
-			startOffset = stream.Position;
-			Header = ReadHeader();
-			endOffset = startOffset + sizeof(UInt16) + Header.Length;
-			CheckHeader();
-
-			var pdb = ctx.GetService<PDBStream.Data>();
-			useUnicodeStrings = pdb.Version >= PDBPublicVersion.VC70;
-			
-			switch (ctx.GetService<MSFReader>().FileType) {
-				case PDBType.Big:
-					ReadString = ReadString32;
-					break;
-				case PDBType.Small:
-					ReadString = ReadString16;
-					break;
-				default:
-					throw new InvalidDataException();
-			}
-		}
-
-		public bool HasMoreData => Position < (startOffset + Header.Length);
-
-		private void CheckHeader() {
-			if (!Enum.IsDefined(typeof(SymbolType), Header.Type)) {
-				throw new InvalidDataException($"Invalid Symbol Type {Header.Type}");
-			}
-		}
-
-		public ISymbolResolver? ReadSymbol(IModule mod, uint offset) {
-			if (offset == 0)
-				return null;
-
-			if (!(mod is CodeViewModuleReader cv)) {
-				throw new InvalidOperationException();
+				switch (type) {
+					case ThunkType.ADJUSTOR:
+						var adjustor = new Thunks.ADJUSTOR.Serializer(sc, Header, this);
+						return adjustor.Read();
+					case ThunkType.NOTYPE:
+						var notype = new Thunks.NOTYPE.Serializer(sc, Header, this);
+						return notype.Read();
+					case ThunkType.PCODE:
+						var pcode = new Thunks.PCODE.Serializer(sc, Header, this);
+						return pcode.Read();
+					case ThunkType.VCALL:
+						var vcall = new Thunks.VCALL.Serializer(sc, Header, this);
+						return vcall.Read();
+					default:
+						throw new NotImplementedException($"Thunk '{type}' not implemented yet");
+				}
 			}
 
-
-			return cv.PerformAt(offset, () => {
-				return new SymbolsReader(ctx, mod, cv).ReadSymbolDirect();
-			});
-		}
-
-		private SymbolHeader ReadHeader() {
-			return Read<SymbolHeader>();
-		}
-
-		public string ReadSymbolString() {
-			if (useUnicodeStrings) {
-				return ReadCString(Encoding.UTF8);
-			} else {
-				return ReadString();
-			}
-		}
-
-		public IThunk ReadThunk(ThunkType type) {
-			if (!Enum.IsDefined(typeof(ThunkType), type)) {
-				throw new InvalidDataException();
+			public override byte[] ReadRemaining() {
+				return ReadBytes(Remaining);
 			}
 
-			switch (type) {
-				case ThunkType.ADJUSTOR:
-					return new ADJUSTOR(ctx, Header, this);
-				case ThunkType.NOTYPE:
-					return new NOTYPE(ctx, Header, this);
-				case ThunkType.PCODE:
-					return new PCODE(ctx, Header, this);
-				case ThunkType.VCALL:
-					return new VCALL(ctx, Header, this);
-				default:
-					throw new NotImplementedException($"Thunk '{type}' not implemented yet");
-			}
-		}
+			public State Initialize(SymbolHeader? header = null) {
+				var startOffset = Position;
+				var endOffset = startOffset;
 
-		public override byte[] ReadRemaining() {
-			return ReadBytes(Remaining);
+				if (header == null) {
+					header = ReadHeader();
+				} else {
+					startOffset -= Marshal.SizeOf<SymbolHeader>();
+					endOffset += sizeof(ushort);
+				}
+				Header = header.Value;
+				endOffset += Header.Length;
+
+				CheckHeader(Header);
+				var useUnicodeStrings = pdbStream.Version >= PDBPublicVersion.VC70;
+
+				State = new State {
+					StartOffset = startOffset,
+					EndOffset = endOffset,
+					UseUnicodeStrings = useUnicodeStrings
+				};
+				return State;
+			}
 		}
 	}
 }

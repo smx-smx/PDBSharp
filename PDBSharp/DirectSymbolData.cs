@@ -10,9 +10,9 @@
 
 public class DirectSymbolData : ISymbolResolver
 {
-	public SymbolContext? Data { get; }
+	public SymbolContext Data { get; }
 
-	public DirectSymbolData(SymbolContext? data) {
+	public DirectSymbolData(SymbolContext data) {
 		Data = data;
 	}
 

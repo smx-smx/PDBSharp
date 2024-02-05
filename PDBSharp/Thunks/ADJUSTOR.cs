@@ -11,22 +11,49 @@ using Smx.SharpIO;
 using System;
 using System.ComponentModel.Design;
 using System.IO;
+using System.Xml.Linq;
 
 namespace Smx.PDBSharp.Thunks
 {
-	public class ADJUSTOR : SymbolDataReader, IThunk
-	{
-		public readonly UInt16 Delta;
-		public readonly string Name;
-
-		public ADJUSTOR(IServiceContainer ctx, SymbolHeader symHeader, SpanStream stream) : base(ctx, symHeader, stream) {
-			Delta = ReadUInt16();
-			Name = ReadSymbolString();
+	namespace ADJUSTOR {
+		public class Data : IThunk {
+			public UInt16 Delta;
+			public string Name = string.Empty;
 		}
 
-		public void Write(SymbolDataWriter w) {
-			w.WriteUInt16(Delta);
-			w.WriteSymbolString(Name);
+		public class Serializer : ISerializer<Data>
+		{
+			private readonly IServiceContainer sc;
+			private readonly SpanStreamEx stream;
+			private readonly SymbolHeader header;
+			public Data Data = new Data();
+			private readonly SymbolData.Reader reader;
+
+			public Serializer(IServiceContainer sc, SymbolHeader header, SpanStreamEx stream) {
+				this.sc = sc;
+				this.stream = stream;
+				this.header = header;
+				this.reader = new SymbolData.Reader(sc, stream);
+			}
+
+			public Data Read() {
+				reader.Initialize(header);
+				var Delta = stream.ReadUInt16();
+				var Name = reader.ReadSymbolString();
+
+				Data = new Data {
+					Delta = Delta,
+					Name = Name
+				};
+				return Data;
+			}
+
+			public void Write(Data data) {
+				/*
+				w.WriteUInt16(Data.Delta);
+				w.WriteSymbolString(Data.Name);
+				*/
+			}
 		}
 	}
 }

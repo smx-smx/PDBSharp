@@ -13,7 +13,7 @@
     <RepositoryUrl>https://github.com/smx-smx/PDBSharp</RepositoryUrl>
     <RepositoryType />
     <PackageTags>Microsoft PDB Debug Parser</PackageTags>
-    <Version>1.0.0-alpha4</Version>
+    <Version>1.0.0-alpha5</Version>
     <Nullable>enable</Nullable>
 	<WarningsAsErrors>Nullable</WarningsAsErrors>
 	<LangVersion>latest</LangVersion>

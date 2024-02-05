@@ -18,9 +18,9 @@ namespace Smx.PDBSharp.Symbols.S_DEFRANGE_FRAMEPOINTER_REL
 	public class Data : ISymbolData {
 		public UInt32 FramePointerOffset { get; set; }
 		public CV_LVAR_ADDR_RANGE Range { get; set; }
-		public CV_LVAR_ADDR_GAP[] Gaps { get; set; }
+		public Structures.CV_LVAR_ADDR_GAP.Data[] Gaps { get; set; }
 
-		public Data(uint framePointerOffset, CV_LVAR_ADDR_RANGE range, CV_LVAR_ADDR_GAP[] gaps) {
+		public Data(uint framePointerOffset, CV_LVAR_ADDR_RANGE range, Structures.CV_LVAR_ADDR_GAP.Data[] gaps) {
 			FramePointerOffset = framePointerOffset;
 			Range = range;
 			Gaps = gaps;
@@ -31,14 +31,14 @@ namespace Smx.PDBSharp.Symbols.S_DEFRANGE_FRAMEPOINTER_REL
 	{
 		private Data? Data { get; set; }
 
-		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 		}
 
 		public void Read() {
 			var r = CreateReader();
 			var FramePointerOffset = r.ReadUInt32();
 			var Range = new CV_LVAR_ADDR_RANGE(stream);
-			var Gaps = CV_LVAR_ADDR_GAP.ReadGaps(r);
+			var Gaps = Structures.CV_LVAR_ADDR_GAP.Serializer.ReadGaps(r);
 			Data = new Data(
 				framePointerOffset: FramePointerOffset,
 				range: Range,
@@ -47,6 +47,7 @@ namespace Smx.PDBSharp.Symbols.S_DEFRANGE_FRAMEPOINTER_REL
 		}
 
 		public void Write() {
+			/*
 			var data = Data;
 			if (data == null) throw new InvalidOperationException();
 			
@@ -54,11 +55,12 @@ namespace Smx.PDBSharp.Symbols.S_DEFRANGE_FRAMEPOINTER_REL
 			w.WriteUInt32(data.FramePointerOffset);
 			data.Range.Write(w);
 
-			foreach (CV_LVAR_ADDR_GAP gap in data.Gaps) {
+			foreach (Structures.CV_LVAR_ADDR_GAP.Data gap in data.Gaps) {
 				gap.Write(w);
 			}
 
 			w.WriteHeader();
+			*/
 		}
 
 		public ISymbolData? GetData() => Data;

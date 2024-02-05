@@ -10,5 +10,5 @@
 
 public interface ISymbolResolver
 {
-	SymbolContext? Data { get; }
+	SymbolContext Data { get; }
 }

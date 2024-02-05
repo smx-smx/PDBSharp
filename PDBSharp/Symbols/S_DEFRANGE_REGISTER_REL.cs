@@ -21,9 +21,9 @@ namespace Smx.PDBSharp.Symbols.S_DEFRANGE_REGISTER_REL
 		public UInt16 ParentVariableOffset;
 		public UInt32 BaseRegisterOffset;
 		public CV_LVAR_ADDR_RANGE Range;
-		public CV_LVAR_ADDR_GAP[] Gaps;
+		public Structures.CV_LVAR_ADDR_GAP.Data[] Gaps;
 
-		public Data(ushort baseRegister, bool spilledUdtMember, ushort parentVariableOffset, uint baseRegisterOffset, CV_LVAR_ADDR_RANGE range, CV_LVAR_ADDR_GAP[] gaps) {
+		public Data(ushort baseRegister, bool spilledUdtMember, ushort parentVariableOffset, uint baseRegisterOffset, CV_LVAR_ADDR_RANGE range, Structures.CV_LVAR_ADDR_GAP.Data[] gaps) {
 			BaseRegister = baseRegister;
 			SpilledUdtMember = spilledUdtMember;
 			ParentVariableOffset = parentVariableOffset;
@@ -38,7 +38,7 @@ namespace Smx.PDBSharp.Symbols.S_DEFRANGE_REGISTER_REL
 		private Data? Data { get; set; }
 
 
-		public Serializer(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream) {
+		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
 		}
 
 		public void Read() {
@@ -51,7 +51,7 @@ namespace Smx.PDBSharp.Symbols.S_DEFRANGE_REGISTER_REL
 
 			var BaseRegisterOffset = r.ReadUInt32();
 			var Range = new CV_LVAR_ADDR_RANGE(stream);
-			var Gaps = CV_LVAR_ADDR_GAP.ReadGaps(r);
+			var Gaps = Structures.CV_LVAR_ADDR_GAP.Serializer.ReadGaps(r);
 
 			Data = new Data(
 				baseRegister: BaseRegister,
@@ -64,6 +64,7 @@ namespace Smx.PDBSharp.Symbols.S_DEFRANGE_REGISTER_REL
 		}
 
 		public void Write() {
+			/*
 			var data = Data;
 			if (data == null) throw new InvalidOperationException();
 			
@@ -78,11 +79,12 @@ namespace Smx.PDBSharp.Symbols.S_DEFRANGE_REGISTER_REL
 			w.WriteUInt32(data.BaseRegisterOffset);
 
 			data.Range.Write(w);
-			foreach (CV_LVAR_ADDR_GAP gap in data.Gaps) {
+			foreach (Structures.CV_LVAR_ADDR_GAP.Data gap in data.Gaps) {
 				gap.Write(w);
 			}
 
 			w.WriteHeader();
+			*/
 		}
 
 		public ISymbolData? GetData() => Data;

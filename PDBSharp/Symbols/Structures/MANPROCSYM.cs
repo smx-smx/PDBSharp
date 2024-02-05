@@ -61,17 +61,17 @@ namespace Smx.PDBSharp.Symbols.Structures
 	{
 		public ManProcData? Data { get; set; }
 
-		public ManProcSymSerializerBase(IServiceContainer ctx, IModule mod, SpanStream stream) : base(ctx, mod, stream){
+		public ManProcSymSerializerBase(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
 		}
 
 		public void Read() {
 			var r = CreateReader();
 
 			var ParentOffset = r.ReadUInt32();
-			var Parent = r.ReadSymbol(Module, ParentOffset);
+			var Parent = r.ReadSymbol(ParentOffset);
 			var End = r.ReadUInt32();
 			var NextOffset = r.ReadUInt32();
-			var Next = r.ReadSymbol(Module, NextOffset);
+			var Next = r.ReadSymbol(NextOffset);
 			var ProcLength = r.ReadUInt32();
 			var DebugStartOffset = r.ReadUInt32();
 			var DebugEndOffset = r.ReadUInt32();
