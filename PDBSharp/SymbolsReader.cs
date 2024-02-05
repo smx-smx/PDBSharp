@@ -156,6 +156,9 @@ namespace Smx.PDBSharp
 				case SymbolType.S_THUNK32_ST:
 					if (moduleStream == null) throw new InvalidOperationException(nameof(moduleStream));
 					return new Symbols.S_THUNK32.Serializer(ctx, subStream, moduleStream);
+				case SymbolType.S_LTHREAD32:
+				case SymbolType.S_GTHREAD32:
+					return new Symbols.Structures.THREADSYM32.Serializer(ctx, subStream);
 				case SymbolType.S_TRAMPOLINE:
 					return new Symbols.S_TRAMPOLINE.Serializer(ctx, subStream);
 				case SymbolType.S_COBOLUDT:
@@ -190,7 +193,7 @@ namespace Smx.PDBSharp
 			return new LazySymbolData(delayedSym);
 
 		}
-		
+
 		public ISymbolResolver? ReadSymbolDirect() {
 			long startOffset = Position;
 
