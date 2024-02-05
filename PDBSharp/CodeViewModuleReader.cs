@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace Smx.PDBSharp
 {
@@ -49,6 +50,8 @@ namespace Smx.PDBSharp
 			}
 
 			symbols = new CachedEnumerable<ISymbolResolver>(ReadSymbols());
+			Position = mod.SymbolsSize; // includes CodeViewSignature
+
 			C11Lines = ReadLines();
 			C13Lines = ReadC13Lines();
 		}
@@ -73,10 +76,15 @@ namespace Smx.PDBSharp
 		}
 
 		private IEnumerable<ISymbolResolver> ReadSymbols() {
-			int symbolsSize = (int)mod.SymbolsSize - sizeof(CodeViewSignature); //exclude signature
+			var symbolsStart = sizeof(CodeViewSignature);
+			var symbolsSize = (int)mod.SymbolsSize - sizeof(CodeViewSignature); //exclude signature
+
+			var symbolsData = PerformAt(symbolsStart, () => {
+				return ReadBytes(symbolsSize);
+			});
 			
-			byte[] symbolsData = ReadBytes(symbolsSize);
-			var rdr = new SymbolsReader(ctx, symbolsData);
+			// need to pass in the current stream, since CodeView offsets are relative to the stream
+			var rdr = new SymbolsReader(ctx, new SpanStream(symbolsData), this);
 			if (OnSymbolData != null) {
 				rdr.OnSymbolData += OnSymbolData;
 			}

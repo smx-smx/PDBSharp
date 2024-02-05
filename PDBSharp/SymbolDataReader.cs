@@ -27,7 +27,7 @@ namespace Smx.PDBSharp
 			public long StartOffset { get; internal set; }
 		}
 		public class Reader : TypeDataReader {
-
+			private readonly IModule? moduleStream = null;
 			public State State = new State();
 			private readonly IServiceContainer sc;
 			private readonly PDBStream.Data pdbStream;
@@ -39,9 +39,10 @@ namespace Smx.PDBSharp
 
 			protected SymbolHeader Header;
 
-			public Reader(IServiceContainer sc, SpanStream stream) : base(sc, stream) {
+			public Reader(IServiceContainer sc, SpanStream stream, IModule? moduleStream = null) : base(sc, stream) {
 				this.sc = sc;
 				this.pdbStream = sc.GetService<PDBStream.Data>();
+				this.moduleStream = moduleStream;
 
 				switch (sc.GetService<MSFReader>().FileType) {
 					case PDBType.Big:
@@ -66,10 +67,16 @@ namespace Smx.PDBSharp
 			}
 
 			public ISymbolResolver? ReadSymbol(uint offset) {
+				if(moduleStream == null || moduleStream is not CodeViewModuleReader cv) {
+					throw new InvalidOperationException(nameof(moduleStream) + " is missing, cannot read (this shouldn't happen)");
+				}
+
 				if (offset == 0)
 					return null;
 
-				return new SymbolsReader(sc, this).ReadSymbolDirect();
+				return cv.PerformAt(offset, () => {
+					return new SymbolsReader(sc, cv, cv).ReadSymbolDirect();
+				});
 			}
 
 			public string ReadSymbolString() {

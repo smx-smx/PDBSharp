@@ -64,7 +64,7 @@ namespace Smx.PDBSharp.Symbols.ProcSym32
 
 		public ISymbolData? GetData() => Data;
 
-		public SerializerBase(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+		public SerializerBase(IServiceContainer ctx, SpanStream stream, IModule cvStream) : base(ctx, stream, cvStream) {
 		}
 
 		public void Read() {

@@ -39,7 +39,7 @@ namespace Smx.PDBSharp.Symbols.S_BLOCK32
 		public Data? Data { get; set; }
 		public ISymbolData? GetData() => Data;
 
-		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+		public Serializer(IServiceContainer ctx, SpanStream stream, IModule cvStream) : base(ctx, stream, cvStream) {
 		}
 
 		public void Read() {

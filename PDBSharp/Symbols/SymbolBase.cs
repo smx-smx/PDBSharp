@@ -19,14 +19,16 @@ namespace Smx.PDBSharp.Symbols
 	{
 		protected readonly IServiceContainer ctx;
 		protected readonly SpanStream stream;
+		protected readonly IModule? moduleStream;
 
-		public SymbolSerializerBase(IServiceContainer ctx, SpanStream stream) {
+		public SymbolSerializerBase(IServiceContainer ctx, SpanStream stream, IModule? moduleStream = null) {
 			this.ctx = ctx;
 			this.stream = stream;
+			this.moduleStream = moduleStream;
 		}
 
 		protected SymbolData.Reader CreateReader() {
-			var r = new SymbolData.Reader(ctx, stream);
+			var r = new SymbolData.Reader(ctx, stream, moduleStream);
 			r.Initialize();
 			return r;
 		}

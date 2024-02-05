@@ -15,7 +15,7 @@ namespace Smx.PDBSharp
 	public class TypeServerMapReader : SpanStream
 	{
 		public TypeServerMapReader(SpanStream stream) : base(stream) {
-			throw new NotImplementedException();
+			//throw new NotImplementedException();
 		}
 	}
 }

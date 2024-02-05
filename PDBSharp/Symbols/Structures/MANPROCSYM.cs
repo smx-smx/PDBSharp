@@ -61,7 +61,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 	{
 		public ManProcData? Data { get; set; }
 
-		public ManProcSymSerializerBase(IServiceContainer ctx, SpanStream stream) : base(ctx, stream){
+		public ManProcSymSerializerBase(IServiceContainer ctx, SpanStream stream, IModule cvStream) : base(ctx, stream, cvStream){
 		}
 
 		public void Read() {

@@ -16,7 +16,7 @@ namespace Smx.PDBSharp.Symbols.S_GMANPROC
 {
 	public class Serializer : ManProcSymSerializerBase, ISymbolSerializer
 	{
-		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+		public Serializer(IServiceContainer ctx, SpanStream stream, IModule cvStream) : base(ctx, stream, cvStream) {
 		}
 
 		public void Write() {

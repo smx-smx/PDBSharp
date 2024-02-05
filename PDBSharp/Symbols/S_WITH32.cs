@@ -38,7 +38,7 @@ namespace Smx.PDBSharp.Symbols.S_WITH32
 	{
 		private Data? Data;
 
-		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+		public Serializer(IServiceContainer ctx, SpanStream stream, IModule cvStream) : base(ctx, stream, cvStream) {
 		}
 
 		public void Read() {

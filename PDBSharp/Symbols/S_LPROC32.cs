@@ -15,7 +15,7 @@ namespace Smx.PDBSharp.Symbols.S_LPROC32
 {
 	public class Serializer : Symbols.ProcSym32.SerializerBase
 	{
-		public Serializer(IServiceContainer ctx, SpanStream stream) : base(ctx, stream) {
+		public Serializer(IServiceContainer ctx, SpanStream stream, IModule cvStream) : base(ctx, stream, cvStream) {
 		}
 
 		public void Write() {
