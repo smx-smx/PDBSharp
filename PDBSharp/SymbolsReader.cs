@@ -119,7 +119,9 @@ namespace Smx.PDBSharp
 				case SymbolType.S_PROCREF:
 				case SymbolType.S_LPROCREF:
 				case SymbolType.S_DATAREF:
-					return new Symbols.Structures.REFSYM2.Serializer(ctx, subStream);
+				case SymbolType.S_TOKENREF:
+				case SymbolType.S_ANNOTATIONREF:
+					return new Symbols.Structures.REFSYM2.Serializer(ctx, subStream, hdr.Type);
 				case SymbolType.S_HEAPALLOCSITE:
 					return new Symbols.S_HEAPALLOCSITE.Serializer(ctx, subStream);
 				case SymbolType.S_LABEL32:

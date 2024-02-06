@@ -23,6 +23,8 @@ namespace Smx.PDBSharp.Symbols.Structures
 			public ushort ModuleIndex;
 			public string Name = string.Empty;
 
+			public SymbolType Type { get; set; }
+
 			public override string ToString() {
 				return $"REFSYM2(Name='{Name}', ModuleIndex='{ModuleIndex}', SymbolOffset='{SymbolOffset}')";
 			}
@@ -32,7 +34,8 @@ namespace Smx.PDBSharp.Symbols.Structures
 		{
 			public Data Data = new Data();
 
-			public Serializer(IServiceContainer sc, SpanStream stream) : base(sc, stream) {
+			public Serializer(IServiceContainer sc, SpanStream stream, SymbolType type) : base(sc, stream) {
+				Data.Type = type;
 			}
 
 			public ISymbolData? GetData() {
@@ -46,6 +49,7 @@ namespace Smx.PDBSharp.Symbols.Structures
 				var moduleIndex = r.ReadUInt16();
 				var name = r.ReadSymbolString();
 				Data = new Data {
+					Type = Data.Type,
 					SumName = sumName,
 					SymbolOffset = symbolOffset,
 					ModuleIndex = moduleIndex,
