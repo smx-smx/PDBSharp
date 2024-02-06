@@ -116,6 +116,10 @@ namespace Smx.PDBSharp
 				case SymbolType.S_LPROC32_ST:
 					if (moduleStream == null) throw new InvalidOperationException(nameof(moduleStream));
 					return new Symbols.S_LPROC32.Serializer(ctx, subStream, moduleStream);
+				case SymbolType.S_PROCREF_ST:
+				case SymbolType.S_DATAREF_ST:
+				case SymbolType.S_LPROCREF_ST:
+					return new Symbols.Structures.REFSYM.Serializer(ctx, subStream, hdr.Type);
 				case SymbolType.S_PROCREF:
 				case SymbolType.S_LPROCREF:
 				case SymbolType.S_DATAREF:
@@ -143,6 +147,7 @@ namespace Smx.PDBSharp
 				case SymbolType.S_OEM:
 					return new Symbols.S_OEM.Serializer(ctx, subStream);
 				case SymbolType.S_PUB32:
+				case SymbolType.S_PUB32_ST:
 					return new Symbols.S_PUB32.Serializer(ctx, subStream);
 				case SymbolType.S_REGISTER:
 				case SymbolType.S_REGISTER_ST:

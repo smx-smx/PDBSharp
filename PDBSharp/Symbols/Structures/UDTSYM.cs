@@ -23,6 +23,10 @@ namespace Smx.PDBSharp.Symbols.Structures.UdtSym
 			Type = type;
 			Name = name;
 		}
+
+		public override string ToString() {
+			return $"UdtSym(Type='{Type}', Name='{Name}')";
+		}
 	}
 
 	public class UdtSym : SymbolSerializerBase, ISymbolSerializer
