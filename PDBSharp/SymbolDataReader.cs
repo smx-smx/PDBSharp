@@ -46,10 +46,10 @@ namespace Smx.PDBSharp
 
 				switch (sc.GetService<MSFReader>().FileType) {
 					case PDBType.Big:
-						ReadString = ReadString32;
+						ReadString = ReadString32NoTerm;
 						break;
 					case PDBType.Small:
-						ReadString = ReadString16;
+						ReadString = ReadString16NoTerm;
 						break;
 					default:
 						throw new InvalidDataException();

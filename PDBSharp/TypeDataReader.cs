@@ -42,7 +42,7 @@ namespace Smx.PDBSharp
 		private void InitVariants() {
 			switch (ctx.GetService<PDBFile>().Type) {
 				case PDBType.Small:
-					ReadString16 = base.ReadString16;
+					ReadString16 = base.ReadString16NoTerm;
 					break;
 				case PDBType.Old:
 					ReadString16 = base.ReadString16NoTerm;

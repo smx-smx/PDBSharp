@@ -31,6 +31,12 @@ namespace Smx.PDBSharp
 			return str;
 		}
 
+		public string ReadString32NoTerm() {
+			int length = ReadInt32();
+			string str = Encoding.ASCII.GetString(ReadBytes(length));
+			return str;
+		}
+
 		public string ReadString16() {
 			int length = ReadByte();
 			string str = Encoding.ASCII.GetString(ReadBytes(length));
