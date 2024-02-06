@@ -197,7 +197,7 @@ namespace Smx.PDBSharp.Dumper
 				}
 			}
 
-			if(OptPrintSyms && dbi.SymbolRecords != null) {
+			if(OptPrintSyms && dbi != null && dbi.SymbolRecords != null) {
 				Console.WriteLine("=== Symbol Records ===");
 				foreach(var sym in dbi.SymbolRecords) {
 					Console.WriteLine(sym);
