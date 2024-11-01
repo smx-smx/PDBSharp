@@ -1,4 +1,10 @@
 # PDBSharp
+
+**NOTE**: I'm working on a new and more robust parser based on the Kaitai struct language.
+You can find the project at the following link: https://github.com/smx-smx/kaitai-pdb
+The new parser is probably not as efficient or convenient as a hand-written parser, but the newly gained knowledge and fixes could be eventually added back to PDBSharp.
+
+
 C# Library and Tools to read Program DataBase (PDB) files created by MSVC
 
 The library supports reading:
